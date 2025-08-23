@@ -16,6 +16,9 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      remote-reload-utils:
+        specifier: ^0.0.2
+        version: 0.0.2
     devDependencies:
       '@rsbuild/core':
         specifier: ^1.4.13
@@ -1210,6 +1213,9 @@ packages:
   rechoir@0.8.0:
     resolution: {integrity: sha512-/vxpCXddiX8NGfGO/mTafwjq4aFa/71pvamip0++IQk3zG8cbCj0fifNPrjjF1XMXUne91jL9OoxmdykoEtifQ==}
     engines: {node: '>= 10.13.0'}
+
+  remote-reload-utils@0.0.2:
+    resolution: {integrity: sha512-KUihombAy4yj+6y75lJYantlDgS+1t3xIlhQNrWl9XDOQwp36gXgbgho3F9sVqlD77+SvtEtKSeLkpdLDVTgFA==}
 
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
@@ -2636,6 +2642,10 @@ snapshots:
   rechoir@0.8.0:
     dependencies:
       resolve: 1.22.10
+
+  remote-reload-utils@0.0.2:
+    dependencies:
+      '@module-federation/runtime': 0.18.3
 
   require-directory@2.1.1: {}
 

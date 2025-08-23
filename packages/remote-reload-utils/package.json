@@ -1,12 +1,12 @@
 {
   "name": "remote-reload-utils",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/loadRemote.d.ts",
+      "import": "./dist/main.js",
+      "require": "./dist/main.cjs"
     }
   },
   "main": "./dist/index.cjs",

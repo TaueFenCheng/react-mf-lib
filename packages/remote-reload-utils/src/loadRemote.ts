@@ -1,5 +1,9 @@
-import { loadRemote } from '@module-federation/runtime';
-
+import {
+  registerRemotes,
+  loadRemote,
+  createInstance,
+} from '@module-federation/runtime';
+// import { createInstance } from '@module-federation/enhanced/runtime';
 export interface LoadRemoteOptions {
   name: string; // 模块联邦 name（基础名）
   pkg: string; // npm 包名
@@ -26,7 +30,7 @@ async function fetchLatestVersion(pkg: string): Promise<string> {
   const res = await fetch(`https://registry.npmjs.org/${pkg}`);
   if (!res.ok) throw new Error(`无法获取 ${pkg} 的版本信息`);
   const data = await res.json();
-  return data['dist-tags']?.latest;
+  return (data as any)['dist-tags']?.latest;
 }
 
 /**
@@ -77,6 +81,7 @@ export async function loadRemoteMultiVersion(options: LoadRemoteOptions) {
 
   let finalVersion = version;
 
+  // 处理 latest 的情况，优先用缓存
   if (version === 'latest') {
     const cache = getVersionCache();
     const versions = cache[pkg] || {};
@@ -114,12 +119,26 @@ export async function loadRemoteMultiVersion(options: LoadRemoteOptions) {
   const urls = buildCdnUrls(pkg, finalVersion);
   if (localFallback) urls.push(localFallback);
 
+  // 依次尝试多个 CDN
   for (let url of urls) {
     let success = false;
     for (let i = 0; i < retries; i++) {
       try {
         console.log(`[MF] 尝试加载: ${url} (第 ${i + 1} 次)`);
-        await loadRemote({ url, name: scopeName });
+
+        // 先注册 remote
+        // registerRemotes({
+        //   [scopeName]: url,
+        // });
+        registerRemotes([
+          {
+            name: scopeName,
+            entry: url,
+          },
+        ]);
+        // 尝试加载 remoteEntry 本身
+        await loadRemote(`${scopeName}/remoteEntry`);
+
         console.log(`[MF] 成功加载: ${scopeName}`);
         success = true;
         break;
@@ -133,3 +152,4 @@ export async function loadRemoteMultiVersion(options: LoadRemoteOptions) {
 
   throw new Error(`[MF] 所有 CDN 加载失败: ${urls.join(', ')}`);
 }
+export { loadRemote, registerRemotes, createInstance };

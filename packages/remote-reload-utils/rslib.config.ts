@@ -1,6 +1,11 @@
 import { defineConfig } from '@rslib/core';
 
 export default defineConfig({
+  source: {
+    entry: {
+      main: './src/loadRemote.ts',
+    },
+  },
   lib: [
     {
       format: 'esm',
