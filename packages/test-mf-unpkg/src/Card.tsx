@@ -1,6 +1,6 @@
 
 export default function Card() {
   return (
-    <div>Card</div>
+    <div>Card From Remote</div>
   )
 }

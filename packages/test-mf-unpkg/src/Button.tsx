@@ -1,6 +1,6 @@
 
 export default function Button() {
   return (
-    <div>Button</div>
+    <div>Button From Remote</div>
   )
 }

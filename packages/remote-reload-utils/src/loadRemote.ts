@@ -89,35 +89,67 @@ export async function loadRemoteMultiVersion(options: LoadRemoteOptions) {
   }
 
   // 生成唯一 scope
-  const scopeName = `${name}@${finalVersion}`;
-  const urls = buildCdnUrls(pkg, finalVersion);
+  // const scopeName = `${name}@${finalVersion}`;
+  // const urls = buildCdnUrls(pkg, finalVersion);
+  // if (localFallback) urls.push(localFallback);
+
+  // // 尝试多个 CDN
+  // for (let url of urls) {
+  //   let success = false;
+  //   for (let i = 0; i < retries; i++) {
+  //     try {
+  //       const mf = createInstance({
+  //         name: 'host',
+  //         remotes: [
+  //           {
+  //             name: scopeName,
+  //             entry: url,
+  //           },
+  //         ],
+  //       });
+
+  //       await mf.loadRemote(`${scopeName}/remoteEntry`);
+  //       success = true;
+  //       return { scopeName, mf };
+  //     } catch {
+  //       await new Promise((res) => setTimeout(res, delay));
+  //     }
+  //   }
+  //   if (success) return { scopeName, mf: null };
+  // }
+
+  // const finalVersion = version;
+  // const scopeName = `${name}@${finalVersion}`;
+  const scopeName = `${name}`;
+
+  const urls = [
+    `https://cdn.jsdelivr.net/npm/${pkg}@${finalVersion}/dist/remoteEntry.js`,
+    `https://unpkg.com/${pkg}@${finalVersion}/dist/remoteEntry.js`,
+  ];
   if (localFallback) urls.push(localFallback);
 
-  // 尝试多个 CDN
   for (let url of urls) {
-    let success = false;
     for (let i = 0; i < retries; i++) {
       try {
+        // 创建一个 runtime 实例
         const mf = createInstance({
           name: 'host',
           remotes: [
             {
-              name: scopeName,
-              entry: url,
+              name: scopeName, // 唯一 scope
+              entry: url, // remoteEntry.js 的 url
             },
           ],
         });
 
-        await mf.loadRemote(`${scopeName}/remoteEntry`);
-        success = true;
+        // ⚠️ 不要 loadRemote remoteEntry
+        // 这里直接返回实例，后续加载组件用 mf.loadRemote
         return { scopeName, mf };
       } catch {
         await new Promise((res) => setTimeout(res, delay));
       }
     }
-    if (success) return { scopeName, mf: null };
   }
 
   throw new Error(`[MF] 所有 CDN 加载失败: ${urls.join(', ')}`);
 }
-
