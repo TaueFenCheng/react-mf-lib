@@ -1,27 +1,5 @@
-import {
-  registerRemotes,
-  loadRemote,
-  createInstance,
-} from '@module-federation/runtime';
-// import { createInstance } from '@module-federation/enhanced/runtime';
-export interface LoadRemoteOptions {
-  name: string; // 模块联邦 name（基础名）
-  pkg: string; // npm 包名
-  version?: string; // 指定版本 or "latest"
-  retries?: number; // 重试次数
-  delay?: number; // 重试间隔
-  localFallback?: string; // 本地兜底
-  cacheTTL?: number; // 缓存时间
-  revalidate?: boolean; // 灰度更新
-}
-
-interface VersionCache {
-  [pkg: string]: {
-    [version: string]: {
-      timestamp: number;
-    };
-  };
-}
+import { createInstance } from '@module-federation/enhanced/runtime';
+import { LoadRemoteOptions, VersionCache } from './types';
 
 /**
  * 从 npm registry 获取最新版本
@@ -93,63 +71,53 @@ export async function loadRemoteMultiVersion(options: LoadRemoteOptions) {
       latestCached &&
       Date.now() - versions[latestCached].timestamp < cacheTTL
     ) {
-      console.log(`[MF] 使用缓存版本: ${pkg}@${latestCached}`);
       finalVersion = latestCached;
 
-      // 后台 revalidate
       if (revalidate) {
         fetchLatestVersion(pkg)
           .then((latest) => {
             if (latest !== latestCached) {
-              console.log(`[MF] 检测到新版本: ${pkg}@${latest} (下次可用)`);
               setVersionCache(pkg, latest);
             }
           })
-          .catch((err) => console.warn(`[MF] 检查更新失败: ${pkg}`, err));
+          .catch(() => {});
       }
     } else {
       finalVersion = await fetchLatestVersion(pkg);
-      console.log(`[MF] 获取最新版本: ${pkg}@${finalVersion}`);
       setVersionCache(pkg, finalVersion);
     }
   }
 
-  // 生成唯一 scope，避免冲突
+  // 生成唯一 scope
   const scopeName = `${name}@${finalVersion}`;
   const urls = buildCdnUrls(pkg, finalVersion);
   if (localFallback) urls.push(localFallback);
 
-  // 依次尝试多个 CDN
+  // 尝试多个 CDN
   for (let url of urls) {
     let success = false;
     for (let i = 0; i < retries; i++) {
       try {
-        console.log(`[MF] 尝试加载: ${url} (第 ${i + 1} 次)`);
+        const mf = createInstance({
+          name: 'host',
+          remotes: [
+            {
+              name: scopeName,
+              entry: url,
+            },
+          ],
+        });
 
-        // 先注册 remote
-        // registerRemotes({
-        //   [scopeName]: url,
-        // });
-        registerRemotes([
-          {
-            name: scopeName,
-            entry: url,
-          },
-        ]);
-        // 尝试加载 remoteEntry 本身
-        await loadRemote(`${scopeName}/remoteEntry`);
-
-        console.log(`[MF] 成功加载: ${scopeName}`);
+        await mf.loadRemote(`${scopeName}/remoteEntry`);
         success = true;
-        break;
-      } catch (err) {
-        console.warn(`[MF] 加载失败: ${url}, 重试中...`, err);
+        return { scopeName, mf };
+      } catch {
         await new Promise((res) => setTimeout(res, delay));
       }
     }
-    if (success) return scopeName;
+    if (success) return { scopeName, mf: null };
   }
 
   throw new Error(`[MF] 所有 CDN 加载失败: ${urls.join(', ')}`);
 }
-export { loadRemote, registerRemotes, createInstance };
+

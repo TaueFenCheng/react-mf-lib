@@ -1,28 +1,25 @@
 import './App.css';
-import { loadRemoteMultiVersion, loadRemote } from 'remote-reload-utils';
+import { loadRemoteMultiVersion } from 'remote-reload-utils';
 import { useEffect } from 'react';
 
-const App =  () => {
+const App = () => {
   useEffect(() => {
     async function init() {
-      const scope = await loadRemoteMultiVersion({
-        name: 'test-mf-unpkg',
+      const { scopeName, mf } = await loadRemoteMultiVersion({
+        name: 'react_mf_lib',
         pkg: 'test-mf-unpkg',
         version: 'latest',
       });
-      const { Button } = await loadRemote<any>(`${scope}/Button`);
-      console.log(Button)
+      if (!mf) {
+        return;
+      }
+      // 用 mf 实例加载暴露的模块
+      // const mod = await mf.loadRemote(`${scopeName}/Button`);
+      const mod = await mf.loadRemote(`react_mf_lib/Button`);
+      console.log(mod.default);
     }
-    init()
-  }, [])
-  
-  // const scope = await loadRemoteMultiVersion({
-  //   name: 'test-mf-unpkg',
-  //   pkg: 'test-mf-unpkg',
-  //   version: 'latest',
-  // });
-
-  // scope 形如 "my-lib@1.2.3"
+    init();
+  }, []);
 
   return (
     <div className="content">
