@@ -1,7 +1,7 @@
 {
   "name": "test-mf-unpkg",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.3",
   "main": "dist/remoteEntry.js",
   "scripts": {
     "dev": "rspack dev",
