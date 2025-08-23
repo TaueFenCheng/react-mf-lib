@@ -9,8 +9,8 @@ const App = () => {
       const { scopeName, mf } = await loadRemoteMultiVersion({
         name: 'react_mf_lib',
         pkg: 'test-mf-unpkg',
-        // version: '1.0.4',
-        version: 'latest',
+        version: '1.0.5',
+        // version: 'latest',
       });
       if (!mf) {
         return;
