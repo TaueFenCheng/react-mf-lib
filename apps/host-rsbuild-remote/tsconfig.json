@@ -9,19 +9,17 @@
 
     /* modules */
     "module": "ESNext",
-    "resolveJsonModule": true,
+    "moduleDetection": "force",
     "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
+    "noUncheckedSideEffectImports": true,
 
     /* type checking */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["src"],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS"
-    }
-  }
+  "include": ["src"]
 }
