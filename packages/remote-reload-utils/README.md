@@ -26,12 +26,29 @@ pnpm dev
 
 ```ts
 import { loadRemoteMultiVersion } from 'remote-reload-utils';
-const scope = await loadRemoteMultiVersion({
-  name: 'my-lib',
-  pkg: 'my-lib',
-  version: 'latest',
-});
-
-// scope 形如 "my-lib@1.2.3"
-const { Button } = await loadRemote(`${scope}/Button`);
+const [comp, setComp] = useState(null);
+useEffect(() => {
+  async function init() {
+    const { scopeName, mf } = await loadRemoteMultiVersion({
+      name: 'react_mf_lib',
+      pkg: 'test-mf-unpkg',
+      version: '1.0.5',
+      // version: 'latest',
+    });
+    if (!mf) {
+      return;
+    }
+    if (mf) {
+      console.log(mf);
+      const mod = await mf.loadRemote(`${scopeName}/Button`);
+      console.log(mod.default); // 这里就是远程组件
+      setComp(mod.default);
+    }
+    // 用 mf 实例加载暴露的模块
+    // const mod = await mf.loadRemote(`${scopeName}/Button`);
+    // const mod = await mf.loadRemote(`react_mf_lib/Button`);
+    // console.log(mod.default);
+  }
+  init();
+}, []);
 ```
