@@ -88,38 +88,6 @@ export async function loadRemoteMultiVersion(options: LoadRemoteOptions) {
     }
   }
 
-  // 生成唯一 scope
-  // const scopeName = `${name}@${finalVersion}`;
-  // const urls = buildCdnUrls(pkg, finalVersion);
-  // if (localFallback) urls.push(localFallback);
-
-  // // 尝试多个 CDN
-  // for (let url of urls) {
-  //   let success = false;
-  //   for (let i = 0; i < retries; i++) {
-  //     try {
-  //       const mf = createInstance({
-  //         name: 'host',
-  //         remotes: [
-  //           {
-  //             name: scopeName,
-  //             entry: url,
-  //           },
-  //         ],
-  //       });
-
-  //       await mf.loadRemote(`${scopeName}/remoteEntry`);
-  //       success = true;
-  //       return { scopeName, mf };
-  //     } catch {
-  //       await new Promise((res) => setTimeout(res, delay));
-  //     }
-  //   }
-  //   if (success) return { scopeName, mf: null };
-  // }
-
-  // const finalVersion = version;
-  // const scopeName = `${name}@${finalVersion}`;
   const scopeName = `${name}`;
 
   const urls = [
@@ -140,6 +108,23 @@ export async function loadRemoteMultiVersion(options: LoadRemoteOptions) {
               entry: url, // remoteEntry.js 的 url
             },
           ],
+          // 共享react react-dom 版本
+          shared: {
+            react: {
+              shareConfig: {
+                singleton: true,
+                eager: true, // 是否提前加载
+                requiredVersion: false,
+              },
+            },
+            'react-dom': {
+              shareConfig: {
+                singleton: true,
+                eager: true, // 是否提前加载
+                requiredVersion: false,
+              },
+            },
+          },
         });
 
         // ⚠️ 不要 loadRemote remoteEntry

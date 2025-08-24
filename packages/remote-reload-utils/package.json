@@ -16,7 +16,8 @@
   ],
   "scripts": {
     "build": "rslib build",
-    "dev": "rslib build --watch"
+    "dev": "rslib build --watch",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@rslib/core": "^0.12.2",
