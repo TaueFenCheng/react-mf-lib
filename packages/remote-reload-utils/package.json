@@ -1,7 +1,8 @@
 {
   "name": "remote-reload-utils",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
+  "description": "Utilities for remote reload in Module Federation & React Component",
   "exports": {
     ".": {
       "types": "./dist/loadRemote.d.ts",
@@ -15,6 +16,11 @@
     "dist",
     "loadRemote.md"
   ],
+  "gitRepository": {
+    "type": "git",
+    "url": "https://github.com/TaueFenCheng/react-mf-lib.git",
+    "directory": "packages/remote-reload-utils"
+  },
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
