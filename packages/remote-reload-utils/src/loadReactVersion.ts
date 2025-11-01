@@ -1,4 +1,4 @@
-import { createInstance } from '@module-federation/enhanced/runtime';
+import { createInstance } from '@module-federation/enhanced/runtime'
 
 export async function loadReactVersion(version: '17' | '18' | '19') {
   const runtime = await createInstance({
@@ -17,9 +17,9 @@ export async function loadReactVersion(version: '17' | '18' | '19') {
         entryGlobalName: 'ReactDOM',
       },
     ],
-  });
+  })
 
-  const React = await runtime.loadRemote(`react@${version}`);
-  const ReactDOM = await runtime.loadRemote(`react-dom@${version}`);
-  return { React, ReactDOM };
+  const React = await runtime.loadRemote(`react@${version}`)
+  const ReactDOM = await runtime.loadRemote(`react-dom@${version}`)
+  return { React, ReactDOM }
 }

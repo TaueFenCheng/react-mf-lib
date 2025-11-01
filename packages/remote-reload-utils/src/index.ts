@@ -1,1 +1,2 @@
-export const squared = (n: number): number => n * n;
+export { loadReactVersion } from './loadReactVersion'
+export { loadRemoteMultiVersion } from './loadRemote'
