@@ -1,3 +1,5 @@
+import { ModuleFederationRuntimePlugin } from "@module-federation/enhanced/runtime"
+
 export interface LoadRemoteOptions {
   name: string // 模块联邦 name（基础名）
   pkg: string // npm 包名
@@ -7,6 +9,7 @@ export interface LoadRemoteOptions {
   localFallback?: string // 本地兜底
   cacheTTL?: number // 缓存时间
   revalidate?: boolean // 灰度更新
+  shared?: Record<string, ModuleFederationRuntimePlugin> // 自定义 shared 配置
 }
 
 export interface VersionCache {
