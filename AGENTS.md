@@ -86,6 +86,8 @@ pnpm --filter remote-reload-utils test --run --grep "test name"
 - Prefix error messages with `[MF]` for module federation related errors
 - Log warnings with `console.warn` for recoverable issues
 - Wrap localStorage operations in try-catch for safety
+- Implement retry logic with configurable `retries` and `delay` params
+- Provide fallback URLs for CDN failures
 
 ### Comments
 - Use JSDoc comments for exported functions with `/** */`
@@ -136,3 +138,19 @@ pnpm --filter remote-reload-utils test --run --grep "test name"
 ## Testing
 
 Tests should be placed next to source files or in a `__tests__` directory with `.test.ts` or `.spec.ts` extensions.
+
+## CDN & Version Management
+
+- Primary CDN: `https://cdn.jsdelivr.net/npm/`
+- Fallback CDN: `https://unpkg.com/`
+- Version cache stored in localStorage under key `mf-multi-version`
+- Default cache TTL: 24 hours (configurable via `cacheTTL` param)
+- Revalidation mode: fetch latest version in background when using cached version
+- Entry file pattern: `/dist/remoteEntry.js`
+
+## Build System
+
+- Library builds use `rslib` (built on Rspack)
+- Demo apps use `rsbuild`
+- Output formats: ESM (`main.js`) and CJS (`main.cjs`)
+- Type definitions: `loadRemote.d.ts` for main entry point
