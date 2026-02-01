@@ -1,5 +1,7 @@
 import { ModuleFederationRuntimePlugin } from "@module-federation/enhanced/runtime"
 
+export { type ModuleFederationRuntimePlugin }
+
 export interface LoadRemoteOptions {
   name: string // 模块联邦 name（基础名）
   pkg: string // npm 包名
@@ -18,4 +20,21 @@ export interface VersionCache {
       timestamp: number
     }
   }
+}
+
+export interface PreloadOptions extends LoadRemoteOptions {
+  priority?: 'idle' | 'high'
+  force?: boolean
+}
+
+export interface PreloadCacheItem {
+  version: string
+  scopeName: string
+  mf: any
+  timestamp: number
+}
+
+export interface PreloadStatus {
+  loaded: boolean
+  timestamp: number
 }

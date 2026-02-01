@@ -9,10 +9,20 @@
 - [安装](#安装)
 - [快速开始](#快速开始)
 - [API 参考](#api-参考)
+- [高级功能](#高级功能)
+  - [预加载远程模块](#预加载远程模块)
+  - [卸载远程模块](#卸载远程模块)
+  - [健康检查](#健康检查)
+  - [React Hooks](#react-hooks)
+  - [跨模块共享状态](#跨模块共享状态)
+  - [事件总线](#事件总线)
+  - [版本兼容性检查](#版本兼容性检查)
+  - [React 组件适配器](#react-组件适配器)
 - [配置选项](#配置选项)
 - [使用示例](#使用示例)
 - [最佳实践](#最佳实践)
 - [故障排查](#故障排查)
+- [类型定义](#类型定义)
 
 ## 简介
 
@@ -747,6 +757,336 @@ function buildCdnUrls(pkg: string, version: string) {
 // 在浏览器中手动访问这些 URL 验证是否可用
 ```
 
+## 高级功能
+
+### 预加载远程模块
+
+使用 `preloadRemote` 预加载远程模块，提升用户体验。
+
+```typescript
+import { preloadRemote } from 'remote-reload-utils';
+
+// 空闲时预加载
+preloadRemote({
+  name: 'my-lib',
+  pkg: 'my-ui-lib',
+  version: '1.0.0',
+  priority: 'idle',  // 'idle' 或 'high'
+});
+
+// 批量预加载
+await preloadRemoteList([
+  { name: 'lib1', pkg: 'pkg1', version: '1.0.0' },
+  { name: 'lib2', pkg: 'pkg2', version: '2.0.0' },
+], (loaded, total) => {
+  console.log(`加载进度: ${loaded}/${total}`);
+});
+
+// 检查预加载状态
+const status = getPreloadStatus('my-lib');
+if (status?.loaded) {
+  console.log('已预加载，时间戳:', status.timestamp);
+}
+
+// 取消预加载
+cancelPreload('my-lib');
+
+// 清除所有预加载缓存
+clearPreloadCache();
+```
+
+### 卸载远程模块
+
+使用 `unloadRemote` 卸载已加载的远程模块，释放资源。
+
+```typescript
+import { unloadRemote, unloadAll, getLoadedRemotes } from 'remote-reload-utils';
+
+// 卸载指定模块
+await unloadRemote({
+  name: 'my-lib',
+  pkg: 'my-ui-lib',
+  version: '1.0.0',
+});
+
+// 卸载所有模块
+await unloadAll(true);  // true 表示同时清除缓存
+
+// 查看已加载的模块
+const loaded = getLoadedRemotes();
+console.log(loaded);
+// [{ name, pkg, version, loadedModules, timestamp }]
+```
+
+### 健康检查
+
+使用 `checkRemoteHealth` 检查远程模块的可用性和性能。
+
+```typescript
+import { checkRemoteHealth, getRemoteHealthReport, formatHealthStatus } from 'remote-reload-utils';
+
+// 检查单个远程模块
+const health = await checkRemoteHealth({
+  name: 'my-lib',
+  pkg: 'my-ui-lib',
+  version: '1.0.0',
+});
+
+console.log(formatHealthStatus(health.status));
+// 🟢 healthy 或 🟡 degraded 或 🔴 unhealthy
+
+// 批量检查多个远程模块
+const report = await getRemoteHealthReport([
+  { name: 'lib1', pkg: 'pkg1' },
+  { name: 'lib2', pkg: 'pkg2' },
+]);
+
+console.log('总体状态:', report.overall);
+```
+
+### React Hooks
+
+提供 `useRemote` 和 `useRemoteList` Hooks，简化 React 中的使用。
+
+```typescript
+import { useRemote, useRemoteList, onRemoteReady, onRemoteError } from 'remote-reload-utils';
+
+// 单个远程组件
+function MyComponent() {
+  const { component: Button, loading, error, retry } = useRemote({
+    name: 'ui-lib',
+    pkg: 'my-ui-lib',
+    modulePath: 'Button',
+    version: '1.0.0',
+    onReady: (comp) => console.log('加载成功'),
+    onError: (err) => console.error('加载失败', err),
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <button onClick={retry}>重试</button>;
+
+  return Button ? <Button /> : null;
+}
+
+// 批量加载
+function MultiComponent() {
+  const { components, loading, errors } = useRemoteList({
+    remotes: [
+      { name: 'lib1', pkg: 'pkg1', modulePath: 'Button' },
+      { name: 'lib2', pkg: 'pkg2', modulePath: 'Card' },
+    ],
+    onAllReady: (cmps) => console.log('全部加载完成'),
+    onRemoteError: (err, pkg) => console.error(`${pkg} 加载失败`, err),
+  });
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      {components.get('pkg1/Button')?.()}
+      {components.get('pkg2/Card')?.()}
+    </div>
+  );
+}
+
+// 事件监听
+onRemoteReady('ui-lib', (scopeName, mf) => {
+  console.log('远程模块已就绪', scopeName);
+});
+
+onRemoteError('ui-lib', (error) => {
+  console.error('远程模块加载失败', error);
+});
+```
+
+### 跨模块共享状态
+
+使用 `createSharedContext` 在不同远程模块间共享状态。
+
+```typescript
+import { createSharedContext } from 'remote-reload-utils';
+
+// 创建共享上下文
+const { Provider, useContext, useSharedState, useSelector, setValue, getValue, reset, destroy } =
+  createSharedContext('app-store', { count: 0, user: null });
+
+// 在 React 中使用
+function App() {
+  return (
+    <Provider value={{ count: 0, user: null }}>
+      <Counter />
+      <UserInfo />
+    </Provider>
+  );
+}
+
+function Counter() {
+  const [count, setCount] = useSharedState();
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+
+function UserInfo() {
+  const user = useSelector((state) => state.user);
+  return <div>{user?.name || '未登录'}</div>;
+}
+
+// 非 React 环境使用
+setValue({ count: 5, user: { id: 1, name: '张三' } });
+const current = getValue();
+reset();  // 重置为初始值
+destroy();  // 销毁上下文
+```
+
+### 事件总线
+
+使用 `eventBus` 实现跨模块通信。
+
+```typescript
+import { eventBus, createEventBus } from 'remote-reload-utils';
+
+// 监听事件
+const unsubscribe = eventBus.on('user-login', (user) => {
+  console.log('用户登录:', user);
+});
+
+// 一次性监听
+eventBus.once('notification', (data) => {
+  console.log('收到通知:', data);
+});
+
+// 发送事件
+eventBus.emit('user-login', { id: 1, name: '张三' });
+eventBus.emit('notification', { message: '有新消息' }, { source: 'system' });
+
+// 带过滤条件监听
+eventBus.on('order', (order) => {
+  console.log('订单:', order);
+}, { filter: (order) => order.status === 'paid' });
+
+// 查看历史事件
+const history = eventBus.getHistory('user-login');
+console.log('登录历史:', history);
+
+// 查看所有事件
+console.log('所有事件:', eventBus.getEvents());
+
+// 清除事件
+eventBus.clear('user-login');  // 清除单个事件
+eventBus.clear();  // 清除所有事件
+
+// 创建独立的事件总线实例
+const myBus = createEventBus();
+```
+
+### 版本兼容性检查
+
+使用 `checkVersionCompatibility` 检查版本兼容性。
+
+```typescript
+import {
+  checkVersionCompatibility,
+  satisfiesVersion,
+  findCompatibleVersion,
+  fetchAvailableVersions,
+  sortVersions,
+  getLatestVersion,
+  getStableVersions,
+} from 'remote-reload-utils';
+
+// 检查版本兼容性
+const result = checkVersionCompatibility('18.2.0', '^18.0.0', 'react');
+console.log(result.compatible);  // true
+console.log(result.severity);    // 'info' | 'warning' | 'error'
+console.log(result.message);     // 描述信息
+console.log(result.suggestion);  // 升级建议
+
+// 检查是否满足版本范围
+satisfiesVersion('1.2.3', '^1.0.0');  // true
+satisfiesVersion('2.0.0', '^1.0.0');  // false
+
+// 查找兼容版本
+const versions = ['1.0.0', '1.1.0', '2.0.0', '2.1.0'];
+findCompatibleVersion(versions, { min: '1.0.0', max: '2.0.0' });  // '2.0.0'
+
+// 获取可用版本
+const available = await fetchAvailableVersions('react');
+const sorted = sortVersions(available, 'desc');
+const latest = getLatestVersion(available);
+const stable = getStableVersions(available);  // 过滤掉 alpha/beta/rc 版本
+```
+
+### React 组件适配器
+
+提供多种方式在 React 中使用远程组件。
+
+```typescript
+import { RemoteComponent, SuspenseRemote, ErrorBoundary, withRemote, lazyRemote } from 'remote-reload-utils';
+
+// 1. 直接使用 RemoteComponent
+function App() {
+  return (
+    <RemoteComponent
+      name="ui-lib"
+      pkg="my-ui-lib"
+      modulePath="Button"
+      version="1.0.0"
+      fallback={<div>Loading...</div>}
+      errorFallback={(error) => <div>加载失败: {error.message}</div>}
+      onLoading={() => console.log('开始加载')}
+      onError={(error) => console.error(error)}
+    />
+  );
+}
+
+// 2. 使用 SuspenseRemote（支持 React.Suspense）
+function App() {
+  return (
+    <SuspenseRemote
+      name="ui-lib"
+      pkg="my-ui-lib"
+      modulePath="Button"
+      version="1.0.0"
+      loading={<div>Loading...</div>}
+    >
+      <ChildComponent />
+    </SuspenseRemote>
+  );
+}
+
+// 3. 使用 withRemote 高阶组件
+const RemoteButton = withRemote({
+  name: 'ui-lib',
+  pkg: 'my-ui-lib',
+  modulePath: 'Button',
+  version: '1.0.0',
+})(OriginalButton);
+
+// 4. 使用 lazyRemote（支持 React.lazy）
+const RemoteButton = lazyRemote({
+  name: 'ui-lib',
+  pkg: 'my-ui-lib',
+  modulePath: 'Button',
+  version: '1.0.0',
+});
+
+function App() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <RemoteButton />
+    </React.Suspense>
+  );
+}
+
+// 5. 使用 ErrorBoundary 包裹
+function App() {
+  return (
+    <ErrorBoundary fallback={(error) => <div>出错了: {error.message}</div>}>
+      <RemoteComponent {...config} />
+    </ErrorBoundary>
+  );
+}
+```
+
 ## 类型定义
 
 ```typescript
@@ -773,6 +1113,115 @@ interface VersionCache {
 interface LoadResult {
   scopeName: string;
   mf: ReturnType<typeof createInstance>;
+}
+
+// 预加载相关类型
+interface PreloadOptions extends LoadRemoteOptions {
+  priority?: 'idle' | 'high';
+  force?: boolean;
+}
+
+interface PreloadCacheItem {
+  version: string;
+  scopeName: string;
+  mf: any;
+  timestamp: number;
+}
+
+interface PreloadStatus {
+  loaded: boolean;
+  timestamp: number;
+}
+
+// 健康检查相关类型
+interface HealthCheckResult {
+  pkg: string;
+  version: string;
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  latency: number;
+  cdn: string;
+  details: {
+    cdnReachable: boolean;
+    remoteEntryValid: boolean;
+    modulesLoadable: boolean;
+    error?: string;
+  };
+}
+
+interface RemoteHealthReport {
+  timestamp: number;
+  overall: 'healthy' | 'degraded' | 'unhealthy';
+  remotes: HealthCheckResult[];
+}
+
+// 事件总线相关类型
+type EventCallback<T = any> = (data: T, meta?: EventMeta) => void;
+
+interface EventMeta {
+  timestamp: number;
+  source?: string;
+  id?: string;
+}
+
+interface EventEmitterOptions {
+  once?: boolean;
+  filter?: (data: any, meta: EventMeta) => boolean;
+}
+
+// 版本检查相关类型
+interface VersionInfo {
+  major: number;
+  minor: number;
+  patch: number;
+  prerelease?: string;
+  build?: string;
+  raw: string;
+}
+
+interface CompatibilityResult {
+  compatible: boolean;
+  currentVersion: string;
+  requiredVersion: string;
+  suggestion?: string;
+  severity: 'error' | 'warning' | 'info';
+  message: string;
+}
+
+interface VersionRange {
+  min?: string;
+  max?: string;
+  exact?: string;
+}
+
+// React Hooks 相关类型
+interface RemoteHookResult<T = any> {
+  component: T | null;
+  loading: boolean;
+  error: Error | null;
+  retry: () => void;
+  scopeName: string | null;
+  mf: any | null;
+}
+
+interface UseRemoteOptions extends LoadRemoteOptions {
+  modulePath: string;
+  plugins?: ModuleFederationRuntimePlugin[];
+  onReady?: (component: any, scopeName: string) => void;
+  onError?: (error: Error) => void;
+  skip?: boolean;
+}
+
+// 共享上下文相关类型
+interface SharedContextApi<T> {
+  Provider: React.ComponentType<{ value: T; children: React.ReactNode }>;
+  useContext: () => T;
+  useSharedState: () => [T, (value: T | ((prev: T) => T)) => void];
+  useSelector: <R>(selector: (value: T) => R) => R;
+  setValue: (value: T | ((prev: T) => T)) => void;
+  getValue: () => T;
+  subscribe: (listener: (value: T) => void) => () => void;
+  reset: () => void;
+  destroy: () => void;
 }
 ```
 

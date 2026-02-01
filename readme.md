@@ -11,6 +11,51 @@
 - 🎯 **TypeScript 支持** - 完整的类型定义
 - ⚛️ **React 友好** - 专为 React 组件 Module Federation 设计
 - 🔧 **可扩展** - 插件系统支持自定义扩展
+- 📊 **性能优化** - 预加载、卸载、健康检查
+- 🔗 **跨模块通信** - 事件总线、共享状态
+- ✅ **质量保障** - 单元测试覆盖
+
+## 新增功能
+
+### 预加载与卸载
+```typescript
+// 预加载远程模块
+preloadRemote({ name: 'lib', pkg: 'pkg', version: '1.0.0' });
+
+// 卸载释放资源
+await unloadRemote({ name: 'lib', pkg: 'pkg', version: '1.0.0' });
+```
+
+### 健康检查
+```typescript
+const health = await checkRemoteHealth({ name: 'lib', pkg: 'pkg' });
+console.log(health.status); // 'healthy' | 'degraded' | 'unhealthy'
+```
+
+### React Hooks
+```typescript
+const { component: Button, loading, error } = useRemote({
+  name: 'lib',
+  pkg: 'pkg',
+  modulePath: 'Button',
+});
+```
+
+### 事件总线
+```typescript
+eventBus.on('user-login', (user) => console.log(user));
+eventBus.emit('user-login', { id: 1 });
+```
+
+### 共享状态
+```typescript
+const { Provider, useSharedState } = createSharedContext('store', { count: 0 });
+```
+
+### 版本兼容性
+```typescript
+const result = checkVersionCompatibility('18.2.0', '^18.0.0', 'react');
+```
 
 ## 项目结构
 
