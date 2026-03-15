@@ -1,5 +1,5 @@
-import { loadRemoteMultiVersion } from './loadRemote';
-import type { LoadRemoteOptions } from './types';
+import { loadRemoteMultiVersion } from '../loader';
+import type { LoadRemoteOptions } from '../types';
 
 interface PreloadCache {
   [pkg: string]: {

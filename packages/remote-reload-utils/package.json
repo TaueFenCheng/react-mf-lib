@@ -5,13 +5,13 @@
   "description": "Utilities for remote reload in Module Federation & React Component",
   "exports": {
     ".": {
-      "types": "./dist/loadRemote.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/main.js",
       "require": "./dist/main.cjs"
     }
   },
   "main": "./dist/main.cjs",
-  "types": "./dist/loadRemote.d.ts",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "loadRemote.md",

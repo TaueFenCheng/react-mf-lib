@@ -4,7 +4,7 @@ export default defineConfig({
   plugins: [pluginPublint()],
   source: {
     entry: {
-      main: './src/loadRemote.ts',
+      main: './src/index.ts',
     },
   },
   lib: [

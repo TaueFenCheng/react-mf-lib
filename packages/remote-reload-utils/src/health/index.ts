@@ -1,4 +1,4 @@
-import type { LoadRemoteOptions } from './types'
+import type { LoadRemoteOptions } from '../types'
 
 export interface HealthCheckResult {
   pkg: string
