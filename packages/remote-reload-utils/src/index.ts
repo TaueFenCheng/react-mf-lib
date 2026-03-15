@@ -1,5 +1,16 @@
 export { loadReactVersion } from './loadReactVersion'
-export { loadRemoteMultiVersion } from './loadRemote2'
+export { loadRemoteMultiVersion } from './loadRemote'
+export {
+  fetchLatestVersion,
+  getVersionCache,
+  setVersionCache,
+  buildCdnUrls,
+  tryLoadRemote,
+  getFinalSharedConfig,
+  resolveFinalVersion,
+  buildFinalUrls,
+  type LoadResult,
+} from './loadRemoteUtils'
 export {
   preloadRemote,
   preloadRemoteList,

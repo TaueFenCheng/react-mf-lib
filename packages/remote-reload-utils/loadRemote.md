@@ -9,6 +9,9 @@
 - [安装](#安装)
 - [快速开始](#快速开始)
 - [API 参考](#api-参考)
+  - [loadRemoteMultiVersion](#loadremotemultiversion)
+  - [工具函数](#工具函数)
+  - [loadReactVersion](#loadreactversion)
 - [高级功能](#高级功能)
   - [预加载远程模块](#预加载远程模块)
   - [卸载远程模块](#卸载远程模块)
@@ -160,6 +163,8 @@ async function loadMultipleComponents() {
 
 ### loadRemoteMultiVersion
 
+核心函数，加载远程模块的多版本实例。
+
 ```typescript
 function loadRemoteMultiVersion(
   options: LoadRemoteOptions,
@@ -209,6 +214,140 @@ const Button = module.default;
 
 // 也可以直接使用完整的模块路径
 const Button2 = await mf.loadRemote('ui_lib/Button');
+```
+
+### 工具函数
+
+以下工具函数从 `loadRemoteUtils` 模块导出，可用于更细粒度的控制或自定义加载逻辑：
+
+#### fetchLatestVersion
+
+从 npm registry 获取包的最新版本。
+
+```typescript
+function fetchLatestVersion(pkg: string): Promise<string>
+```
+
+**示例**:
+```typescript
+const latest = await fetchLatestVersion('react');
+console.log(`React 最新版本：${latest}`);
+```
+
+#### getVersionCache / setVersionCache
+
+读取和写入版本缓存。
+
+```typescript
+function getVersionCache(): VersionCache
+function setVersionCache(pkg: string, version: string): void
+```
+
+**示例**:
+```typescript
+// 读取缓存
+const cache = getVersionCache();
+console.log(cache['my-pkg']);
+
+// 写入缓存
+setVersionCache('my-pkg', '1.0.0');
+```
+
+#### buildCdnUrls
+
+根据包名和版本构建 CDN 地址列表。
+
+```typescript
+function buildCdnUrls(pkg: string, version: string): string[]
+```
+
+**示例**:
+```typescript
+const urls = buildCdnUrls('my-lib', '1.0.0');
+// [
+//   'https://cdn.jsdelivr.net/npm/my-lib@1.0.0/dist/remoteEntry.js',
+//   'https://unpkg.com/my-lib@1.0.0/dist/remoteEntry.js'
+// ]
+```
+
+#### tryLoadRemote
+
+尝试加载单个远程模块 URL，包含重试逻辑。
+
+```typescript
+function tryLoadRemote(
+  scopeName: string,
+  url: string,
+  retries: number,
+  delay: number,
+  sharedConfig: Record<string, any>,
+  plugins: ModuleFederationRuntimePlugin[],
+): Promise<LoadResult>
+```
+
+#### getFinalSharedConfig
+
+合并默认共享配置和自定义配置。
+
+```typescript
+function getFinalSharedConfig(customShared?: Record<string, any>): Record<string, any>
+```
+
+**示例**:
+```typescript
+// 使用默认配置（包含 react 和 react-dom 的 singleton 配置）
+const config = getFinalSharedConfig();
+
+// 合并自定义配置
+const customConfig = getFinalSharedConfig({
+  lodash: {
+    shareConfig: {
+      singleton: false,
+      requiredVersion: '^4.17.0',
+    },
+  },
+});
+```
+
+#### resolveFinalVersion
+
+解析最终版本号（处理 'latest' 情况，使用缓存）。
+
+```typescript
+function resolveFinalVersion(
+  pkg: string,
+  version: string,
+  cacheTTL: number,
+  revalidate: boolean,
+): Promise<string>
+```
+
+**示例**:
+```typescript
+// 解析版本号，如果 version 为 'latest' 则使用缓存或请求最新
+const finalVersion = await resolveFinalVersion('my-pkg', 'latest', 24 * 60 * 60 * 1000, true);
+```
+
+#### buildFinalUrls
+
+构建最终的 URL 列表（包含本地 fallback）。
+
+```typescript
+function buildFinalUrls(
+  pkg: string,
+  version: string,
+  localFallback?: string,
+): string[]
+```
+
+**示例**:
+```typescript
+const urls = buildFinalUrls('my-lib', '1.0.0', 'http://localhost:3001/remoteEntry.js');
+// [
+//   'https://cdn.jsdelivr.net/npm/my-lib@1.0.0/dist/remoteEntry.js',
+//   'https://unpkg.com/my-lib@1.0.0/dist/remoteEntry.js',
+//   'http://localhost:3001/remoteEntry.js'
+// ]
 ```
 
 ### loadReactVersion

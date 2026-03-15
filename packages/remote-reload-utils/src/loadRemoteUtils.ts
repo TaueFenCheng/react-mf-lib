@@ -2,9 +2,8 @@ import {
   createInstance,
   ModuleFederationRuntimePlugin,
 } from '@module-federation/enhanced/runtime';
-// 假设这些来自本地文件
 import { fallbackPlugin } from './plugins';
-import type { LoadRemoteOptions, VersionCache } from './types';
+import type { VersionCache } from './types';
 
 // --- 核心配置抽象 ---
 
@@ -44,10 +43,10 @@ interface NpmRegistryResponse {
 /**
  * 从 npm registry 获取最新版本，并增加类型安全性
  */
-async function fetchLatestVersion(pkg: string): Promise<string> {
+export async function fetchLatestVersion(pkg: string): Promise<string> {
   const res = await fetch(`https://registry.npmjs.org/${pkg}`);
   if (!res.ok)
-    throw new Error(`[MF] 无法获取 ${pkg} 的版本信息，状态码: ${res.status}`);
+    throw new Error(`[MF] 无法获取 ${pkg} 的版本信息，状态码：${res.status}`);
   const data = (await res.json()) as NpmRegistryResponse;
   const latest = data['dist-tags']?.latest;
 
@@ -58,7 +57,7 @@ async function fetchLatestVersion(pkg: string): Promise<string> {
 /**
  * 读取多版本缓存，增强健壮性
  */
-function getVersionCache(): VersionCache {
+export function getVersionCache(): VersionCache {
   try {
     const cacheStr = localStorage.getItem('mf-multi-version');
     return cacheStr ? JSON.parse(cacheStr) : {};
@@ -71,7 +70,7 @@ function getVersionCache(): VersionCache {
 /**
  * 写入多版本缓存，增强健壮性
  */
-function setVersionCache(pkg: string, version: string) {
+export function setVersionCache(pkg: string, version: string) {
   try {
     const cache = getVersionCache();
     cache[pkg] = cache[pkg] || {};
@@ -85,7 +84,7 @@ function setVersionCache(pkg: string, version: string) {
 /**
  * 拼接 CDN 地址 (统一使用抽象的模板)
  */
-function buildCdnUrls(pkg: string, version: string): string[] {
+export function buildCdnUrls(pkg: string, version: string): string[] {
   return DEFAULT_CDN_TEMPLATES.map((template) =>
     template.replace('{pkg}', pkg).replace('{version}', version),
   );
@@ -93,7 +92,7 @@ function buildCdnUrls(pkg: string, version: string): string[] {
 
 // --- 核心加载逻辑 ---
 
-interface LoadResult {
+export interface LoadResult {
   scopeName: string;
   mf: ReturnType<typeof createInstance>;
 }
@@ -101,7 +100,7 @@ interface LoadResult {
 /**
  * 尝试加载单个远程模块 URL，包含重试逻辑
  */
-async function tryLoadRemote(
+export async function tryLoadRemote(
   scopeName: string,
   url: string,
   retries: number,
@@ -142,27 +141,25 @@ async function tryLoadRemote(
 }
 
 /**
- * 多版本共存的 loadRemote (优化版本)
+ * 获取最终的共享配置
  */
-export async function loadRemoteMultiVersion(
-  options: LoadRemoteOptions,
-  plugins: ModuleFederationRuntimePlugin[],
-): Promise<LoadResult> {
-  const {
-    name,
-    pkg,
-    version = 'latest',
-    retries = 3,
-    delay = 1000,
-    localFallback,
-    cacheTTL = 24 * 60 * 60 * 1000,
-    revalidate = true,
-    shared: customShared = {}, // 接受自定义共享配置
-  } = options;
+export function getFinalSharedConfig(
+  customShared?: Record<string, any>,
+): Record<string, any> {
+  return { ...DEFAULT_SHARED_CONFIG, ...(customShared || {}) };
+}
 
+/**
+ * 解析最终版本号（处理 latest 情况）
+ */
+export async function resolveFinalVersion(
+  pkg: string,
+  version: string,
+  cacheTTL: number,
+  revalidate: boolean,
+): Promise<string> {
   let finalVersion = version;
 
-  // 1. 处理 'latest' 版本
   if (version === 'latest') {
     const cache = getVersionCache();
     const versions = cache[pkg] || {};
@@ -183,7 +180,9 @@ export async function loadRemoteMultiVersion(
         fetchLatestVersion(pkg)
           .then((latest) => {
             if (latest !== latestCached) {
-              console.log(`[MF] 发现 ${pkg} 新版本 ${latest}，已更新缓存。`);
+              console.log(
+                `[MF] 发现 ${pkg} 新版本 ${latest}，已更新缓存。`,
+              );
               setVersionCache(pkg, latest);
             }
           })
@@ -196,31 +195,18 @@ export async function loadRemoteMultiVersion(
     }
   }
 
-  // 2. 构造最终的 URL 列表
-  const scopeName = `${name}`;
-  const urls = buildCdnUrls(pkg, finalVersion);
+  return finalVersion;
+}
+
+/**
+ * 构建最终的 URL 列表（包含本地 fallback）
+ */
+export function buildFinalUrls(
+  pkg: string,
+  version: string,
+  localFallback?: string,
+): string[] {
+  const urls = buildCdnUrls(pkg, version);
   if (localFallback) urls.push(localFallback);
-
-  // 合并共享配置
-  const finalSharedConfig = { ...DEFAULT_SHARED_CONFIG, ...customShared };
-
-  // 3. 遍历 URL 并尝试加载 (故障转移/Fallback)
-  for (const url of urls) {
-    try {
-      return await tryLoadRemote(
-        scopeName,
-        url,
-        retries,
-        delay,
-        finalSharedConfig,
-        plugins,
-      );
-    } catch (e) {
-      // tryLoadRemote 内部已经处理了重试，这里只需打印警告并尝试下一个 URL
-      console.warn(`[MF] 切换 CDN 路径: ${url} 失败，尝试下一个...`, e);
-    }
-  }
-
-  // 4. 全部失败，抛出错误
-  throw new Error(`[MF] 所有加载源 (${urls.length} 个) 均加载失败。`);
+  return urls;
 }
