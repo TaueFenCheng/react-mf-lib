@@ -14,7 +14,8 @@
   "types": "./dist/loadRemote.d.ts",
   "files": [
     "dist",
-    "loadRemote.md"
+    "loadRemote.md",
+    "CHANGELOG.md"
   ],
   "gitRepository": {
     "type": "git",
