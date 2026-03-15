@@ -1,31 +1,36 @@
-#!/usr/bin/env zx
+#!/usr/bin/env node
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { $, chalk } from 'zx';
+import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-$.verbose = false;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '..');
+
+// 颜色输出
+const colors = {
+  reset: '\x1b[0m',
+  blue: '\x1b[34m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+};
+
+function log(color, message) {
+  console.log(`${color}${message}${colors.reset}`);
+}
 
 /**
- * 发布后更新 CHANGELOG，将 [未发布] 改为具体版本号
+ * 执行 shell 命令
  */
-async function finalizeChangelog(version) {
-  const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
-  const today = new Date().toISOString().split('T')[0];
-
-  let changelogContent = await fs.readFile(changelogPath, 'utf-8');
-
-  // 将 [未发布] 替换为 [version] - date
-  const unreleasedRegex = /## \[未发布\]/;
-  if (unreleasedRegex.test(changelogContent)) {
-    changelogContent = changelogContent.replace(
-      unreleasedRegex,
-      `## [未发布]\n\n## [${version}] - ${today}`
-    );
-    await fs.writeFile(changelogPath, changelogContent);
-    console.log(chalk.blue(`Updated CHANGELOG.md for version ${version}`));
-  } else {
-    console.log(chalk.yellow('No [未发布] section found in CHANGELOG.md'));
+function exec(command) {
+  try {
+    execSync(command, { stdio: 'inherit', cwd: rootDir });
+    return true;
+  } catch (error) {
+    log(colors.red, `Failed to execute: ${command}`);
+    return false;
   }
 }
 
@@ -34,23 +39,26 @@ async function finalizeChangelog(version) {
  */
 async function main() {
   try {
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const packageJsonPath = path.join(rootDir, 'package.json');
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
     const version = packageJson.version;
 
-    console.log(chalk.blue(`Finalizing release for version ${version}`));
+    log(colors.blue, `Finalizing release for version ${version}`);
 
-    await finalizeChangelog(version);
+    // 发布到 npm
+    log(colors.blue, 'Publishing to npm...');
+    exec('pnpm changeset:publish');
 
     // 提交 CHANGELOG 更新
-    await $`git add CHANGELOG.md`;
-    await $`git commit -m "docs: update CHANGELOG for v${version}"`;
-    await $`git push`;
+    log(colors.blue, 'Committing CHANGELOG...');
+    exec('git add CHANGELOG.md');
+    exec(`git commit -m "docs: update CHANGELOG for v${version}" || echo "No changes to commit"`);
+    exec('git push');
 
-    console.log(chalk.green(`\n✅ Release v${version} finalized!\n`));
+    log(colors.green, `\n✅ Release v${version} finalized!\n`);
 
   } catch (error) {
-    console.error(chalk.red(`❌ Error: ${error.message}`));
+    log(colors.red, `Error: ${error.message}`);
     process.exit(1);
   }
 }

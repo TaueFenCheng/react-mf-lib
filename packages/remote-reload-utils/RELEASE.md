@@ -1,15 +1,12 @@
 # Release Guide
 
-本指南说明如何使用 Changesets 管理 `remote-reload-utils` 的版本发布流程。
+本指南说明如何使用发布脚本管理 `remote-reload-utils` 的版本发布流程。
 
 ## 目录结构
 
 ```
 packages/remote-reload-utils/
-├── .changeset/           # Changeset 配置文件和变更记录
-│   └── config.json       # Changeset 配置
 ├── scripts/              # 发布脚本
-│   ├── initChangeset.mjs      # 初始化 Changeset
 │   ├── generateReleasePr.mjs  # 生成发布 PR
 │   └── finalizeRelease.mjs    # 完成发布
 ├── CHANGELOG.md          # 变更日志
@@ -18,25 +15,7 @@ packages/remote-reload-utils/
 
 ## 快速开始
 
-### 1. 初始化 Changeset（首次使用）
-
-```bash
-pnpm release:init
-```
-
-这会创建初始的 changeset 文件并更新 CHANGELOG.md。
-
-### 2. 添加变更记录
-
-每次开发新功能或修复 bug 时，运行：
-
-```bash
-pnpm changeset
-```
-
-按提示选择版本类型（major/minor/patch）并填写变更描述。
-
-### 3. 准备发布
+### 1. 准备发布
 
 ```bash
 # 发布补丁版本 (0.0.x -> 0.0.x+1)
@@ -51,82 +30,58 @@ pnpm release:major
 
 这会自动：
 - 创建新版本分支（如 `release/v0.0.9`）
-- 生成 changeset 文件
-- 更新版本号
 - 更新 CHANGELOG.md
+- 更新 package.json 版本号
+- 构建 package
 - 提交并推送分支
 
-### 4. 创建 Pull Request
+### 2. 创建 Pull Request
 
 在 GitHub 上创建 PR，将发布分支合并到 `main`。
 
-### 5. 合并 PR 并发布
+### 3. 合并 PR 并发布
 
 PR 合并后，运行：
 
 ```bash
-# 更新 CHANGELOG 格式
-pnpm release:finalize
-
 # 发布到 npm
-pnpm changeset:publish
+pnpm publish:live
 ```
 
 ## 脚本说明
 
 | 脚本 | 说明 |
 |------|------|
-| `pnpm changeset` | 添加新的变更记录 |
-| `pnpm changeset:version` | 根据 changesets 更新版本 |
-| `pnpm changeset:publish` | 发布到 npm |
-| `pnpm release:init` | 初始化 Changeset |
-| `pnpm release:prepare` | 准备发布（创建分支、更新版本） |
-| `pnpm release:finalize` | 完成发布（更新 CHANGELOG） |
+| `pnpm release:prepare` | 准备发布（支持 -t patch/minor/major） |
+| `pnpm release:finalize` | 完成发布（发布到 npm） |
 | `pnpm release:patch` | 发布补丁版本 |
 | `pnpm release:minor` | 发布小版本 |
 | `pnpm release:major` | 发布主版本 |
+| `pnpm publish:dry` | 预演发布（不会真正发布） |
+| `pnpm publish:live` | 正式发布到 npm |
 
-## 手动流程
+## 手动发布流程
 
 如果不想使用自动化脚本，可以手动执行：
 
 ```bash
-# 1. 添加变更
-pnpm changeset
+# 1. 更新 CHANGELOG.md
+# 在 [未发布] 部分后添加新版本条目
 
-# 2. 更新版本
-pnpm changeset version
+# 2. 更新 package.json 版本
+npm version patch --no-git-tag-version
 
-# 3. 安装依赖（更新 lockfile）
-pnpm install
+# 3. 构建
+pnpm run build
 
 # 4. 提交
 git add .
-git commit -m "Release vx.x.x"
+git commit -m "Release v0.0.x"
 
 # 5. 创建并发布 PR
 
 # 6. 合并后发布
-pnpm changeset publish
-```
-
-## Changeset 文件格式
-
-`.changeset/*.md` 文件格式：
-
-```markdown
----
-"remote-reload-utils": minor
----
-
-### 新增功能
-
-- 添加了新功能 X
-- 优化了性能
-
-### Bug 修复
-
-- 修复了问题 Y
+npm publish
 ```
 
 ## 版本命名规范
@@ -144,12 +99,9 @@ pnpm changeset publish
 - [ ] 版本号正确
 - [ ] dist 目录已构建
 - [ ] package.json 的 dependencies 正确
+- [ ] npm 登录状态正常 (`npm whoami`)
 
 ## 故障排查
-
-### Changeset 未检测到变更
-
-确保 `.changeset` 目录下有变更文件。
 
 ### 发布失败
 
@@ -165,8 +117,15 @@ npm whoami
 npm login
 ```
 
+### 构建失败
+
+确保先运行构建：
+
+```bash
+pnpm run build
+```
+
 ## 相关资源
 
-- [Changesets 官方文档](https://github.com/changesets/changesets)
-- [@changesets/changelog-github](https://github.com/changesets/changesets/tree/main/packages/changelog-github)
+- [npm publish 文档](https://docs.npmjs.com/cli/commands/npm-publish)
 - [语义化版本规范](https://semver.org/)

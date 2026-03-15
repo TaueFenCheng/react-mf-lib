@@ -1,17 +1,32 @@
-#!/usr/bin/env zx
+#!/usr/bin/env node
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { parseArgs } from 'node:util';
-import { $, chalk } from 'zx';
+import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-$.verbose = false;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '..');
+
+// 颜色输出
+const colors = {
+  reset: '\x1b[0m',
+  blue: '\x1b[34m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+  yellow: '\x1b[33m',
+};
+
+function log(color, message) {
+  console.log(`${color}${message}${colors.reset}`);
+}
 
 /**
  * 获取当前版本号
  */
 async function getCurrentVersion() {
-  const packageJsonPath = path.join(process.cwd(), 'package.json');
+  const packageJsonPath = path.join(rootDir, 'package.json');
   const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
   return packageJson.version;
 }
@@ -19,7 +34,7 @@ async function getCurrentVersion() {
 /**
  * 计算下一个版本号
  */
-async function getNextVersion(currentVersion, type) {
+function getNextVersion(currentVersion, type) {
   const [major, minor, patch] = currentVersion.split('.').map(Number);
   switch (type) {
     case 'patch':
@@ -34,64 +49,55 @@ async function getNextVersion(currentVersion, type) {
 }
 
 /**
- * 生成 changeset 文件
+ * 更新 CHANGELOG.md
  */
-async function generateChangesetFile(bumpType, nextVersion) {
-  const changesetDir = path.join(process.cwd(), '.changeset');
-  const timestamp = Date.now();
-  const randomId = Math.random().toString(36).substring(2, 8);
-  const filename = `${randomId}-${bumpType}-release-${nextVersion}.md`;
-  const content = `---
-"remote-reload-utils": ${bumpType}
----
-
-Release version ${nextVersion}
-
-### What's Changed
-
-- Release version ${nextVersion} with updated CHANGELOG
-`;
-
-  await fs.mkdir(changesetDir, { recursive: true });
-  await fs.writeFile(path.join(changesetDir, filename), content);
-
-  console.log(chalk.blue(`Generated changeset file: ${filename}`));
-}
-
-/**
- * 更新 CHANGELOG.md，添加新版本条目
- */
-async function updateChangelog(nextVersion) {
-  const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
+async function updateChangelog(nextVersion, bumpType) {
+  const changelogPath = path.join(rootDir, 'CHANGELOG.md');
   const today = new Date().toISOString().split('T')[0];
 
   let changelogContent = await fs.readFile(changelogPath, 'utf-8');
 
-  // 检查是否已存在该版本的标题
-  const versionRegex = new RegExp(`## \\[未发布\\]`);
-  if (!versionRegex.test(changelogContent)) {
-    // 在文件开头添加新版本部分
-    const newSection = `# Changelog
-
-所有重要的项目变更都将记录在此文件中。
-
-格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
-项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
-
-## [未发布]
-
+  // 在 [未发布] 后添加新版本部分
+  const unreleasedIndex = changelogContent.indexOf('## [未发布]');
+  if (unreleasedIndex !== -1) {
+    const insertPos = changelogContent.indexOf('\n', unreleasedIndex) + 1;
+    const newSection = `
 ## [${nextVersion}] - ${today}
 
 ### Release
 
-- Published version ${nextVersion}
+- Published version ${nextVersion} with ${bumpType} bump
 
 `;
-    changelogContent = newSection + changangelogContent.split('\n').slice(5).join('\n');
+    changelogContent = changelogContent.slice(0, insertPos) + newSection + changelogContent.slice(insertPos);
+    await fs.writeFile(changelogPath, changelogContent);
+    log(colors.blue, 'Updated CHANGELOG.md');
   }
 
-  await fs.writeFile(changelogPath, changelogContent);
-  console.log(chalk.blue('Updated CHANGELOG.md'));
+  // 更新版本表格
+  const versionTableRegex = /\| 版本 \| 日期 \| 主要变更 \|/;
+  if (versionTableRegex.test(changelogContent)) {
+    const newTableRow = `| ${nextVersion} | ${today} | ${bumpType} 版本发布 |`;
+    changelogContent = changelogContent.replace(
+      versionTableRegex,
+      `| 版本 | 日期 | 主要变更 |\n|------|------|----------|\n${newTableRow}`
+    );
+    await fs.writeFile(changelogPath, changelogContent);
+    log(colors.blue, 'Updated version table in CHANGELOG.md');
+  }
+}
+
+/**
+ * 执行 shell 命令
+ */
+function exec(command) {
+  try {
+    execSync(command, { stdio: 'inherit', cwd: rootDir });
+    return true;
+  } catch (error) {
+    log(colors.red, `Failed to execute: ${command}`);
+    return false;
+  }
 }
 
 /**
@@ -99,103 +105,59 @@ async function updateChangelog(nextVersion) {
  */
 async function main() {
   try {
-    // 1. 读取当前版本
-    const currentVersion = await getCurrentVersion();
-    console.log(chalk.blue(`Current version: ${currentVersion}`));
-
-    // 2. 确定版本类型和下一个版本号
-    const options = {
-      type: {
-        type: 'string',
-        short: 't',
-        default: 'patch',
-      },
-      message: {
-        type: 'string',
-        short: 'm',
-        default: '',
-      },
-    };
     const args = process.argv.slice(3);
-    const { values } = parseArgs({ args, options });
+    let bumpType = 'patch';
 
-    const bumpType = values.type;
-    const message = values.message;
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '-t' || args[i] === '--type') {
+        bumpType = args[i + 1];
+      }
+    }
 
     if (!['major', 'minor', 'patch'].includes(bumpType)) {
-      console.error(chalk.red('Invalid bump type. Please select major, minor, or patch.'));
+      log(colors.red, 'Invalid bump type. Please select major, minor, or patch.');
       process.exit(1);
     }
 
-    console.log(chalk.blue(`Bump type: ${bumpType}`));
+    // 1. 读取当前版本
+    const currentVersion = await getCurrentVersion();
+    log(colors.blue, `Current version: ${currentVersion}`);
+    log(colors.blue, `Bump type: ${bumpType}`);
 
-    const nextVersion = await getNextVersion(currentVersion, bumpType);
-    console.log(chalk.blue(`Next version: ${nextVersion}`));
+    const nextVersion = getNextVersion(currentVersion, bumpType);
+    log(colors.blue, `Next version: ${nextVersion}`);
 
-    // 3. 创建并切换到新分支
+    // 2. 创建并切换到新分支
     const branchName = `release/v${nextVersion}`;
-    console.log(chalk.blue(`Creating branch: ${branchName}`));
+    log(colors.blue, `Creating branch: ${branchName}`);
+    exec(`git checkout -b ${branchName}`);
 
-    await $`git checkout -b ${branchName}`;
+    // 3. 更新 CHANGELOG
+    await updateChangelog(nextVersion, bumpType);
 
-    // 4. 生成 changeset 文件
-    await generateChangesetFile(bumpType, nextVersion);
+    // 4. 更新 package.json 版本
+    log(colors.blue, 'Updating package.json version...');
+    exec(`npm version ${nextVersion} --no-git-tag-version`);
 
-    // 5. 运行 changeset version 命令
-    console.log(chalk.blue('Running changeset version...'));
-    await $`pnpm changeset version`;
+    // 5. 构建
+    log(colors.blue, 'Building package...');
+    exec('pnpm run build');
 
-    // 6. 更新 CHANGELOG
-    if (message) {
-      await updateChangelogWithMessage(message, nextVersion);
-    }
+    // 6. 提交更改
+    log(colors.blue, 'Committing changes...');
+    exec('git add .');
+    exec(`git commit -m "Release v${nextVersion}"`);
 
-    // 7. 安装依赖
-    console.log(chalk.blue('Running pnpm install...'));
-    await $`pnpm install --ignore-scripts`;
+    // 7. 推送到远程仓库
+    log(colors.blue, `Pushing branch: ${branchName}`);
+    exec(`git push -u origin ${branchName}`);
 
-    // 8. 提交更改
-    console.log(chalk.blue('Committing changes...'));
-    await $`git add .`;
-    await $`git commit -m "Release v${nextVersion}"`;
-
-    // 9. 推送到远程仓库
-    console.log(chalk.blue(`Pushing branch: ${branchName}`));
-    await $`git push -u origin ${branchName}`;
-
-    console.log(chalk.green(`\n✅ Successfully created and pushed ${branchName}`));
-    console.log(chalk.green(`   Next step: Create a PR to merge into main\n`));
+    log(colors.green, `\n✅ Successfully created and pushed ${branchName}`);
+    log(colors.green, `   Next step: Create a PR to merge into main\n`);
 
   } catch (error) {
-    console.error(chalk.red(`❌ Error: ${error.message}`));
+    log(colors.red, `Error: ${error.message}`);
     process.exit(1);
-  }
-}
-
-/**
- * 使用自定义消息更新 CHANGELOG
- */
-async function updateChangelogWithMessage(message, version) {
-  const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
-  const today = new Date().toISOString().split('T')[0];
-
-  let changelogContent = await fs.readFile(changelogPath, 'utf-8');
-
-  // 在 [未发布] 部分后添加新版本条目
-  const unreleasedIndex = changelogContent.indexOf('## [未发布]');
-  if (unreleasedIndex !== -1) {
-    const insertPos = changelogContent.indexOf('\n', unreleasedIndex) + 1;
-    const newSection = `
-## [${version}] - ${today}
-
-### Release
-
-${message}
-
-`;
-    changelogContent = changelogContent.slice(0, insertPos) + newSection + changelogContent.slice(insertPos);
-    await fs.writeFile(changelogPath, changelogContent);
-    console.log(chalk.blue('Updated CHANGELOG.md with release message'));
   }
 }
 
