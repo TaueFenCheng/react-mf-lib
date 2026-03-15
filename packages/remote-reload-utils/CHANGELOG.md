@@ -8,7 +8,20 @@
 ## [未发布]
 
 ### Refactor
-- 修复 preloadRemote.ts 引用，从 loadRemote2 改为 loadRemote
+- 重构项目为模块化目录结构
+  - `src/loader/` - 核心加载模块
+  - `src/version/` - 版本管理模块
+  - `src/preload/` - 预加载模块
+  - `src/unload/` - 卸载管理模块
+  - `src/health/` - 健康检查模块
+  - `src/event-bus/` - 事件总线模块
+  - `src/plugins/` - 插件模块
+  - `src/types/` - 类型定义
+- 更新 rslib.config.ts entry 为 `./src/index.ts`
+- 更新 package.json types 路径为 `./dist/index.d.ts`
+
+### Changed
+- 修复 preloadRemote 引用从 loadRemote2 改为 loadRemote
 - 移除 App.tsx 中未使用的 React 导入
 - 添加 release 脚本到 package.json
 
@@ -103,6 +116,7 @@
 
 | 版本 | 日期 | 主要变更 |
 |------|------|----------|
+| 0.0.9 | 2026-03-15 | 重构为模块化目录结构 |
 | 0.0.8 | 2026-03-15 | 重构代码结构，抽离公共工具函数 |
 | 0.0.7 | 2026-03-15 | 新增微前端工具函数集 |
 | 0.0.6 | 2026-03-14 | 文档更新 |
