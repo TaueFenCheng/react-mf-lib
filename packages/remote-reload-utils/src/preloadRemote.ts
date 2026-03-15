@@ -1,4 +1,4 @@
-import { loadRemoteMultiVersion } from './loadRemote2';
+import { loadRemoteMultiVersion } from './loadRemote';
 import type { LoadRemoteOptions } from './types';
 
 interface PreloadCache {

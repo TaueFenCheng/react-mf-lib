@@ -33,7 +33,11 @@
     "check": "biome check --write",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "biome format ./src --write"
+    "lint": "biome format ./src --write",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish",
+    "publish:dry": "npm publish --dry-run"
   },
   "devDependencies": {
     "@rslib/core": "0.17.0",
