@@ -2,8 +2,8 @@
 export { ErrorBoundary } from './ErrorBoundary';
 export type { ErrorBoundaryProps } from './ErrorBoundary';
 
-export { RemoteModuleCard } from './RemoteModuleCard';
-export type { RemoteModuleCardProps } from './RemoteModuleCard';
+export { RemoteModuleProvider, RemoteModuleRenderer, useRemoteModule } from './RemoteModuleProvider';
+export type { RemoteModuleCardProps, UseRemoteModuleOptions } from './RemoteModuleProvider';
 
 export {
   lazyRemote,

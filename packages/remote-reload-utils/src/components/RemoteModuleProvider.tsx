@@ -1,5 +1,5 @@
 import { loadRemoteMultiVersion } from '../loader';
-import React, { useEffect, useState, useCallback, Suspense, lazy } from 'react';
+import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import type { ErrorBoundaryProps } from './ErrorBoundary';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -39,7 +39,20 @@ interface ModuleState {
 }
 
 /**
- * 内部 Hook：加载远程模块
+ * Hook 选项：加载远程模块
+ */
+export interface UseRemoteModuleOptions {
+  pkg: string;
+  version: string;
+  moduleName: string;
+  scopeName: string;
+  onError?: (error: Error) => void;
+  onLoad?: (component: React.ComponentType<any>) => void;
+  retryKey?: number;
+}
+
+/**
+ * Hook：加载远程模块
  */
 export function useRemoteModule({
   pkg,
@@ -48,7 +61,8 @@ export function useRemoteModule({
   scopeName,
   onError,
   onLoad,
-}: RemoteModuleCardProps) {
+  retryKey = 0,
+}: UseRemoteModuleOptions) {
   const [moduleState, setModuleState] = useState<ModuleState>({
     loading: true,
     error: null,
@@ -106,15 +120,15 @@ export function useRemoteModule({
     return () => {
       mounted = false;
     };
-  }, [pkg, version, moduleName, scopeName, onError, onLoad]);
+  }, [pkg, version, moduleName, scopeName, onError, onLoad, retryKey]);
 
   return moduleState;
 }
 
 /**
- * 内部组件：纯内容渲染（不含 Suspense/ErrorBoundary）
+ * 远程模块渲染器：纯内容渲染（不含 Suspense/ErrorBoundary）
  */
-export function RemoteModuleCardContent({
+export function RemoteModuleRenderer({
   pkg,
   version,
   moduleName,
@@ -128,17 +142,17 @@ export function RemoteModuleCardContent({
   onLoad,
 }: RemoteModuleCardProps) {
   const moduleState = useRemoteModule({ pkg, version, moduleName, scopeName, onError, onLoad });
-  const [retryCount, setRetryCount] = useState(0);
+  const [retryKey, setRetryKey] = useState(0);
 
   // 强制重新加载
   const handleRetry = useCallback(() => {
-    setRetryCount(prev => prev + 1);
+    setRetryKey(prev => prev + 1);
   }, []);
 
-  // 当 retryCount 变化时，触发重新加载（通过 key 强制重新挂载）
+  // retryKey 变化会触发 useRemoteModule 重新加载（依赖项中包含 retryKey）
   useEffect(() => {
-    // retryCount 变化会自动触发 useRemoteModule 的重新加载
-  }, [retryCount]);
+    // 通过 key 变化触发重新加载
+  }, [retryKey]);
 
   if (moduleState.loading) {
     return (
@@ -189,8 +203,7 @@ export function RemoteModuleCardContent({
 }
 
 /**
- * 远程模块卡片组件
- * 负责加载和渲染远程模块，内置 Suspense 和 ErrorBoundary 支持
+ * 远程模块提供者：带 Suspense 和 ErrorBoundary 的完整组件
  *
  * @features
  * - 自动加载远程模块
@@ -201,7 +214,7 @@ export function RemoteModuleCardContent({
  *
  * @example
  * ```tsx
- * <RemoteModuleCard
+ * <RemoteModuleProvider
  *   pkg="@myorg/remote-app"
  *   version="^1.0.0"
  *   moduleName="Dashboard"
@@ -227,7 +240,7 @@ export function RemoteModuleCardContent({
  * </Suspense>
  * ```
  */
-export function RemoteModuleCard(props: RemoteModuleCardProps) {
+export function RemoteModuleProvider(props: RemoteModuleCardProps) {
   const {
     disableErrorBoundary,
     errorFallback,
@@ -239,7 +252,7 @@ export function RemoteModuleCard(props: RemoteModuleCardProps) {
   if (disableErrorBoundary) {
     return (
       <Suspense fallback={loadingFallback || <div>Loading...</div>}>
-        <RemoteModuleCardContent {...props} />
+        <RemoteModuleRenderer {...props} />
       </Suspense>
     );
   }
@@ -252,7 +265,7 @@ export function RemoteModuleCard(props: RemoteModuleCardProps) {
       onReset={errorBoundaryOptions?.onReset}
     >
       <Suspense fallback={loadingFallback || <div>Loading...</div>}>
-        <RemoteModuleCardContent {...props} />
+        <RemoteModuleRenderer {...props} />
       </Suspense>
     </ErrorBoundary>
   );

@@ -58,13 +58,13 @@ useEffect(() => {
 #### 2. 使用 React 组件加载远程模块
 
 ```tsx
-import { RemoteModuleCard, ErrorBoundary, lazyRemote } from 'remote-reload-utils';
+import { RemoteModuleProvider, ErrorBoundary, lazyRemote } from 'remote-reload-utils';
 import React, { Suspense } from 'react';
 
-// 方式一：使用 RemoteModuleCard 组件（推荐）
+// 方式一：使用 RemoteModuleProvider 组件（推荐）
 function App() {
   return (
-    <RemoteModuleCard
+    <RemoteModuleProvider
       pkg="@myorg/remote-app"
       version="^1.0.0"
       moduleName="Dashboard"
