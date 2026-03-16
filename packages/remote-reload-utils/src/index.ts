@@ -73,3 +73,21 @@ export type {
 
 // 插件导出
 export { fallbackPlugin } from './plugins/fallback'
+
+// React 组件导出
+export {
+  ErrorBoundary,
+  RemoteModuleCard,
+  lazyRemote,
+  SuspenseRemote,
+  SuspenseRemoteLoader,
+  withRemote,
+  useRemoteModuleHook,
+} from './components'
+export type {
+  ErrorBoundaryProps,
+  RemoteModuleCardProps,
+  LazyRemoteOptions,
+  SuspenseRemoteProps,
+  SuspenseRemoteWithPropsProps,
+} from './components'

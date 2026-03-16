@@ -24,6 +24,8 @@ pnpm dev
 
 ### 使用方式
 
+#### 1. 基础加载远程模块
+
 ```ts
 import { loadRemoteMultiVersion } from 'remote-reload-utils';
 const [comp, setComp] = useState(null);
@@ -51,4 +53,64 @@ useEffect(() => {
   }
   init();
 }, []);
+```
+
+#### 2. 使用 React 组件加载远程模块
+
+```tsx
+import { RemoteModuleCard, ErrorBoundary, lazyRemote } from 'remote-reload-utils';
+import React, { Suspense } from 'react';
+
+// 方式一：使用 RemoteModuleCard 组件（推荐）
+function App() {
+  return (
+    <RemoteModuleCard
+      pkg="@myorg/remote-app"
+      version="^1.0.0"
+      moduleName="Dashboard"
+      scopeName="myorg"
+      loadingFallback={<Spinner />}
+      errorFallback={(error, reset) => (
+        <div>
+          <p>加载失败：{error.message}</p>
+          <button onClick={reset}>重试</button>
+        </div>
+      )}
+      componentProps={{ userId: 123 }}
+    />
+  );
+}
+
+// 方式二：使用 lazy + Suspense
+const LazyDashboard = lazyRemote({
+  pkg: "@myorg/remote-app",
+  version: "^1.0.0",
+  moduleName: "Dashboard",
+  scopeName: "myorg"
+});
+
+function App() {
+  return (
+    <ErrorBoundary fallback={(error) => <div>错误：{error.message}</div>}>
+      <Suspense fallback={<Spinner />}>
+        <LazyDashboard userId={123} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+// 方式三：使用 SuspenseRemoteLoader（一体化方案）
+function App() {
+  return (
+    <SuspenseRemoteLoader
+      pkg="@myorg/remote-app"
+      version="^1.0.0"
+      moduleName="Dashboard"
+      scopeName="myorg"
+      fallback={<Spinner />}
+      errorFallback={(error) => <div>错误：{error.message}</div>}
+      componentProps={{ userId: 123 }}
+    />
+  );
+}
 ```
