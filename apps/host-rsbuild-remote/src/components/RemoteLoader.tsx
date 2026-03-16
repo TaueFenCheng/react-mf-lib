@@ -1,6 +1,5 @@
-import React, { Suspense } from 'react';
-import { ErrorBoundary } from './ErrorBoundary';
-import { RemoteModuleCard } from './RemoteModuleCard';
+import React from 'react';
+import { RemoteModuleCard } from 'remote-reload-utils';
 
 interface RemoteLoaderProps {
   pkg: string;
@@ -13,6 +12,7 @@ interface RemoteLoaderProps {
 /**
  * 远程组件加载器
  * 使用 Suspense 和 ErrorBoundary 包装远程模块加载
+ * 注意：RemoteModuleCard 已内置 Suspense 和 ErrorBoundary
  */
 export function RemoteLoader({
   pkg,
@@ -22,26 +22,17 @@ export function RemoteLoader({
   fallback,
 }: RemoteLoaderProps) {
   return (
-    <ErrorBoundary
-      fallback={
-        <div className="module-card module-card--error">
-          <span>Component unavailable</span>
-        </div>
-      }
-    >
-      <Suspense fallback={fallback || (
+    <RemoteModuleCard
+      pkg={pkg}
+      version={version}
+      moduleName={moduleName}
+      scopeName={scopeName}
+      loadingFallback={fallback || (
         <div className="module-card module-card--loading">
           <div className="loading-spinner" />
           <span>Loading {moduleName}...</span>
         </div>
-      )}>
-        <RemoteModuleCard
-          pkg={pkg}
-          version={version}
-          moduleName={moduleName}
-          scopeName={scopeName}
-        />
-      </Suspense>
-    </ErrorBoundary>
+      )}
+    />
   );
 }
