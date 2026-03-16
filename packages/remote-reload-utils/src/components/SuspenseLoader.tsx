@@ -103,7 +103,7 @@ export function lazyRemote(options: LazyRemoteOptions) {
  * // 与 ErrorBoundary 配合使用
  * <ErrorBoundary fallback={(error) => <div>Error: {error.message}</div>}>
  *   <SuspenseRemote fallback={<Spinner />}>
- *     <RemoteModuleCard pkg="@myorg/remote-app" version="^1.0.0" moduleName="Dashboard" scopeName="myorg" />
+ *     <RemoteModuleProvider pkg="@myorg/remote-app" version="^1.0.0" moduleName="Dashboard" scopeName="myorg" />
  *   </SuspenseRemote>
  * </ErrorBoundary>
  * ```

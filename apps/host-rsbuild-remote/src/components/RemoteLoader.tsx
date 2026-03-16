@@ -1,5 +1,5 @@
 import React from 'react';
-import { RemoteModuleCard } from 'remote-reload-utils';
+import { RemoteModuleProvider } from 'remote-reload-utils';
 
 interface RemoteLoaderProps {
   pkg: string;
@@ -12,7 +12,7 @@ interface RemoteLoaderProps {
 /**
  * 远程组件加载器
  * 使用 Suspense 和 ErrorBoundary 包装远程模块加载
- * 注意：RemoteModuleCard 已内置 Suspense 和 ErrorBoundary
+ * 注意：RemoteModuleProvider 已内置 Suspense 和 ErrorBoundary
  */
 export function RemoteLoader({
   pkg,
@@ -22,7 +22,7 @@ export function RemoteLoader({
   fallback,
 }: RemoteLoaderProps) {
   return (
-    <RemoteModuleCard
+    <RemoteModuleProvider
       pkg={pkg}
       version={version}
       moduleName={moduleName}

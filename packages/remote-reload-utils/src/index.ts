@@ -77,7 +77,9 @@ export { fallbackPlugin } from './plugins/fallback'
 // React 组件导出
 export {
   ErrorBoundary,
-  RemoteModuleCard,
+  RemoteModuleProvider,
+  RemoteModuleRenderer,
+  useRemoteModule,
   lazyRemote,
   SuspenseRemote,
   SuspenseRemoteLoader,
@@ -87,6 +89,7 @@ export {
 export type {
   ErrorBoundaryProps,
   RemoteModuleCardProps,
+  UseRemoteModuleOptions,
   LazyRemoteOptions,
   SuspenseRemoteProps,
   SuspenseRemoteWithPropsProps,
