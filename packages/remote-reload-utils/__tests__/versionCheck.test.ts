@@ -10,7 +10,7 @@ import {
   getStableVersions,
   extractMajorVersion,
   isPrerelease,
-} from '../src/versionCheck'
+} from '../src/version'
 
 describe('parseVersion', () => {
   it('should parse standard version', () => {

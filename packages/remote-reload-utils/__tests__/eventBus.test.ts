@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { eventBus, createEventBus, EventBusClass } from '../src/eventBus'
+import { eventBus, createEventBus, EventBusClass } from '../src/event-bus'
 
 describe('EventBus', () => {
   let bus: EventBusClass

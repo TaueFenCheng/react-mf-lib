@@ -17,7 +17,7 @@ interface EventEmitterOptions {
   filter?: (data: any, meta: EventMeta) => boolean
 }
 
-class EventBusClass {
+export class EventBusClass {
   private listeners: Map<string, Set<EventSubscription>> = new Map()
   private eventHistory: Map<string, Array<{ data: any; meta: EventMeta }>> = new Map()
   private maxHistorySize = 100

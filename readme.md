@@ -1,6 +1,10 @@
 # React Module Federation Utils
 
-一个用于运行时动态加载远程 React 组件的工具库，支持多版本共存和 CDN 故障转移。
+一个用于运行时动态加载远程 React 组件的工具库，支持多版本共存、CDN 故障转移和完整的模块生命周期管理。
+
+[![npm version](https://img.shields.io/npm/v/remote-reload-utils.svg)](https://www.npmjs.com/package/remote-reload-utils)
+[![License](https://img.shields.io/npm/l/remote-reload-utils.svg)](https://github.com/TaueFenCheng/react-mf-lib/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
 ## 特性
 
@@ -12,155 +16,88 @@
 - ⚛️ **React 友好** - 专为 React 组件 Module Federation 设计
 - 🔧 **可扩展** - 插件系统支持自定义扩展
 - 📊 **性能优化** - 预加载、卸载、健康检查
-- 🔗 **跨模块通信** - 事件总线、共享状态
-- ✅ **质量保障** - 单元测试覆盖
+- 🔗 **事件总线** - 跨模块通信支持
+- ✅ **质量保障** - 155+ 单元测试，高覆盖率
 
-## 新增功能
+## 安装
 
-### 预加载与卸载
-```typescript
-// 预加载远程模块
-preloadRemote({ name: 'lib', pkg: 'pkg', version: '1.0.0' });
-
-// 卸载释放资源
-await unloadRemote({ name: 'lib', pkg: 'pkg', version: '1.0.0' });
-```
-
-### 健康检查
-```typescript
-const health = await checkRemoteHealth({ name: 'lib', pkg: 'pkg' });
-console.log(health.status); // 'healthy' | 'degraded' | 'unhealthy'
-```
-
-### React Hooks
-```typescript
-const { component: Button, loading, error } = useRemote({
-  name: 'lib',
-  pkg: 'pkg',
-  modulePath: 'Button',
-});
-```
-
-### 事件总线
-```typescript
-eventBus.on('user-login', (user) => console.log(user));
-eventBus.emit('user-login', { id: 1 });
-```
-
-### 共享状态
-```typescript
-const { Provider, useSharedState } = createSharedContext('store', { count: 0 });
-```
-
-### 版本兼容性
-```typescript
-const result = checkVersionCompatibility('18.2.0', '^18.0.0', 'react');
-```
-
-## 项目结构
-
-```
-react-mf-lib/
-├── packages/
-│   ├── remote-reload-utils/    # 核心工具库
-│   └── test-mf-unpkg/          # 远程组件示例
-└── apps/
-    └── host-rsbuild-remote/    # 宿主应用示例
+```bash
+npm install remote-reload-utils
+# 或
+pnpm add remote-reload-utils
+# 或
+yarn add remote-reload-utils
 ```
 
 ## 快速开始
 
-### 安装
-
-```bash
-# 安装依赖
-pnpm install
-```
-
-### 运行示例
-
-#### 1. 启动远程组件（remote）
-
-```bash
-cd packages/test-mf-unpkg
-pnpm dev
-```
-
-#### 2. 启动宿主应用（host）
-
-```bash
-cd apps/host-rsbuild-remote
-pnpm dev
-```
-
-访问 http://localhost:3000 查看运行效果。
-
-## 核心使用
-
-### 1. 配置远程组件
-
-远程组件需要使用 Module Federation 进行配置：
-
-```javascript
-// packages/test-mf-unpkg/rspack.config.ts
-import { rspack } from '@rspack/core';
-
-export default {
-  plugins: [
-    new rspack.container.ModuleFederationPlugin({
-      name: 'react_mf_lib',
-      filename: 'remoteEntry.js',
-      exposes: {
-        './Button': './src/Button.tsx',
-        './Card': './src/Card.tsx',
-      },
-      shared: {
-        react: { singleton: true, eager: true },
-        'react-dom': { singleton: true, eager: true },
-      },
-    }),
-  ],
-};
-```
-
-### 2. 在宿主应用中加载
+### 基本使用
 
 ```typescript
 import { loadRemoteMultiVersion } from 'remote-reload-utils';
-import { useEffect, useState } from 'react';
 
-const App = () => {
-  const [Button, setButton] = useState(null);
+async function loadRemoteComponent() {
+  const { scopeName, mf } = await loadRemoteMultiVersion({
+    name: 'my-remote-app',
+    pkg: '@myorg/remote-app',
+    version: '1.0.0',
+  });
 
-  useEffect(() => {
-    async function loadRemoteComponent() {
-      // 加载远程组件
-      const { scopeName, mf } = await loadRemoteMultiVersion({
-        name: 'react_mf_lib',
-        pkg: 'test-mf-unpkg',
-        version: '1.0.5',
-      });
-
-      // 加载具体的暴露模块
-      const mod = await mf.loadRemote(`${scopeName}/Button`);
-      setButton(mod.default);
-    }
-
-    loadRemoteComponent();
-  }, []);
-
-  return (
-    <div>
-      <h1>Host Application</h1>
-      {Button && <Button />}
-    </div>
-  );
-};
+  const mod = await mf.loadRemote(`${scopeName}/Button`);
+  return mod.default;
+}
 ```
 
-## API 文档
+### React Hooks 方式
 
-### loadRemoteMultiVersion
+```typescript
+import { useRemoteModuleHook } from 'remote-reload-utils';
+
+function MyComponent() {
+  const { component: RemoteButton, loading, error } = useRemoteModuleHook({
+    pkg: '@myorg/remote-app',
+    version: '^1.0.0',
+    moduleName: 'Button',
+    scopeName: 'myorg',
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!RemoteButton) return null;
+
+  return <RemoteButton onClick={() => console.log('clicked')} />;
+}
+```
+
+### 使用 RemoteModuleProvider
+
+```typescript
+import { RemoteModuleProvider } from 'remote-reload-utils';
+
+function App() {
+  return (
+    <RemoteModuleProvider
+      pkg="@myorg/remote-app"
+      version="^1.0.0"
+      moduleName="Dashboard"
+      scopeName="myorg"
+      loadingFallback={<Spinner />}
+      errorFallback={(error, reset) => (
+        <div>
+          <p>加载失败：{error.message}</p>
+          <button onClick={reset}>重试</button>
+        </div>
+      )}
+    />
+  );
+}
+```
+
+## 完整 API 文档
+
+### 核心加载
+
+#### loadRemoteMultiVersion
 
 动态加载远程模块，支持多版本和故障转移。
 
@@ -170,130 +107,316 @@ import { loadRemoteMultiVersion } from 'remote-reload-utils';
 const { scopeName, mf } = await loadRemoteMultiVersion(options, plugins);
 ```
 
-#### 参数
-
-**options**: `LoadRemoteOptions`
+**参数**:
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
-| `name` | `string` | ✅ | - | Module Federation 的名称（基础名） |
+| `name` | `string` | ✅ | - | Module Federation 的名称 |
 | `pkg` | `string` | ✅ | - | npm 包名 |
-| `version` | `string` | ❌ | `'latest'` | 指定版本号或 `'latest'` |
+| `version` | `string` | ❌ | `'latest'` | 版本号或 `'latest'` |
 | `retries` | `number` | ❌ | `3` | 每个 CDN 的重试次数 |
 | `delay` | `number` | ❌ | `1000` | 重试间隔（毫秒） |
 | `localFallback` | `string` | ❌ | - | 本地兜底 URL |
-| `cacheTTL` | `number` | ❌ | `86400000` | 缓存时间（毫秒，默认 24 小时） |
-| `revalidate` | `boolean` | ❌ | `true` | 是否异步重新验证最新版本 |
-| `shared` | `Record<string, ModuleFederationRuntimePlugin>` | ❌ | - | 自定义共享模块配置 |
+| `cacheTTL` | `number` | ❌ | `86400000` | 缓存时间（毫秒） |
+| `revalidate` | `boolean` | ❌ | `true` | 异步重新验证最新版本 |
+| `shared` | `Record<string, any>` | ❌ | - | 自定义共享模块配置 |
 
-**plugins**: `ModuleFederationRuntimePlugin[]`
+**返回值**: `Promise<{ scopeName: string, mf: ModuleFederationInstance }>`
 
-Module Federation 运行时插件数组。
-
-#### 返回值
-
-`Promise<{ scopeName: string, mf: ReturnType<typeof createInstance> }>`
-
-- `scopeName`: 远程模块的作用域名称
-- `mf`: Module Federation 实例，可用于加载具体模块
-
-#### CDN 源
-
-默认使用以下 CDN（按顺序尝试）：
-
-1. `https://cdn.jsdelivr.net/npm/${pkg}@${version}/dist/remoteEntry.js`
-2. `https://unpkg.com/${pkg}@${version}/dist/remoteEntry.js`
-3. `localFallback`（如果提供）
-
-### loadReactVersion
-
-加载特定版本的 React 和 ReactDOM。
+### 预加载
 
 ```typescript
-import { loadReactVersion } from 'remote-reload-utils';
+import { preloadRemote, preloadRemoteList } from 'remote-reload-utils';
 
-const { React, ReactDOM } = await loadReactVersion('18');
-```
-
-#### 参数
-
-- `version`: `'17' | '18' | '19'` - React 版本号
-
-## 高级用法
-
-### 多版本共存
-
-```typescript
-// 加载不同版本的远程组件
-const { mf: mfV1 } = await loadRemoteMultiVersion({
-  name: 'app_v1',
-  pkg: 'my-component',
+// 预加载单个模块
+await preloadRemote({
+  pkg: '@myorg/remote-app',
   version: '1.0.0',
+  name: 'myorg',
+  priority: 'idle', // 'idle' | 'high'
+  force: false,
 });
 
-const { mf: mfV2 } = await loadRemoteMultiVersion({
-  name: 'app_v2',
-  pkg: 'my-component',
-  version: '2.0.0',
+// 预加载多个模块
+await preloadRemoteList([
+  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
+  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
+], (loaded, total) => {
+  console.log(`Progress: ${loaded}/${total}`);
 });
-
-// 同时使用两个版本
-const ComponentV1 = await mfV1.loadRemote('app_v1/Button');
-const ComponentV2 = await mfV2.loadRemote('app_v2/Button');
 ```
 
-### 自定义共享模块
+### 卸载
 
 ```typescript
-const { mf } = await loadRemoteMultiVersion(
-  {
-    name: 'my_app',
-    pkg: 'my-component',
-    version: '1.0.0',
-    shared: {
-      lodash: {
-        shareConfig: {
-          singleton: true,
-          eager: false,
-        },
-      },
-    },
-  },
-  [],
+import { unloadRemote, unloadAll } from 'remote-reload-utils';
+
+// 卸载特定模块
+await unloadRemote({
+  name: 'myorg',
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  clearCache: true,
+});
+
+// 卸载所有模块
+await unloadAll(true); // true = 清除所有缓存
+```
+
+### 健康检查
+
+```typescript
+import { checkRemoteHealth, getRemoteHealthReport } from 'remote-reload-utils';
+
+// 检查单个远程模块健康状态
+const health = await checkRemoteHealth({
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  name: 'myorg',
+});
+
+console.log(health.status); // 'healthy' | 'degraded' | 'unhealthy'
+console.log(health.latency); // 延迟（毫秒）
+
+// 生成健康报告
+const report = await getRemoteHealthReport([
+  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
+  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
+]);
+
+console.log(report.overall); // 'healthy' | 'degraded' | 'unhealthy'
+```
+
+### 事件总线
+
+```typescript
+import { eventBus } from 'remote-reload-utils';
+
+// 订阅事件
+const unsubscribe = eventBus.on('user-login', (user, meta) => {
+  console.log('User logged in:', user);
+  console.log('Event meta:', meta); // { timestamp, source, id }
+});
+
+// 发送事件
+eventBus.emit('user-login', { id: 1, name: 'John' });
+
+// 只触发一次的订阅
+eventBus.once('notification', (msg) => {
+  console.log('Received once:', msg);
+});
+
+// 带过滤器的订阅
+eventBus.on(
+  'message',
+  (data) => console.log('Received:', data),
+  { filter: (data) => data.priority === 'high' }
 );
+
+// 取消订阅
+unsubscribe();
+
+// 获取事件历史
+const history = eventBus.getHistory('user-login');
+
+// 获取所有事件
+const events = eventBus.getEvents();
 ```
 
-### 本地开发兜底
+### 版本工具
 
 ```typescript
-const { mf } = await loadRemoteMultiVersion({
-  name: 'my_app',
-  pkg: 'my-component',
-  version: '1.0.0',
-  // 本地开发时使用本地构建
-  localFallback: 'http://localhost:3001/remoteEntry.js',
+import {
+  checkVersionCompatibility,
+  satisfiesVersion,
+  parseVersion,
+  compareVersions,
+  getLatestVersion,
+  getStableVersions,
+} from 'remote-reload-utils';
+
+// 检查版本兼容性
+const result = checkVersionCompatibility('18.2.0', '^18.0.0', 'react');
+console.log(result.compatible); // true
+console.log(result.severity); // 'info' | 'warning' | 'error'
+
+// 版本范围匹配
+satisfiesVersion('1.5.0', '^1.0.0'); // true
+satisfiesVersion('2.0.0', '~1.2.0'); // false
+satisfiesVersion('1.2.5', '>=1.2.0'); // true
+
+// 版本解析
+const parsed = parseVersion('1.2.3-alpha.1');
+// { major: 1, minor: 2, patch: 3, prerelease: 'alpha.1', raw: '1.2.3-alpha.1' }
+
+// 版本比较
+compareVersions('2.0.0', '1.0.0'); // > 0
+compareVersions('1.0.0', '1.0.0'); // 0
+
+// 获取最新稳定版本
+const versions = ['1.0.0', '2.0.0-alpha', '2.0.0', '3.0.0-beta'];
+getLatestVersion(versions); // '3.0.0-beta'
+getStableVersions(versions); // ['1.0.0', '2.0.0']
+```
+
+### React 组件
+
+#### ErrorBoundary
+
+```typescript
+import { ErrorBoundary } from 'remote-reload-utils';
+
+<ErrorBoundary
+  fallback={(error, reset) => (
+    <div>
+      <p>Error: {error.message}</p>
+      <button onClick={reset}>Try again</button>
+    </div>
+  )}
+  onError={(error, errorInfo) => {
+    console.error('Caught error:', error, errorInfo);
+  }}
+  onReset={() => console.log('Reset clicked')}
+>
+  <MyComponent />
+</ErrorBoundary>
+```
+
+#### SuspenseRemoteLoader
+
+```typescript
+import { SuspenseRemoteLoader } from 'remote-reload-utils';
+
+<SuspenseRemoteLoader
+  pkg="@myorg/remote-app"
+  version="^1.0.0"
+  moduleName="Dashboard"
+  scopeName="myorg"
+  fallback={<Spinner />}
+  errorFallback={(error) => <div>Error: {error.message}</div>}
+  componentProps={{ userId: 123 }}
+/>
+```
+
+#### lazyRemote
+
+```typescript
+import { lazyRemote } from 'remote-reload-utils';
+import { Suspense } from 'react';
+
+const RemoteDashboard = lazyRemote({
+  pkg: '@myorg/remote-app',
+  version: '^1.0.0',
+  moduleName: 'Dashboard',
+  scopeName: 'myorg',
+  maxRetries: 3,
+  retryDelay: 1000,
 });
-```
 
-### 版本缓存机制
-
-库会自动缓存版本信息到 `localStorage`，键为 `mf-multi-version`：
-
-```typescript
-// 缓存结构
-{
-  "my-component": {
-    "1.0.0": {
-      "timestamp": 1704067200000
-    },
-    "1.0.1": {
-      "timestamp": 1704153600000
-    }
-  }
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RemoteDashboard userId={123} />
+    </Suspense>
+  );
 }
 ```
 
+### 工具函数
+
+```typescript
+import {
+  // 版本缓存
+  getVersionCache,
+  setVersionCache,
+  fetchLatestVersion,
+
+  // URL 构建
+  buildCdnUrls,
+  buildFinalUrls,
+
+  // 共享配置
+  getFinalSharedConfig,
+
+  // 卸载状态
+  getLoadedRemotes,
+  isRemoteLoaded,
+  registerRemoteInstance,
+  registerLoadedModule,
+
+  // 预加载状态
+  getPreloadStatus,
+  clearPreloadCache,
+  cancelPreload,
+
+  // 格式化
+  formatHealthStatus,
+} from 'remote-reload-utils';
+```
+
+## 项目结构
+
+```
+react-mf-lib/
+├── packages/
+│   ├── remote-reload-utils/          # 核心工具库
+│   │   ├── src/
+│   │   │   ├── index.ts              # 主入口
+│   │   │   ├── loader/
+│   │   │   │   ├── index.ts          # loadRemoteMultiVersion
+│   │   │   │   └── utils.ts          # 加载工具函数
+│   │   │   ├── preload/              # 预加载模块
+│   │   │   ├── unload/               # 卸载管理
+│   │   │   ├── health/               # 健康检查
+│   │   │   ├── version/              # 版本工具
+│   │   │   ├── event-bus/            # 事件总线
+│   │   │   ├── components/           # React 组件
+│   │   │   │   ├── ErrorBoundary.tsx
+│   │   │   │   ├── RemoteModuleProvider.tsx
+│   │   │   │   └── SuspenseLoader.tsx
+│   │   │   └── plugins/              # 插件系统
+│   │   ├── __tests__/                # 单元测试
+│   │   │   ├── loader.test.ts
+│   │   │   ├── preload.test.ts
+│   │   │   ├── unload.test.ts
+│   │   │   ├── health.test.ts
+│   │   │   ├── eventBus.test.ts
+│   │   │   ├── versionCheck.test.ts
+│   │   │   ├── fallback.test.ts
+│   │   │   ├── loadRemote.test.ts
+│   │   │   └── types.test.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── test-mf-unpkg/                # 远程组件示例
+└── apps/
+    └── host-rsbuild-remote/          # 宿主应用示例
+```
+
+## 运行示例
+
+### 1. 启动远程组件（remote）
+
+```bash
+cd packages/test-mf-unpkg
+pnpm dev
+```
+
+### 2. 启动宿主应用（host）
+
+```bash
+cd apps/host-rsbuild-remote
+pnpm dev
+```
+
+访问 http://localhost:3000 查看运行效果。
+
 ## 开发
+
+### 安装依赖
+
+```bash
+pnpm install
+```
 
 ### 构建
 
@@ -301,11 +424,8 @@ const { mf } = await loadRemoteMultiVersion({
 # 构建工具库
 pnpm --filter remote-reload-utils build
 
-# 构建远程组件
-pnpm --filter test-mf-unpkg build
-
-# 构建宿主应用
-pnpm --filter host-rsbuild-remote build
+# 监听模式
+pnpm --filter remote-reload-utils dev
 ```
 
 ### 测试
@@ -314,20 +434,20 @@ pnpm --filter host-rsbuild-remote build
 # 运行所有测试
 pnpm --filter remote-reload-utils test
 
-# 运行单个测试文件
-pnpm --filter remote-reload-utils test path/to/test-file.test.ts
+# 监听模式
+pnpm --filter remote-reload-utils test:watch
 
-# 运行匹配的测试
-pnpm --filter remote-reload-utils test --run --grep "test name"
+# 生成覆盖率报告
+pnpm --filter remote-reload-utils test --coverage
 ```
 
 ### 代码检查
 
 ```bash
 # 格式化代码
-pnpm --filter remote-reload-utils lint
+pnpm --filter remote-reload-utils format
 
-# 检查并自动修复
+# 代码检查
 pnpm --filter remote-reload-utils check
 ```
 
@@ -342,25 +462,65 @@ pnpm --filter remote-reload-utils check
 
 ## 最佳实践
 
-1. **版本管理**
-   - 生产环境建议使用固定版本号
-   - 开发环境可以使用 `'latest'` 进行快速迭代
-   - 合理设置 `cacheTTL` 避免版本更新延迟
+### 1. 版本管理
 
-2. **错误处理**
-   - 始终使用 try-catch 包裹加载操作
-   - 为用户提供加载失败时的降级 UI
-   - 监控加载失败率并配置告警
+```typescript
+// ✅ 推荐：生产环境使用固定版本
+await loadRemoteMultiVersion({
+  name: 'my-app',
+  pkg: '@myorg/remote-app',
+  version: '1.2.3',
+});
 
-3. **性能优化**
-   - 使用 `eager: true` 预加载共享模块
-   - 合理设置重试次数和延迟
-   - 考虑使用 Service Worker 缓存 remoteEntry
+// ⚠️ 注意：使用 latest 时设置合理的 cacheTTL
+await loadRemoteMultiVersion({
+  name: 'my-app',
+  pkg: '@myorg/remote-app',
+  version: 'latest',
+  cacheTTL: 3600000, // 1 小时
+  revalidate: true,
+});
+```
 
-4. **安全性**
-   - 验证加载的远程组件来源
-   - 在生产环境使用 HTTPS CDN
-   - 实施 CSP 策略限制脚本来源
+### 2. 错误处理
+
+```typescript
+try {
+  const { mf } = await loadRemoteMultiVersion(options);
+  const mod = await mf.loadRemote(`${scopeName}/MyComponent`);
+} catch (error) {
+  console.error('Failed to load remote module:', error);
+  // 显示降级 UI
+}
+```
+
+### 3. 预加载优化
+
+```typescript
+// 在应用空闲时预加载
+preloadRemote({
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  priority: 'idle',
+});
+
+// 高优先级立即加载
+preloadRemote({
+  pkg: '@myorg/critical-module',
+  priority: 'high',
+});
+```
+
+### 4. 资源清理
+
+```typescript
+// 组件卸载时清理
+useEffect(() => {
+  return () => {
+    unloadRemote({ name: 'my-app', pkg: '@myorg/remote-app' });
+  };
+}, []);
+```
 
 ## 故障排查
 
@@ -383,6 +543,18 @@ pnpm --filter remote-reload-utils check
 2. 检查 TypeScript 配置
 3. 使用 `import type` 导入类型
 
+## 更新日志
+
+### v0.0.12
+
+- 重构：使用 remote-reload-utils 替换 RemoteModuleCard
+- 新增：完整的单元测试覆盖（155+ 测试）
+- 新增：健康检查模块
+- 新增：事件总线模块
+- 新增：版本兼容性检查
+
+[查看详细更新日志](./packages/remote-reload-utils/CHANGELOG.md)
+
 ## 许可证
 
 ISC
@@ -391,8 +563,15 @@ ISC
 
 欢迎提交 Issue 和 Pull Request！
 
-## 链接
+1. Fork 项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
+## 相关链接
 
 - [remote-reload-utils 详细文档](./packages/remote-reload-utils/loadRemote.md)
 - [Module Federation 官方文档](https://module-federation.io/)
 - [Rsbuild 文档](https://rsbuild.dev/)
+- [npm 包页面](https://www.npmjs.com/package/remote-reload-utils)
