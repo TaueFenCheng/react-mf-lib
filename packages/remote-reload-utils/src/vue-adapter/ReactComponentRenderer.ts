@@ -37,6 +37,7 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
   },
 
   setup(props) {
+    console.log(props,'3280923809482034')
     const containerRef = ref<HTMLElement | null>(null)
     const reactRootRef = ref<any>(null)
 
@@ -48,6 +49,8 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
 
       const React = (window as any).React
       const ReactDOM = (window as any).ReactDOM
+      console.log(React,'React')
+      console.log(ReactDOM,'ReactDOMReactDOMReactDOM')
 
       if (!React || !ReactDOM) {
         console.error('[ReactComponentRenderer] React or ReactDOM not found on window')

@@ -38,7 +38,7 @@ function loadScript(src: string, globalName: string): Promise<void> {
 
     const script = document.createElement('script')
     script.src = src
-    script.async = true
+    script.defer = true
 
     script.onload = () => {
       if ((window as any)[globalName]) {

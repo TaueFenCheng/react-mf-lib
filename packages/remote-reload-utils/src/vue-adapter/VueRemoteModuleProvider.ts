@@ -90,11 +90,39 @@ export function createVueRemoteModuleProvider() {
           state.value.loading = true
           state.value.error = null
 
+          // 获取全局 React/ReactDOM 实例
+          const globalReact = (window as any).React
+          const globalReactDOM = (window as any).ReactDOM
+
+          // 构建共享配置，确保远程组件使用与 Vue 适配器相同的 React 实例
+          const sharedConfig: Record<string, any> = {}
+          if (globalReact && globalReactDOM) {
+            sharedConfig.react = {
+              shareConfig: {
+                singleton: true,
+                eager: true,
+                requiredVersion: false,
+                import: false, // 不导入，使用全局的
+              },
+              version: globalReact.version || '18.0.0',
+            }
+            sharedConfig['react-dom'] = {
+              shareConfig: {
+                singleton: true,
+                eager: true,
+                requiredVersion: false,
+                import: false, // 不导入，使用全局的
+              },
+              version: globalReactDOM.version || '18.0.0',
+            }
+          }
+
           const { mf } = await loadRemoteMultiVersion(
             {
               name: props.scopeName,
               pkg: props.pkg,
               version: props.version,
+              shared: sharedConfig,
             },
             [],
           )
