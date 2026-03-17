@@ -1,54 +1,56 @@
-import { loadRemoteMultiVersion } from '../loader';
-import React, { useEffect, useState, useCallback, Suspense } from 'react';
-import type { ErrorBoundaryProps } from './ErrorBoundary';
-import { ErrorBoundary } from './ErrorBoundary';
+import { loadRemoteMultiVersion } from '../loader'
+import React, { useEffect, useState, useCallback, Suspense } from 'react'
+import type { ErrorBoundaryProps } from './ErrorBoundary'
+import { ErrorBoundary } from './ErrorBoundary'
 
 export interface RemoteModuleCardProps {
   /** 包名称 */
-  pkg: string;
+  pkg: string
   /** 版本号，支持 semver 范围 */
-  version: string;
+  version: string
   /** 远程模块名称（导出名） */
-  moduleName: string;
+  moduleName: string
   /** 作用域名称 */
-  scopeName: string;
+  scopeName: string
   /** 加载中的占位内容 */
-  loadingFallback?: React.ReactNode;
+  loadingFallback?: React.ReactNode
   /** 错误状态的占位内容 */
-  errorFallback?: React.ReactNode | ((error: Error, resetError: () => void) => React.ReactNode);
+  errorFallback?:
+    | React.ReactNode
+    | ((error: Error, resetError: () => void) => React.ReactNode)
   /** 传递给远程组件的 props */
-  componentProps?: Record<string, any>;
+  componentProps?: Record<string, any>
   /** 容器类名 */
-  className?: string;
+  className?: string
   /** 容器样式 */
-  style?: React.CSSProperties;
+  style?: React.CSSProperties
   /** 加载成功回调 */
-  onLoad?: (component: React.ComponentType<any>) => void;
+  onLoad?: (component: React.ComponentType<any>) => void
   /** 加载失败回调 */
-  onError?: (error: Error) => void;
+  onError?: (error: Error) => void
   /** 是否禁用错误边界 */
-  disableErrorBoundary?: boolean;
+  disableErrorBoundary?: boolean
   /** 错误边界配置 */
-  errorBoundaryOptions?: Omit<ErrorBoundaryProps, 'children' | 'fallback'>;
+  errorBoundaryOptions?: Omit<ErrorBoundaryProps, 'children' | 'fallback'>
 }
 
 interface ModuleState {
-  loading: boolean;
-  error: Error | null;
-  component: React.ComponentType<any> | null;
+  loading: boolean
+  error: Error | null
+  component: React.ComponentType<any> | null
 }
 
 /**
  * Hook 选项：加载远程模块
  */
 export interface UseRemoteModuleOptions {
-  pkg: string;
-  version: string;
-  moduleName: string;
-  scopeName: string;
-  onError?: (error: Error) => void;
-  onLoad?: (component: React.ComponentType<any>) => void;
-  retryKey?: number;
+  pkg: string
+  version: string
+  moduleName: string
+  scopeName: string
+  onError?: (error: Error) => void
+  onLoad?: (component: React.ComponentType<any>) => void
+  retryKey?: number
 }
 
 /**
@@ -67,14 +69,14 @@ export function useRemoteModule({
     loading: true,
     error: null,
     component: null,
-  });
+  })
 
   useEffect(() => {
-    let mounted = true;
+    let mounted = true
 
     async function loadModule() {
       try {
-        setModuleState(prev => ({ ...prev, loading: true, error: null }));
+        setModuleState((prev) => ({ ...prev, loading: true, error: null }))
 
         const { mf } = await loadRemoteMultiVersion(
           {
@@ -82,47 +84,50 @@ export function useRemoteModule({
             pkg,
             version,
           },
-          []
-        );
+          [],
+        )
 
-        if (!mf || !mounted) return;
+        if (!mf || !mounted) return
 
-        const mod = await mf.loadRemote(`${scopeName}/${moduleName}`);
+        const mod = await mf.loadRemote(`${scopeName}/${moduleName}`)
 
-        if (!mounted) return;
+        if (!mounted) return
 
         if (mod && typeof mod === 'object' && 'default' in mod) {
-          const Component = (mod as { default: React.ComponentType<any> }).default;
+          const Component = (mod as { default: React.ComponentType<any> })
+            .default
           setModuleState({
             loading: false,
             error: null,
             component: Component,
-          });
-          onLoad?.(Component);
+          })
+          onLoad?.(Component)
         } else {
-          throw new Error(`Module "${scopeName}/${moduleName}" does not export a default component`);
+          throw new Error(
+            `Module "${scopeName}/${moduleName}" does not export a default component`,
+          )
         }
       } catch (err) {
         if (mounted) {
-          const error = err instanceof Error ? err : new Error(String(err));
+          const error = err instanceof Error ? err : new Error(String(err))
           setModuleState({
             loading: false,
             error,
             component: null,
-          });
-          onError?.(error);
+          })
+          onError?.(error)
         }
       }
     }
 
-    loadModule();
+    loadModule()
 
     return () => {
-      mounted = false;
-    };
-  }, [pkg, version, moduleName, scopeName, onError, onLoad, retryKey]);
+      mounted = false
+    }
+  }, [pkg, version, moduleName, scopeName, onError, onLoad, retryKey])
 
-  return moduleState;
+  return moduleState
 }
 
 /**
@@ -141,18 +146,25 @@ export function RemoteModuleRenderer({
   onError,
   onLoad,
 }: RemoteModuleCardProps) {
-  const moduleState = useRemoteModule({ pkg, version, moduleName, scopeName, onError, onLoad });
-  const [retryKey, setRetryKey] = useState(0);
+  const moduleState = useRemoteModule({
+    pkg,
+    version,
+    moduleName,
+    scopeName,
+    onError,
+    onLoad,
+  })
+  const [retryKey, setRetryKey] = useState(0)
 
   // 强制重新加载
   const handleRetry = useCallback(() => {
-    setRetryKey(prev => prev + 1);
-  }, []);
+    setRetryKey((prev) => prev + 1)
+  }, [])
 
   // retryKey 变化会触发 useRemoteModule 重新加载（依赖项中包含 retryKey）
   useEffect(() => {
     // 通过 key 变化触发重新加载
-  }, [retryKey]);
+  }, [retryKey])
 
   if (moduleState.loading) {
     return (
@@ -160,25 +172,27 @@ export function RemoteModuleRenderer({
         {loadingFallback || (
           <div className="module-card module-card--loading">
             <div className="loading-spinner" aria-hidden="true" />
-            <span>Loading {moduleName}...</span>
+            <span className="text-gray-600">Loading {moduleName}...</span>
           </div>
         )}
       </div>
-    );
+    )
   }
 
   if (moduleState.error) {
     if (typeof errorFallback === 'function') {
-      return <>{errorFallback(moduleState.error, handleRetry)}</>;
+      return <>{errorFallback(moduleState.error, handleRetry)}</>
     }
     if (errorFallback !== undefined) {
-      return <>{errorFallback}</>;
+      return <>{errorFallback}</>
     }
     // 默认错误 UI
     return (
       <div className={className} style={style} role="alert">
         <div className="module-card module-card--error">
-          <span className="error-icon" aria-hidden="true">!</span>
+          <span className="error-icon" aria-hidden="true">
+            !
+          </span>
           <span>Failed to load {moduleName}</span>
           <p className="error-message">{moduleState.error.message}</p>
           <button onClick={handleRetry} className="retry-button" type="button">
@@ -186,20 +200,20 @@ export function RemoteModuleRenderer({
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   if (!moduleState.component) {
-    return null;
+    return null
   }
 
-  const Component = moduleState.component;
+  const Component = moduleState.component
 
   return (
     <div className={className} style={style}>
       <Component {...componentProps} />
     </div>
-  );
+  )
 }
 
 /**
@@ -246,7 +260,7 @@ export function RemoteModuleProvider(props: RemoteModuleCardProps) {
     errorFallback,
     loadingFallback,
     errorBoundaryOptions,
-  } = props;
+  } = props
 
   // 如果禁用了错误边界，直接渲染内容
   if (disableErrorBoundary) {
@@ -254,7 +268,7 @@ export function RemoteModuleProvider(props: RemoteModuleCardProps) {
       <Suspense fallback={loadingFallback || <div>Loading...</div>}>
         <RemoteModuleRenderer {...props} />
       </Suspense>
-    );
+    )
   }
 
   // 默认启用错误边界
@@ -268,5 +282,5 @@ export function RemoteModuleProvider(props: RemoteModuleCardProps) {
         <RemoteModuleRenderer {...props} />
       </Suspense>
     </ErrorBoundary>
-  );
+  )
 }

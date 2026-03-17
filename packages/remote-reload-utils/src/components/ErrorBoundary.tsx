@@ -1,16 +1,18 @@
-import React from 'react';
+import React from 'react'
 
 export interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode | ((error: Error, resetError: () => void) => React.ReactNode);
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-  onReset?: () => void;
+  children: React.ReactNode
+  fallback?:
+    | React.ReactNode
+    | ((error: Error, resetError: () => void) => React.ReactNode)
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void
+  onReset?: () => void
 }
 
 interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo?: React.ErrorInfo | null;
+  hasError: boolean
+  error: Error | null
+  errorInfo?: React.ErrorInfo | null
 }
 
 /**
@@ -32,44 +34,54 @@ export class ErrorBoundary extends React.Component<
   ErrorBoundaryState
 > {
   constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    super(props)
+    this.state = { hasError: false, error: null, errorInfo: null }
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error, errorInfo: null };
+    return { hasError: true, error, errorInfo: null }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.setState({ errorInfo });
-    this.props.onError?.(error, errorInfo);
-    console.error('[RemoteReloadUtils] ErrorBoundary caught error:', error, errorInfo);
+    this.setState({ errorInfo })
+    this.props.onError?.(error, errorInfo)
+    console.error(
+      '[RemoteReloadUtils] ErrorBoundary caught error:',
+      error,
+      errorInfo,
+    )
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
-    this.props.onReset?.();
-  };
+    this.setState({ hasError: false, error: null, errorInfo: null })
+    this.props.onReset?.()
+  }
 
   render() {
     if (this.state.hasError && this.state.error) {
       if (typeof this.props.fallback === 'function') {
-        return this.props.fallback(this.state.error, this.handleReset);
+        return this.props.fallback(this.state.error, this.handleReset)
       }
       if (this.props.fallback !== undefined) {
-        return this.props.fallback;
+        return this.props.fallback
       }
       // 默认降级 UI
       return (
-        <div role="alert" style={{ padding: '16px', border: '1px solid #ffcccc', backgroundColor: '#fff5f5', borderRadius: '4px' }}>
-          <h3>Something went wrong</h3>
-          <p>{this.state.error.message}</p>
-          <button onClick={this.handleReset} style={{ marginTop: '8px', padding: '8px 16px', cursor: 'pointer' }}>
+        <div
+          role="alert"
+          className="p-4 border border-red-200 bg-red-50 rounded-lg"
+        >
+          <h3 className="text-lg font-semibold mb-2">Something went wrong</h3>
+          <p className="text-red-700">{this.state.error.message}</p>
+          <button
+            onClick={this.handleReset}
+            className="mt-3 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 cursor-pointer transition-colors"
+          >
             Try again
           </button>
         </div>
-      );
+      )
     }
-    return this.props.children;
+    return this.props.children
   }
 }

@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+/* 自定义组件样式 */
+.module-card {
+  @apply flex flex-col items-center justify-center p-4;
+}
+
+.module-card--loading {
+  @apply text-gray-500;
+}
+
+.module-card--error {
+  @apply flex flex-col items-center justify-center p-4 text-red-600 bg-red-50 border border-red-200 rounded;
+}
+
+.loading-spinner {
+  @apply inline-block h-6 w-6 animate-spin rounded-full border-4 border-gray-200 border-t-gray-600;
+}
+
+.error-icon {
+  @apply mr-2 text-xl font-bold;
+}
+
+.error-message {
+  @apply mt-2 text-sm text-red-500;
+}
+
+.retry-button {
+  @apply mt-3 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors cursor-pointer;
+}

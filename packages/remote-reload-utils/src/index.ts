@@ -1,3 +1,6 @@
+// 样式导入
+import './styles/index.css'
+
 // 版本管理模块
 export { loadReactVersion } from './version/react'
 export {
