@@ -206,15 +206,17 @@ export function createVueRemoteModuleProvider() {
         // 创建 React 元素
         const element = React.createElement(Component, props)
 
-        // 使用 ReactDOM 18 的 createRoot API
+        // 优先使用 ReactDOM 18+ 的 createRoot API
         if (ReactDOM.createRoot) {
           const root = ReactDOM.createRoot(containerRef.value)
           root.render(element)
           reactRootRef.value = root
-        } else {
-          // 使用旧的 ReactDOM.render API
+        } else if (ReactDOM.render) {
+          // 使用旧的 ReactDOM.render API (React 17 及更早版本)
           ReactDOM.render(element, containerRef.value)
           reactRootRef.value = { unmount: () => ReactDOM.unmountComponentAtNode(containerRef.value!) }
+        } else {
+          console.error('[VueRemoteModuleProvider] No suitable React rendering API found')
         }
       }
 

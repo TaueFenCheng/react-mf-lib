@@ -74,15 +74,17 @@ export function createReactComponentRenderer(
   // 创建 React 元素
   const element = React.createElement(ReactComponent, props)
 
-  // 使用 ReactDOM 18 的 createRoot API（如果可用）
+  // 优先使用 ReactDOM 18+ 的 createRoot API（如果可用）
   if (ReactDOM.createRoot) {
     const root = ReactDOM.createRoot(container)
     root.render(element)
     return () => root.unmount()
-  } else {
-    // 使用旧的 ReactDOM.render API
+  } else if (ReactDOM.render) {
+    // 使用旧的 ReactDOM.render API (React 17 及更早版本)
     ReactDOM.render(element, container)
     return () => ReactDOM.unmountComponentAtNode(container)
+  } else {
+    throw new Error('No suitable React rendering API found')
   }
 }
 
