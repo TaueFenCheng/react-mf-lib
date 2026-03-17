@@ -97,3 +97,20 @@ export type {
   SuspenseRemoteProps,
   SuspenseRemoteWithPropsProps,
 } from './components'
+
+// Vue 适配器导出 (用于 Vue 项目加载 React 远程组件)
+export {
+  VueRemoteModuleProvider,
+  mountReactToGlobal,
+  hasGlobalReact,
+  getGlobalReactVersion,
+  getGlobalReact,
+  getGlobalReactDOM,
+  unmountReactFromGlobal,
+  useVueRemoteModule,
+} from './vue-adapter'
+export type {
+  VueRemoteModuleCardProps,
+  UseVueRemoteModuleOptions,
+  UseVueRemoteModuleResult,
+} from './vue-adapter'

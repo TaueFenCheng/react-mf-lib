@@ -38,6 +38,9 @@ importers:
 
   apps/host-vue3-remote:
     dependencies:
+      remote-reload-utils:
+        specifier: workspace:*
+        version: link:../../packages/remote-reload-utils
       vue:
         specifier: ^3.5.30
         version: 3.5.30(typescript@5.9.3)
@@ -94,6 +97,9 @@ importers:
       '@vitest/ui':
         specifier: ^2.1.8
         version: 2.1.9(vitest@2.1.9)
+      '@vue/runtime-core':
+        specifier: ^3.5.30
+        version: 3.5.30
       base-biome-config:
         specifier: 0.0.8
         version: 0.0.8(@biomejs/biome@2.0.6)(@rsbuild/core@1.6.0)
@@ -115,6 +121,9 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.17.2)(@vitest/ui@2.1.9)(happy-dom@20.8.4)(lightningcss@1.32.0)
+      vue:
+        specifier: ^3.5.30
+        version: 3.5.30(typescript@5.9.2)
 
   packages/test-mf-unpkg:
     dependencies:
@@ -4419,6 +4428,12 @@ snapshots:
       '@vue/shared': 3.5.30
       csstype: 3.2.3
 
+  '@vue/server-renderer@3.5.30(vue@3.5.30(typescript@5.9.2))':
+    dependencies:
+      '@vue/compiler-ssr': 3.5.30
+      '@vue/shared': 3.5.30
+      vue: 3.5.30(typescript@5.9.2)
+
   '@vue/server-renderer@3.5.30(vue@3.5.30(typescript@5.9.3))':
     dependencies:
       '@vue/compiler-ssr': 3.5.30
@@ -5970,6 +5985,16 @@ snapshots:
       '@volar/typescript': 2.4.28
       '@vue/language-core': 3.2.5
       typescript: 5.9.3
+
+  vue@3.5.30(typescript@5.9.2):
+    dependencies:
+      '@vue/compiler-dom': 3.5.30
+      '@vue/compiler-sfc': 3.5.30
+      '@vue/runtime-dom': 3.5.30
+      '@vue/server-renderer': 3.5.30(vue@3.5.30(typescript@5.9.2))
+      '@vue/shared': 3.5.30
+    optionalDependencies:
+      typescript: 5.9.2
 
   vue@3.5.30(typescript@5.9.3):
     dependencies:
