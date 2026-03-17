@@ -64,3 +64,7 @@ export type {
   UseVueRemoteModuleOptions,
   UseVueRemoteModuleResult,
 } from './useVueRemoteModule'
+
+// React 组件渲染器 (用于在 Vue 中渲染 React 组件)
+export { ReactComponentRenderer } from './ReactComponentRenderer'
+export type { ReactComponentRendererProps } from './ReactComponentRenderer'

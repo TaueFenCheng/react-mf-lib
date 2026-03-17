@@ -146,7 +146,35 @@ export async function tryLoadRemote(
 export function getFinalSharedConfig(
   customShared?: Record<string, any>,
 ): Record<string, any> {
-  return { ...DEFAULT_SHARED_CONFIG, ...(customShared || {}) }
+  // 检查全局是否有 React/ReactDOM（用于 Vue 项目加载 React 远程组件）
+  const globalReact = (window as any).React
+  const globalReactDOM = (window as any).ReactDOM
+
+  const globalShared: Record<string, any> = {}
+
+  if (globalReact && globalReactDOM) {
+    // 如果全局有 React，使用全局实例作为共享模块
+    globalShared.react = {
+      shareConfig: {
+        singleton: true,
+        eager: true,
+        requiredVersion: false,
+        import: false, // 不导入，使用全局的
+      },
+      version: globalReact.version || '18.0.0',
+    }
+    globalShared['react-dom'] = {
+      shareConfig: {
+        singleton: true,
+        eager: true,
+        requiredVersion: false,
+        import: false, // 不导入，使用全局的
+      },
+      version: globalReactDOM.version || '18.0.0',
+    }
+  }
+
+  return { ...DEFAULT_SHARED_CONFIG, ...globalShared, ...(customShared || {}) }
 }
 
 /**

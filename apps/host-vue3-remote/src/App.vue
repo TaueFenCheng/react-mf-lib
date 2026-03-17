@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
-import { VueRemoteModuleProvider, useVueRemoteModule } from 'remote-reload-utils/vue'
+import { VueRemoteModuleProvider, useVueRemoteModule, ReactComponentRenderer } from 'remote-reload-utils/vue'
 
 // 示例：使用组件方式加载远程 React 组件
 const handleLoad = (component: any) => {
@@ -103,9 +103,9 @@ const {
           <button @click="buttonRetry" class="retry-btn">重试</button>
         </div>
 
-        <component
+        <ReactComponentRenderer
           v-else-if="RemoteButton"
-          :is="RemoteButton"
+          :component="RemoteButton"
           class="remote-component"
         />
       </div>
@@ -127,9 +127,9 @@ const {
           <button @click="cardRetry" class="retry-btn">重试</button>
         </div>
 
-        <component
+        <ReactComponentRenderer
           v-else-if="RemoteCard"
-          :is="RemoteCard"
+          :component="RemoteCard"
           class="remote-component"
         />
       </div>

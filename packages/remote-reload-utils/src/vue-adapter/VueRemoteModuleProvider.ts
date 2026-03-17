@@ -1,6 +1,7 @@
 import {
   defineComponent,
   ref,
+  watch,
   watchEffect,
   h,
   onMounted,
@@ -190,14 +191,18 @@ export function createVueRemoteModuleProvider() {
       }
 
       // 监听组件变化并渲染
-      watchEffect(() => {
-        if (state.value.component && containerRef.value) {
-          // 等待下一个 tick 确保 DOM 已更新
-          setTimeout(() => {
-            renderReactComponent(state.value.component, props.componentProps || {})
-          }, 0)
-        }
-      })
+      watch(
+        () => [state.value.component, containerRef.value, props.componentProps],
+        () => {
+          if (state.value.component && containerRef.value) {
+            // 等待下一个 tick 确保 DOM 已更新
+            setTimeout(() => {
+              renderReactComponent(state.value.component, props.componentProps || {})
+            }, 0)
+          }
+        },
+        { immediate: true },
+      )
 
       // 监听 props 变化和 retryKey 变化，重新加载
       watchEffect(() => {
