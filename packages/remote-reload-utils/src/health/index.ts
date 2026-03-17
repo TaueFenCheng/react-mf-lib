@@ -25,7 +25,9 @@ const CDN_URLS = [
   'https://unpkg.com/{pkg}@{version}/dist/remoteEntry.js',
 ]
 
-async function checkCdnAccess(cdnUrl: string): Promise<{ reachable: boolean; latency: number }> {
+async function checkCdnAccess(
+  cdnUrl: string,
+): Promise<{ reachable: boolean; latency: number }> {
   const start = performance.now()
   try {
     const controller = new AbortController()
@@ -65,12 +67,16 @@ export async function checkRemoteHealth(
 ): Promise<HealthCheckResult> {
   const { pkg, version = 'latest' } = options
 
-  const actualVersion = version === 'latest' ? await fetchLatestVersion(pkg) || version : version
+  const actualVersion =
+    version === 'latest' ? (await fetchLatestVersion(pkg)) || version : version
 
-  const results: Array<{ cdn: string; reachable: boolean; latency: number }> = []
+  const results: Array<{ cdn: string; reachable: boolean; latency: number }> =
+    []
 
   for (const template of CDN_URLS) {
-    const url = template.replace('{pkg}', pkg).replace('{version}', actualVersion)
+    const url = template
+      .replace('{pkg}', pkg)
+      .replace('{version}', actualVersion)
     const result = await checkCdnAccess(url)
     results.push({
       cdn: url,
@@ -135,7 +141,9 @@ export async function getRemoteHealthReport(
   }
 }
 
-export function formatHealthStatus(status: 'healthy' | 'degraded' | 'unhealthy'): string {
+export function formatHealthStatus(
+  status: 'healthy' | 'degraded' | 'unhealthy',
+): string {
   const icons = {
     healthy: '🟢',
     degraded: '🟡',

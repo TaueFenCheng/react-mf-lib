@@ -10,7 +10,11 @@ interface RemoteInstance {
 
 const remoteInstances: Map<string, RemoteInstance> = new Map()
 
-function generateInstanceKey(name: string, pkg: string, version: string): string {
+function generateInstanceKey(
+  name: string,
+  pkg: string,
+  version: string,
+): string {
   return `${name}::${pkg}@${version}`
 }
 
@@ -180,7 +184,11 @@ export function getRemoteInstance(key: string): RemoteInstance | undefined {
   return remoteInstances.get(key)
 }
 
-export function isRemoteLoaded(name: string, pkg: string, version?: string): boolean {
+export function isRemoteLoaded(
+  name: string,
+  pkg: string,
+  version?: string,
+): boolean {
   const key = generateInstanceKey(name, pkg, version || '*')
   return remoteInstances.has(key)
 }

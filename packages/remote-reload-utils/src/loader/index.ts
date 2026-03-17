@@ -1,11 +1,11 @@
-import { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/runtime';
-import type { LoadRemoteOptions } from '../types';
+import { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/runtime'
+import type { LoadRemoteOptions } from '../types'
 import {
   resolveFinalVersion,
   buildFinalUrls,
   getFinalSharedConfig,
   tryLoadRemote,
-} from './utils';
+} from './utils'
 
 /**
  * 多版本共存的 loadRemote
@@ -24,7 +24,7 @@ export async function loadRemoteMultiVersion(
     cacheTTL = 24 * 60 * 60 * 1000,
     revalidate = true,
     shared: customShared,
-  } = options;
+  } = options
 
   // 1. 解析最终版本号
   const finalVersion = await resolveFinalVersion(
@@ -32,14 +32,14 @@ export async function loadRemoteMultiVersion(
     version,
     cacheTTL,
     revalidate,
-  );
+  )
 
   // 2. 构建最终 URL 列表
-  const scopeName = `${name}`;
-  const urls = buildFinalUrls(pkg, finalVersion, localFallback);
+  const scopeName = `${name}`
+  const urls = buildFinalUrls(pkg, finalVersion, localFallback)
 
   // 3. 合并共享配置
-  const finalSharedConfig = getFinalSharedConfig(customShared);
+  const finalSharedConfig = getFinalSharedConfig(customShared)
 
   // 4. 遍历 URL 并尝试加载（故障转移/Fallback）
   for (const url of urls) {
@@ -51,12 +51,12 @@ export async function loadRemoteMultiVersion(
         delay,
         finalSharedConfig,
         plugins,
-      );
+      )
     } catch (e) {
-      console.warn(`[MF] 切换 CDN 路径：${url} 失败，尝试下一个...`, e);
+      console.warn(`[MF] 切换 CDN 路径：${url} 失败，尝试下一个...`, e)
     }
   }
 
   // 5. 全部失败，抛出错误
-  throw new Error(`[MF] 所有加载源 (${urls.length} 个) 均加载失败。`);
+  throw new Error(`[MF] 所有加载源 (${urls.length} 个) 均加载失败。`)
 }

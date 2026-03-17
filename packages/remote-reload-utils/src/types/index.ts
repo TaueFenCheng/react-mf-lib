@@ -1,4 +1,4 @@
-import { ModuleFederationRuntimePlugin } from "@module-federation/enhanced/runtime"
+import { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/runtime'
 
 export { type ModuleFederationRuntimePlugin }
 

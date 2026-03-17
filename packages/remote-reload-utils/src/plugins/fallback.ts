@@ -2,9 +2,9 @@ import type { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/
 
 export const fallbackPlugin: () => ModuleFederationRuntimePlugin = () => ({
   name: 'fallback-plugin',
-  errorLoadRemote(args:any) {
+  errorLoadRemote(args: any) {
     const fallback = 'fallback'
-    console.log(args,'args')
+    console.log(args, 'args')
     return fallback
   },
 })

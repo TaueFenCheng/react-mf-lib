@@ -19,14 +19,19 @@ interface EventEmitterOptions {
 
 export class EventBusClass {
   private listeners: Map<string, Set<EventSubscription>> = new Map()
-  private eventHistory: Map<string, Array<{ data: any; meta: EventMeta }>> = new Map()
+  private eventHistory: Map<string, Array<{ data: any; meta: EventMeta }>> =
+    new Map()
   private maxHistorySize = 100
 
   private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
 
-  on<T = any>(event: string, callback: EventCallback<T>, options?: EventEmitterOptions): () => void {
+  on<T = any>(
+    event: string,
+    callback: EventCallback<T>,
+    options?: EventEmitterOptions,
+  ): () => void {
     const onceValue = options?.once ?? false
 
     if (!this.listeners.has(event)) {
@@ -151,7 +156,11 @@ export class EventBusClass {
     return exists
   }
 
-  emitAsync<T = any>(event: string, data?: T, meta?: Partial<EventMeta>): Promise<void> {
+  emitAsync<T = any>(
+    event: string,
+    data?: T,
+    meta?: Partial<EventMeta>,
+  ): Promise<void> {
     return new Promise((resolve) => {
       this.emit(event, data, meta)
       resolve()

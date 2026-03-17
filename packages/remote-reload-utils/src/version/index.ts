@@ -77,7 +77,8 @@ export function satisfiesVersion(current: string, required: string): boolean {
     case '^':
       return (
         parseVersion(current).major === parseVersion(version).major &&
-        (parseVersion(current).major > 0 || parseVersion(current).minor === parseVersion(version).minor)
+        (parseVersion(current).major > 0 ||
+          parseVersion(current).minor === parseVersion(version).minor)
       )
     case '~':
       return (
@@ -161,7 +162,10 @@ export function getCompatibleReactVersions(hostVersion: string): string[] {
   for (let i = host.major; i >= 15; i--) {
     for (let j = 0; j <= 5; j++) {
       const version = `${i}.${j}.0`
-      if (checkVersionCompatibility(version, `^${host.major}.0.0`, 'react').compatible) {
+      if (
+        checkVersionCompatibility(version, `^${host.major}.0.0`, 'react')
+          .compatible
+      ) {
         versions.push(version)
       }
     }
@@ -189,7 +193,10 @@ export async function fetchAvailableVersions(pkg: string): Promise<string[]> {
   }
 }
 
-export function sortVersions(versions: string[], order: 'asc' | 'desc' = 'desc'): string[] {
+export function sortVersions(
+  versions: string[],
+  order: 'asc' | 'desc' = 'desc',
+): string[] {
   return [...versions].sort((a, b) => {
     const cmp = compareVersions(a, b)
     return order === 'desc' ? -cmp : cmp
@@ -202,7 +209,9 @@ export function getLatestVersion(versions: string[]): string | null {
 }
 
 export function getStableVersions(versions: string[]): string[] {
-  return versions.filter((v) => !v.includes('alpha') && !v.includes('beta') && !v.includes('rc'))
+  return versions.filter(
+    (v) => !v.includes('alpha') && !v.includes('beta') && !v.includes('rc'),
+  )
 }
 
 export function extractMajorVersion(version: string): number {
