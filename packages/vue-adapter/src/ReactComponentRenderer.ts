@@ -1,4 +1,5 @@
 import { defineComponent, h, ref, onBeforeUnmount, watch, type PropType } from 'vue'
+import { useReactResolver } from './composables/useReactResolver'
 
 /**
  * React 组件渲染器 Props
@@ -34,43 +35,7 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
   setup(props) {
     const containerRef = ref<HTMLElement | null>(null)
     const reactRootRef = ref<any>(null)
-    const runtimeReactRef = ref<any>(null)
-    const runtimeReactDOMClientRef = ref<any>(null)
-
-    function normalizeSharedModule(mod: any) {
-      if (!mod) return null
-      if (typeof mod === 'object' && 'default' in mod && mod.default) return mod.default
-      return mod
-    }
-
-    async function resolveRuntimeReact() {
-      if (!props.mf?.loadShare) return
-
-      try {
-        const [reactGetter, reactDomClientGetter, reactDomGetter] = await Promise.all([
-          props.mf.loadShare('react'),
-          props.mf.loadShare('react-dom/client'),
-          props.mf.loadShare('react-dom'),
-        ])
-
-        const sharedReact =
-          typeof reactGetter === 'function' ? normalizeSharedModule(reactGetter()) : null
-
-        const sharedReactDOMClient =
-          typeof reactDomClientGetter === 'function'
-            ? normalizeSharedModule(reactDomClientGetter())
-            : typeof reactDomGetter === 'function'
-              ? normalizeSharedModule(reactDomGetter())
-              : null
-
-        if (sharedReact && sharedReactDOMClient) {
-          runtimeReactRef.value = sharedReact
-          runtimeReactDOMClientRef.value = sharedReactDOMClient
-        }
-      } catch (e) {
-        console.warn('[ReactComponentRenderer] Failed to resolve runtime shared React, fallback to window', e)
-      }
-    }
+    const { runtimeReact, runtimeReactDOMClient, resolve } = useReactResolver()
 
     /**
      * 渲染 React 组件到容器
@@ -78,9 +43,9 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
     function renderReactComponent() {
       if (!containerRef.value || !props.component) return
 
-      const React = runtimeReactRef.value || (window as any).React
+      const React = runtimeReact.value || (window as any).React
       const ReactDOM =
-        runtimeReactDOMClientRef.value || (window as any).ReactDOM || (window as any).ReactDOMClient
+        runtimeReactDOMClient.value || (window as any).ReactDOM || (window as any).ReactDOMClient
 
       if (!React || !ReactDOM) {
         console.error('[ReactComponentRenderer] React or ReactDOM not found on window')
@@ -130,7 +95,7 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
     watch(
       () => props.mf,
       () => {
-        void resolveRuntimeReact()
+        void resolve(props.mf)
       },
       { immediate: true },
     )
@@ -140,8 +105,8 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
       () => [
         props.component,
         props.componentProps,
-        runtimeReactRef.value,
-        runtimeReactDOMClientRef.value,
+        runtimeReact.value,
+        runtimeReactDOMClient.value,
       ],
       () => {
         // 等待下一个 tick 确保 DOM 已更新
