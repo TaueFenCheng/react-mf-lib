@@ -6,6 +6,16 @@
 [![License](https://img.shields.io/npm/l/remote-reload-utils.svg)](https://github.com/TaueFenCheng/react-mf-lib/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
+## 仓库概览
+
+这是一个 pnpm monorepo，当前包含：
+
+- `packages/remote-reload-utils`：核心运行时加载工具库（已发布 npm）
+- `packages/vue-adapter`：Vue 3 适配层（在 Vue 中加载 React 远程组件）
+- `apps/test-mf-unpkg`：远程组件示例应用（React）
+- `apps/host-rsbuild-remote`：宿主示例应用（React）
+- `apps/host-vue3-remote`：宿主示例应用（Vue 3）
+
 ## 特性
 
 - 🚀 **运行时动态加载** - 无需重新构建即可加载远程组件
@@ -387,9 +397,11 @@ react-mf-lib/
 │   │   │   └── types.test.ts
 │   │   ├── package.json
 │   │   └── tsconfig.json
-│   └── test-mf-unpkg/                # 远程组件示例
+│   └── vue-adapter/                  # Vue 3 适配层
 └── apps/
-    └── host-rsbuild-remote/          # 宿主应用示例
+    ├── test-mf-unpkg/                # 远程组件示例（React）
+    ├── host-rsbuild-remote/          # 宿主应用示例（React）
+    └── host-vue3-remote/             # 宿主应用示例（Vue 3）
 ```
 
 ## 运行示例
@@ -397,18 +409,23 @@ react-mf-lib/
 ### 1. 启动远程组件（remote）
 
 ```bash
-cd packages/test-mf-unpkg
-pnpm dev
+pnpm --filter test-mf-unpkg dev
 ```
 
-### 2. 启动宿主应用（host）
+### 2. 启动 React 宿主应用（host-react）
 
 ```bash
-cd apps/host-rsbuild-remote
-pnpm dev
+pnpm --filter host-rsbuild-remote dev
 ```
 
-访问 http://localhost:3000 查看运行效果。
+### 3. 启动 Vue 宿主应用（host-vue）
+
+```bash
+pnpm --filter @react-mf-lib/vue-adapter build
+pnpm --filter host-vue3-remote dev
+```
+
+按各应用控制台输出的地址访问运行效果。
 
 ## 开发
 
@@ -423,6 +440,9 @@ pnpm install
 ```bash
 # 构建工具库
 pnpm --filter remote-reload-utils build
+
+# 构建 Vue 适配器
+pnpm --filter @react-mf-lib/vue-adapter build
 
 # 监听模式
 pnpm --filter remote-reload-utils dev
@@ -449,6 +469,10 @@ pnpm --filter remote-reload-utils format
 
 # 代码检查
 pnpm --filter remote-reload-utils check
+
+# Vue 适配器格式化/检查
+pnpm --filter @react-mf-lib/vue-adapter lint
+pnpm --filter @react-mf-lib/vue-adapter check
 ```
 
 ## 技术栈
@@ -572,6 +596,10 @@ ISC
 ## 相关链接
 
 - [remote-reload-utils 详细文档](./packages/remote-reload-utils/loadRemote.md)
+- [vue-adapter 文档（中文）](./packages/vue-adapter/README.md)
+- [vue-adapter docs (English)](./packages/vue-adapter/README.en.md)
+- [vue-adapter 源码文档](./packages/vue-adapter/src/README.md)
+- [host-vue3-remote 使用说明](./apps/host-vue3-remote/README.md)
 - [Module Federation 官方文档](https://module-federation.io/)
 - [Rsbuild 文档](https://rsbuild.dev/)
 - [npm 包页面](https://www.npmjs.com/package/remote-reload-utils)
