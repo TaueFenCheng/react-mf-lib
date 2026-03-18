@@ -24,7 +24,7 @@ const {
   retry: buttonRetry,
 } = useVueRemoteModule({
   pkg: 'test-mf-unpkg',
-  version: '1.0.6',
+  version: '1.0.7',
   moduleName: 'Button',
   scopeName: 'react_mf_lib',
   onLoad: (comp) => console.log('Hook 方式加载 Button 成功:', comp),
@@ -40,7 +40,7 @@ const {
   retry: cardRetry,
 } = useVueRemoteModule({
   pkg: 'test-mf-unpkg',
-  version: '1.0.6',
+  version: '1.0.7',
   moduleName: 'Card',
   scopeName: 'react_mf_lib',
   onLoad: (comp) => console.log('Hook 方式加载 Card 成功:', comp),
@@ -61,7 +61,7 @@ const {
 
       <VueRemoteModuleProvider
         pkg="test-mf-unpkg"
-        version="1.0.6"
+        version="1.0.7"
         moduleName="Card"
         scopeName="react_mf_lib"
         class-name="remote-module-container"
@@ -146,7 +146,7 @@ const {
         <h3>当前配置</h3>
         <ul>
           <li><strong>React 版本:</strong> 18 (已挂载到全局 window 对象)</li>
-          <li><strong>远程组件包:</strong> test-mf-unpkg@1.0.6</li>
+          <li><strong>远程组件包:</strong> test-mf-unpkg@1.0.7</li>
           <li><strong>远程模块:</strong> Button, Card</li>
           <li><strong>作用域:</strong> react_mf_lib</li>
         </ul>

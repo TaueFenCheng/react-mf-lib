@@ -3,7 +3,6 @@ import {
   ModuleFederationRuntimePlugin,
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
-import { initSharedScope, registerSharedReact } from '../plugins/register-shared-react'
 import type { VersionCache } from '../types'
 
 // --- 核心配置抽象 ---
@@ -14,17 +13,52 @@ const DEFAULT_CDN_TEMPLATES = [
   'https://unpkg.com/{pkg}@{version}/dist/remoteEntry.js',
 ]
 
-/** 默认的共享模块配置 (React/ReactDOM) */
-const DEFAULT_SHARED_CONFIG: Record<string, Record<string, any>> = {
+/** 默认的共享模块配置（使用 runtime 期望的 shareConfig 结构） */
+const DEFAULT_SHARED_CONFIG: Record<string, any> = {
   react: {
-    singleton: true,
-    eager: true, // 是否提前加载
-    requiredVersion: false,
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
   },
   'react-dom': {
-    singleton: true,
-    eager: true, // 是否提前加载
-    requiredVersion: false,
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
+  },
+  'react-dom/client': {
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
+  },
+  'react/jsx-runtime': {
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
+  },
+  'react/jsx-dev-runtime': {
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
   },
 }
 
@@ -109,9 +143,6 @@ export async function tryLoadRemote(
 
   for (let i = 0; i < retries; i++) {
     try {
-      // 在创建 MF 实例之前先初始化共享作用域
-      initSharedScope()
-
       const mf = createInstance({
         name: 'host',
         remotes: [
@@ -121,7 +152,7 @@ export async function tryLoadRemote(
           },
         ],
         shared: sharedConfig,
-        plugins: [...plugins, fallbackPlugin(), registerSharedReact()],
+        plugins: [...plugins, fallbackPlugin()],
       })
 
       return { scopeName, mf }
@@ -157,22 +188,41 @@ export function getFinalSharedConfig(
     const isValidReact = typeof globalReact === 'object' && typeof globalReact.useCallback === 'function'
 
     if (isValidReact) {
-      // 如果全局有有效的 React，使用全局实例作为共享模块
-      // 使用 get 函数返回全局 React 实例
+      // 注意：runtime shared 需要使用 shareConfig，而不是直接 singleton/eager 顶层字段
       globalShared.react = {
-        singleton: true,
-        eager: true,
-        requiredVersion: false,
-        get: () => () => globalReact,
         version: globalReact.version || '18.0.0',
+        lib: () => globalReact,
+        shareConfig: {
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          strictVersion: false,
+        },
+        strategy: 'loaded-first',
       }
       globalShared['react-dom'] = {
-        singleton: true,
-        eager: true,
-        requiredVersion: false,
-        get: () => () => globalReactDOM,
         version: globalReactDOM.version || '18.0.0',
+        lib: () => globalReactDOM,
+        shareConfig: {
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          strictVersion: false,
+        },
+        strategy: 'loaded-first',
       }
+      globalShared['react-dom/client'] = {
+        version: globalReactDOM.version || '18.0.0',
+        lib: () => globalReactDOM,
+        shareConfig: {
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          strictVersion: false,
+        },
+        strategy: 'loaded-first',
+      }
+
       console.log('[getFinalSharedConfig] Using global React instance', {
         version: globalReact.version,
       })
@@ -192,24 +242,52 @@ export function getFinalSharedConfig(
     ...(customShared || {}),
   }
 
-  // 保证全局 React/ReactDOM 的 get 工厂不会被外部 shared 覆盖
-  if (
-    typeof globalShared.react?.get === 'function'
-    && typeof mergedShared.react?.get !== 'function'
-  ) {
-    mergedShared.react = {
-      ...(mergedShared.react || {}),
-      get: globalShared.react.get,
+  // 保证 React 关键共享模块总是单例 + loaded-first
+  const keepSingletonPackages = [
+    'react',
+    'react-dom',
+    'react-dom/client',
+    'react/jsx-runtime',
+    'react/jsx-dev-runtime',
+  ]
+
+  for (const pkgName of keepSingletonPackages) {
+    const base = mergedShared[pkgName] || {}
+    mergedShared[pkgName] = {
+      ...base,
+      strategy: 'loaded-first',
+      shareConfig: {
+        singleton: true,
+        eager: true,
+        requiredVersion: false,
+        strictVersion: false,
+        ...(base.shareConfig || {}),
+      },
     }
   }
 
-  if (
-    typeof globalShared['react-dom']?.get === 'function'
-    && typeof mergedShared['react-dom']?.get !== 'function'
-  ) {
+  // 如果全局存在 React，则优先保留 host 侧 lib，避免 remote 侧 React 抢占
+  if (typeof globalShared.react?.lib === 'function') {
+    mergedShared.react = {
+      ...(mergedShared.react || {}),
+      lib: globalShared.react.lib,
+      version: globalShared.react.version,
+    }
+  }
+
+  if (typeof globalShared['react-dom']?.lib === 'function') {
     mergedShared['react-dom'] = {
       ...(mergedShared['react-dom'] || {}),
-      get: globalShared['react-dom'].get,
+      lib: globalShared['react-dom'].lib,
+      version: globalShared['react-dom'].version,
+    }
+  }
+
+  if (typeof globalShared['react-dom/client']?.lib === 'function') {
+    mergedShared['react-dom/client'] = {
+      ...(mergedShared['react-dom/client'] || {}),
+      lib: globalShared['react-dom/client'].lib,
+      version: globalShared['react-dom/client'].version,
     }
   }
 

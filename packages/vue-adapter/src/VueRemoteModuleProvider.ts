@@ -85,24 +85,38 @@ export function createVueRemoteModuleProvider() {
       const containerRef = ref<HTMLElement | null>(null)
       const reactRootRef = ref<any>(null)
       const runtimeReactRef = ref<any>(null)
-      const runtimeReactDOMRef = ref<any>(null)
+      const runtimeReactDOMClientRef = ref<any>(null)
       const isMounted = ref(false)
+
+      function normalizeSharedModule(mod: any) {
+        if (!mod) return null
+        if (typeof mod === 'object' && 'default' in mod && mod.default) return mod.default
+        return mod
+      }
 
       async function resolveRuntimeReact(mfInstance: any) {
         if (!mfInstance?.loadShare) return
 
         try {
-          const [reactGetter, reactDomGetter] = await Promise.all([
+          const [reactGetter, reactDomClientGetter, reactDomGetter] = await Promise.all([
             mfInstance.loadShare('react'),
+            mfInstance.loadShare('react-dom/client'),
             mfInstance.loadShare('react-dom'),
           ])
 
-          const sharedReact = typeof reactGetter === 'function' ? reactGetter() : null
-          const sharedReactDOM = typeof reactDomGetter === 'function' ? reactDomGetter() : null
+          const sharedReact =
+            typeof reactGetter === 'function' ? normalizeSharedModule(reactGetter()) : null
 
-          if (sharedReact && sharedReactDOM) {
+          const sharedReactDOMClient =
+            typeof reactDomClientGetter === 'function'
+              ? normalizeSharedModule(reactDomClientGetter())
+              : typeof reactDomGetter === 'function'
+                ? normalizeSharedModule(reactDomGetter())
+                : null
+
+          if (sharedReact && sharedReactDOMClient) {
             runtimeReactRef.value = sharedReact
-            runtimeReactDOMRef.value = sharedReactDOM
+            runtimeReactDOMClientRef.value = sharedReactDOMClient
             console.log('[VueRemoteModuleProvider] Using runtime shared React instance')
           }
         } catch (e) {
@@ -189,7 +203,7 @@ export function createVueRemoteModuleProvider() {
         if (!containerRef.value || !Component) return
 
         const React = runtimeReactRef.value || (window as any).React
-        const ReactDOM = runtimeReactDOMRef.value || (window as any).ReactDOM
+        const ReactDOM = runtimeReactDOMClientRef.value || (window as any).ReactDOM
 
         if (!React || !ReactDOM) {
           console.error('[VueRemoteModuleProvider] React not found on window')

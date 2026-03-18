@@ -63,8 +63,11 @@ export default defineConfig({
         './Card': './src/Card.tsx',
       },
       shared: {
-        react: { singleton: true, eager: true },
-        'react-dom': { singleton: true, eager: true },
+        react: { singleton: true, eager: true, requiredVersion: false },
+        'react-dom': { singleton: true, eager: true, requiredVersion: false },
+        'react-dom/client': { singleton: true, eager: true, requiredVersion: false },
+        'react/jsx-runtime': { singleton: true, eager: true, requiredVersion: false },
+        'react/jsx-dev-runtime': { singleton: true, eager: true, requiredVersion: false },
       },
     }),
     isDev ? new ReactRefreshRspackPlugin() : null,
