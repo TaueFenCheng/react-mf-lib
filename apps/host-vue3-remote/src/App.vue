@@ -163,8 +163,16 @@ const {
         <h3>查看文档</h3>
         <p>
           更多详细信息请查看
-          <a href="../../packages/remote-reload-utils/vue-adapter.md" target="_blank">
-            vue-adapter.md
+          <a href="../../packages/vue-adapter/README.md" target="_blank">
+            vue-adapter README（中文）
+          </a>
+          ，以及
+          <a href="../../packages/vue-adapter/README.en.md" target="_blank">
+            README.en（English）
+          </a>
+          。源码说明请看
+          <a href="../../packages/vue-adapter/src/README.md" target="_blank">
+            src/README
           </a>
         </p>
       </div>
