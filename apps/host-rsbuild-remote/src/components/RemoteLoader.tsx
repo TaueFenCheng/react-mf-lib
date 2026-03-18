@@ -1,5 +1,5 @@
 import React from 'react';
-import { RemoteModuleProvider } from 'remote-reload-utils';
+import { RemoteModuleProvider } from '@react-mf-lib/react-adapter';
 
 interface RemoteLoaderProps {
   pkg: string;

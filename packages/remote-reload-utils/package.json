@@ -23,6 +23,16 @@
         "types": "./dist/index.d.ts",
         "default": "./dist/main.cjs"
       }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/main.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/main.cjs"
+      }
     }
   },
   "main": "./dist/main.cjs",
@@ -84,6 +94,7 @@
   },
   "dependencies": {
     "@module-federation/enhanced": "0.18.3",
-    "@react-mf-lib/vue-adapter": "workspace:*"
+    "@react-mf-lib/vue-adapter": "workspace:*",
+    "@react-mf-lib/react-adapter": "workspace:*"
   }
 }

@@ -74,7 +74,9 @@ export type {
 // 插件导出
 export { fallbackPlugin } from './plugins/fallback'
 
-// React 组件导出
+// React 组件导出（已迁移到 @react-mf-lib/react-adapter）
+// 请改用 import { ... } from '@react-mf-lib/react-adapter';
+// 为了向后兼容，这里重新导出
 export {
   ErrorBoundary,
   RemoteModuleProvider,
@@ -85,7 +87,7 @@ export {
   SuspenseRemoteLoader,
   withRemote,
   useRemoteModuleHook,
-} from './components'
+} from '@react-mf-lib/react-adapter'
 export type {
   ErrorBoundaryProps,
   RemoteModuleCardProps,
@@ -93,7 +95,7 @@ export type {
   LazyRemoteOptions,
   SuspenseRemoteProps,
   SuspenseRemoteWithPropsProps,
-} from './components'
+} from '@react-mf-lib/react-adapter'
 
 // Vue 适配器导出 (用于 Vue 项目加载 React 远程组件)
 // 注意：Vue 适配器已独立为单独的包，请使用 @react-mf-lib/vue-adapter

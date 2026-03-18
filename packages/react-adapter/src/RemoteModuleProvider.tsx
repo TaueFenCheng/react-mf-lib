@@ -1,4 +1,4 @@
-import { loadRemoteMultiVersion } from '../loader'
+import { loadRemoteMultiVersion } from 'remote-reload-utils'
 import React, { useEffect, useState, useCallback, Suspense } from 'react'
 import type { ErrorBoundaryProps } from './ErrorBoundary'
 import { ErrorBoundary } from './ErrorBoundary'
