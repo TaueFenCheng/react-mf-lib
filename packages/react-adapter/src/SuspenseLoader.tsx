@@ -1,4 +1,4 @@
-import { loadRemoteMultiVersion } from '../loader'
+import { loadRemoteMultiVersion } from 'remote-reload-utils'
 import React, {
   lazy,
   Suspense,

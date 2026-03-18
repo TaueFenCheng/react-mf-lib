@@ -7,7 +7,7 @@
  * @example
  * ```ts
  * // 在 Vue 项目的入口文件 (main.ts) 中
- * import { mountReactToGlobal } from 'remote-reload-utils/vue'
+ * import { mountReactToGlobal } from '@react-mf-lib/vue-adapter'
  *
  * // 加载 React 到全局 (React 远程组件需要这些全局变量)
  * await mountReactToGlobal('18')
@@ -20,9 +20,25 @@
  * ```vue
  * <!-- 在 Vue 组件中使用远程 React 组件 -->
  * <script setup lang="ts">
- * import { VueRemoteModuleProvider, mountReactToGlobal } from 'remote-reload-utils/vue'
+ * import { VueRemoteModuleProvider } from '@react-mf-lib/vue-adapter'
+ * </script>
  *
- * // 或者使用 Hook 方式
+ * <template>
+ *   <VueRemoteModuleProvider
+ *     pkg="my-react-components"
+ *     version="1.0.0"
+ *     moduleName="Button"
+ *     scopeName="my_react_app"
+ *   />
+ * </template>
+ * ```
+ *
+ * @example
+ * ```vue
+ * <!-- 使用 Hook 方式 -->
+ * <script setup lang="ts">
+ * import { useVueRemoteModule } from '@react-mf-lib/vue-adapter'
+ *
  * const { component, loading, error, retry } = useVueRemoteModule({
  *   pkg: 'my-react-components',
  *   version: '1.0.0',
@@ -41,7 +57,7 @@
  * ```
  */
 
-// Vue 组件导出 (通过 render 函数方式实现，避免 SFC 构建问题)
+// Vue 组件导出
 export {
   createVueRemoteModuleProvider,
   VueRemoteModuleProvider,
@@ -56,6 +72,7 @@ export {
   getGlobalReact,
   getGlobalReactDOM,
   unmountReactFromGlobal,
+  createReactComponentRenderer,
 } from './mountReactToGlobal'
 
 // Vue Hook 导出

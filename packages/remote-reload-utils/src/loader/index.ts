@@ -41,6 +41,8 @@ export async function loadRemoteMultiVersion(
   // 3. 合并共享配置
   const finalSharedConfig = getFinalSharedConfig(customShared)
 
+  console.log(finalSharedConfig,'finalSharedConfig')
+
   // 4. 遍历 URL 并尝试加载（故障转移/Fallback）
   for (const url of urls) {
     try {

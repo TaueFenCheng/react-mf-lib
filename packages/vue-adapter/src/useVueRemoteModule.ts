@@ -1,5 +1,5 @@
 import { ref, watchEffect, type Ref } from 'vue'
-import { loadRemoteMultiVersion } from '../loader'
+import { loadRemoteMultiVersion } from 'remote-reload-utils'
 
 /**
  * Vue Hook 选项：加载远程模块
@@ -69,21 +69,17 @@ export function useVueRemoteModule({
       const sharedConfig: Record<string, any> = {}
       if (globalReact && globalReactDOM) {
         sharedConfig.react = {
-          shareConfig: {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-            import: false, // 不导入，使用全局的
-          },
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          import: false, // 使用全局的 React
           version: globalReact.version || '18.0.0',
         }
         sharedConfig['react-dom'] = {
-          shareConfig: {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-            import: false, // 不导入，使用全局的
-          },
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          import: false, // 使用全局的 ReactDOM
           version: globalReactDOM.version || '18.0.0',
         }
       }

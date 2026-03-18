@@ -1,13 +1,21 @@
 {
-  "name": "test-mf-unpkg",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "react-mf-lib",
+  "version": "0.0.15",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.6.5",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r run dev",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "check": "pnpm -r run check"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.6.5"
+  "devDependencies": {
+    "@biomejs/biome": "2.0.6",
+    "@rslib/core": "0.17.0",
+    "@rsbuild/core": "^1.4.13",
+    "typescript": "^5.9.2"
+  }
 }

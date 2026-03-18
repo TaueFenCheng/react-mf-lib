@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
-import { VueRemoteModuleProvider, useVueRemoteModule, ReactComponentRenderer } from 'remote-reload-utils/vue'
+import { VueRemoteModuleProvider, useVueRemoteModule, ReactComponentRenderer } from '@react-mf-lib/vue-adapter'
 
 // 示例：使用组件方式加载远程 React 组件
 const handleLoad = (component: any) => {
@@ -12,8 +11,8 @@ const handleError = (error: Error) => {
   console.error('加载失败:', error)
 }
 
-const handleReady = (scopeName: string, mf: any) => {
-  console.log('MF 实例就绪:', scopeName)
+const handleReady = (_scopeName: string, _mf: any) => {
+  console.log('MF 实例就绪:', _scopeName)
 }
 
 // 示例：使用 Hook 方式加载远程 React 组件（Button）

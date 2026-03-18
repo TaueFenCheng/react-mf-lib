@@ -3,6 +3,7 @@ import {
   ModuleFederationRuntimePlugin,
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
+import { initSharedScope } from '../plugins/register-shared-react'
 import type { VersionCache } from '../types'
 
 // --- 核心配置抽象 ---
@@ -16,18 +17,14 @@ const DEFAULT_CDN_TEMPLATES = [
 /** 默认的共享模块配置 (React/ReactDOM) */
 const DEFAULT_SHARED_CONFIG = {
   react: {
-    shareConfig: {
-      singleton: true,
-      eager: true, // 是否提前加载
-      requiredVersion: false,
-    },
+    singleton: true,
+    eager: true, // 是否提前加载
+    requiredVersion: false,
   },
   'react-dom': {
-    shareConfig: {
-      singleton: true,
-      eager: true, // 是否提前加载
-      requiredVersion: false,
-    },
+    singleton: true,
+    eager: true, // 是否提前加载
+    requiredVersion: false,
   },
 }
 
@@ -112,6 +109,9 @@ export async function tryLoadRemote(
 
   for (let i = 0; i < retries; i++) {
     try {
+      // 在创建 MF 实例之前先初始化共享作用域
+      initSharedScope()
+
       const mf = createInstance({
         name: 'host',
         remotes: [
@@ -154,22 +154,19 @@ export function getFinalSharedConfig(
 
   if (globalReact && globalReactDOM) {
     // 如果全局有 React，使用全局实例作为共享模块
+    // 使用 import: false 表示这个模块从外部提供
     globalShared.react = {
-      shareConfig: {
-        singleton: true,
-        eager: true,
-        requiredVersion: false,
-        import: false, // 不导入，使用全局的
-      },
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      import: false,
       version: globalReact.version || '18.0.0',
     }
     globalShared['react-dom'] = {
-      shareConfig: {
-        singleton: true,
-        eager: true,
-        requiredVersion: false,
-        import: false, // 不导入，使用全局的
-      },
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      import: false,
       version: globalReactDOM.version || '18.0.0',
     }
   }

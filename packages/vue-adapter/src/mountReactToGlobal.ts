@@ -98,6 +98,26 @@ export function createReactComponentRenderer(
 export async function mountReactToGlobal(
   version: '17' | '18' | '19' = '18',
 ): Promise<{ React: any; ReactDOM: any }> {
+  // 首先检查全局是否已经有有效的 React/ReactDOM
+  const existingReact = (window as any).React
+  const existingReactDOM = (window as any).ReactDOM
+
+  // 如果全局已经有有效的 React 和 ReactDOM，直接使用
+  if (
+    existingReact &&
+    existingReactDOM &&
+    typeof existingReact === 'object' &&
+    typeof existingReactDOM === 'object' &&
+    typeof existingReact.useCallback === 'function'
+  ) {
+    console.log('[Vue Adapter] Using existing global React instance')
+    globalReactCache.React = existingReact
+    globalReactCache.ReactDOM = existingReactDOM
+    globalReactCache.version = (window as any).__REACT_VERSION__ || version
+    globalReactCache.loaded = true
+    return { React: existingReact, ReactDOM: existingReactDOM }
+  }
+
   // 如果已经加载过相同版本，直接返回
   if (globalReactCache.loaded && globalReactCache.version === version) {
     return { React: globalReactCache.React!, ReactDOM: globalReactCache.ReactDOM! }
@@ -125,6 +145,15 @@ export async function mountReactToGlobal(
 
       if (!React || !ReactDOM) {
         throw new Error('React or ReactDOM not found on window after loading')
+      }
+
+      // 验证 React 实例是否有效
+      if (typeof React !== 'object' || typeof ReactDOM !== 'object') {
+        throw new Error('Invalid React/ReactDOM instance on window')
+      }
+
+      if (typeof React.useCallback !== 'function') {
+        throw new Error('React instance is missing useCallback hook')
       }
 
       // 挂载到全局 window 对象

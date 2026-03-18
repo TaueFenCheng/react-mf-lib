@@ -3,7 +3,7 @@ import './style.css'
 import App from './App.vue'
 
 // 导入 Vue 适配器，将 React 挂载到全局
-import { mountReactToGlobal } from 'remote-reload-utils/vue'
+import { mountReactToGlobal } from '@react-mf-lib/vue-adapter'
 
 // 异步初始化
 async function bootstrap() {

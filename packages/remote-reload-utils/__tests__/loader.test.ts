@@ -163,18 +163,14 @@ describe('loader/utils', () => {
       const result = getFinalSharedConfig()
       expect(result).toEqual({
         react: {
-          shareConfig: {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-          },
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
         },
         'react-dom': {
-          shareConfig: {
-            singleton: true,
-            eager: true,
-            requiredVersion: false,
-          },
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
         },
       })
     })
@@ -182,10 +178,8 @@ describe('loader/utils', () => {
     it('should merge custom shared config', () => {
       const customConfig = {
         'custom-lib': {
-          shareConfig: {
-            singleton: false,
-            eager: false,
-          },
+          singleton: false,
+          eager: false,
         },
       }
 
