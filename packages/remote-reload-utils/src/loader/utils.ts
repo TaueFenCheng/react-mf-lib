@@ -15,7 +15,7 @@ const DEFAULT_CDN_TEMPLATES = [
 ]
 
 /** 默认的共享模块配置 (React/ReactDOM) */
-const DEFAULT_SHARED_CONFIG = {
+const DEFAULT_SHARED_CONFIG: Record<string, Record<string, any>> = {
   react: {
     singleton: true,
     eager: true, // 是否提前加载
@@ -186,7 +186,34 @@ export function getFinalSharedConfig(
     console.log('[getFinalSharedConfig] No global React found, using default shared config')
   }
 
-  return { ...DEFAULT_SHARED_CONFIG, ...globalShared, ...(customShared || {}) }
+  const mergedShared = {
+    ...DEFAULT_SHARED_CONFIG,
+    ...globalShared,
+    ...(customShared || {}),
+  }
+
+  // 保证全局 React/ReactDOM 的 get 工厂不会被外部 shared 覆盖
+  if (
+    typeof globalShared.react?.get === 'function'
+    && typeof mergedShared.react?.get !== 'function'
+  ) {
+    mergedShared.react = {
+      ...(mergedShared.react || {}),
+      get: globalShared.react.get,
+    }
+  }
+
+  if (
+    typeof globalShared['react-dom']?.get === 'function'
+    && typeof mergedShared['react-dom']?.get !== 'function'
+  ) {
+    mergedShared['react-dom'] = {
+      ...(mergedShared['react-dom'] || {}),
+      get: globalShared['react-dom'].get,
+    }
+  }
+
+  return mergedShared
 }
 
 /**

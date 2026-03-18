@@ -20,6 +20,7 @@ const {
   component: RemoteButton,
   loading: buttonLoading,
   error: buttonError,
+  mf: buttonMf,
   retry: buttonRetry,
 } = useVueRemoteModule({
   pkg: 'test-mf-unpkg',
@@ -35,6 +36,7 @@ const {
   component: RemoteCard,
   loading: cardLoading,
   error: cardError,
+  mf: cardMf,
   retry: cardRetry,
 } = useVueRemoteModule({
   pkg: 'test-mf-unpkg',
@@ -105,7 +107,9 @@ const {
         <ReactComponentRenderer
           v-else-if="RemoteButton"
           :component="RemoteButton"
+          :mf="buttonMf"
           class="remote-component"
+          :component-props="{ title: 'Hello World' }"
         />
       </div>
     </section>
@@ -129,6 +133,7 @@ const {
         <ReactComponentRenderer
           v-else-if="RemoteCard"
           :component="RemoteCard"
+          :mf="cardMf"
           class="remote-component"
         />
       </div>
