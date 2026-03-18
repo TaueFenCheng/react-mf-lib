@@ -10,7 +10,7 @@ import {
   type Component,
   type PropType,
 } from 'vue'
-import { loadRemoteMultiVersion } from '../loader'
+import { loadRemoteMultiVersion } from 'remote-reload-utils'
 
 /**
  * Vue 3 远程模块提供者 Props
@@ -72,7 +72,7 @@ export function createVueRemoteModuleProvider() {
 
     emits: ['load', 'error', 'ready'],
 
-    setup(props: VueRemoteModuleCardProps, { emit, slots }: { emit: (event: string, ...args: any[]) => void; slots: any }) {
+    setup(props: VueRemoteModuleCardProps, { emit }) {
       const state = ref<ModuleState>({
         loading: true,
         error: null,
@@ -84,6 +84,7 @@ export function createVueRemoteModuleProvider() {
       const retryKey = ref(0)
       const containerRef = ref<HTMLElement | null>(null)
       const reactRootRef = ref<any>(null)
+      const isMounted = ref(false)
 
       async function loadModule() {
         try {
@@ -183,7 +184,7 @@ export function createVueRemoteModuleProvider() {
       }
 
       // 渲染 React 组件到容器
-      function renderReactComponent(Component: any, props: Record<string, any> = {}) {
+      function renderReactComponent(Component: any, componentProps: Record<string, any> = {}) {
         if (!containerRef.value || !Component) return
 
         const React = (window as any).React
@@ -194,13 +195,24 @@ export function createVueRemoteModuleProvider() {
           return
         }
 
+        // 验证 React 实例有效性
+        if (typeof React !== 'object' || typeof ReactDOM !== 'object') {
+          console.error('[VueRemoteModuleProvider] Invalid React/ReactDOM instance')
+          return
+        }
+
+        if (typeof React.useCallback !== 'function') {
+          console.error('[VueRemoteModuleProvider] React instance is missing hooks')
+          return
+        }
+
         // 清理之前的 React 实例
         if (reactRootRef.value) {
           reactRootRef.value.unmount()
         }
 
         // 创建 React 元素
-        const element = React.createElement(Component, props)
+        const element = React.createElement(Component, componentProps)
 
         // 优先使用 ReactDOM 18+ 的 createRoot API
         if (ReactDOM.createRoot) {
@@ -216,12 +228,22 @@ export function createVueRemoteModuleProvider() {
         }
       }
 
-      // 监听组件变化并渲染
+      // 在组件挂载后渲染 React 组件
+      onMounted(() => {
+        isMounted.value = true
+        if (state.value.component && containerRef.value) {
+          setTimeout(() => {
+            renderReactComponent(state.value.component, props.componentProps || {})
+          }, 0)
+        }
+      })
+
+      // 监听组件变化并渲染（只在组件挂载后执行）
       watch(
-        () => [state.value.component, containerRef.value, props.componentProps],
+        () => [state.value.component, props.componentProps],
         () => {
-          if (state.value.component && containerRef.value) {
-            // 等待下一个 tick 确保 DOM 已更新
+          // 确保组件已挂载且容器可用
+          if (isMounted.value && state.value.component && containerRef.value) {
             setTimeout(() => {
               renderReactComponent(state.value.component, props.componentProps || {})
             }, 0)
@@ -245,12 +267,10 @@ export function createVueRemoteModuleProvider() {
       // 渲染加载状态
       function renderLoading() {
         if (props.loadingFallback) {
-          // 如果是函数，直接调用；否则作为组件渲染
           if (typeof props.loadingFallback === 'function') {
             try {
               return (props.loadingFallback as () => VNode)()
             } catch {
-              // 如果调用失败，作为组件处理
               return h(props.loadingFallback as Component)
             }
           }
@@ -269,12 +289,10 @@ export function createVueRemoteModuleProvider() {
         const error = state.value.error!
 
         if (props.errorFallback) {
-          // 如果是函数，直接调用；否则作为组件渲染
           if (typeof props.errorFallback === 'function') {
             try {
               return (props.errorFallback as (error: Error, retry: () => void) => VNode)(error, retry)
             } catch {
-              // 如果调用失败，作为组件处理
               return h(props.errorFallback as Component)
             }
           }

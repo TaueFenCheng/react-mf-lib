@@ -1,6 +1,3 @@
-// 样式导入
-import './styles/index.css'
-
 // 版本管理模块
 export { loadReactVersion } from './version/react'
 export {
@@ -99,6 +96,8 @@ export type {
 } from './components'
 
 // Vue 适配器导出 (用于 Vue 项目加载 React 远程组件)
+// 注意：Vue 适配器已独立为单独的包，请使用 @react-mf-lib/vue-adapter
+// 为了向后兼容，这里重新导出
 export {
   VueRemoteModuleProvider,
   mountReactToGlobal,
@@ -108,9 +107,11 @@ export {
   getGlobalReactDOM,
   unmountReactFromGlobal,
   useVueRemoteModule,
-} from './vue-adapter'
+  ReactComponentRenderer,
+} from '@react-mf-lib/vue-adapter'
 export type {
   VueRemoteModuleCardProps,
   UseVueRemoteModuleOptions,
   UseVueRemoteModuleResult,
-} from './vue-adapter'
+  ReactComponentRendererProps,
+} from '@react-mf-lib/vue-adapter'

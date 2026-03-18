@@ -1,5 +1,5 @@
 import { ref, watchEffect, type Ref } from 'vue'
-import { loadRemoteMultiVersion } from '../loader'
+import { loadRemoteMultiVersion } from 'remote-reload-utils'
 
 /**
  * Vue Hook 选项：加载远程模块

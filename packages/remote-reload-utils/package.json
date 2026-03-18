@@ -16,12 +16,12 @@
     },
     "./vue": {
       "import": {
-        "types": "./dist/vue-adapter/index.d.ts",
-        "default": "./dist/vue.js"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/main.js"
       },
       "require": {
-        "types": "./dist/vue-adapter/index.d.ts",
-        "default": "./dist/vue.cjs"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/main.cjs"
       }
     }
   },
@@ -41,6 +41,11 @@
     "react": ">=17.0.0",
     "react-dom": ">=17.0.0",
     "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
   },
   "scripts": {
     "build": "rslib build",
@@ -78,6 +83,7 @@
     "vue": "^3.5.30"
   },
   "dependencies": {
-    "@module-federation/enhanced": "0.18.3"
+    "@module-federation/enhanced": "0.18.3",
+    "@react-mf-lib/vue-adapter": "workspace:*"
   }
 }

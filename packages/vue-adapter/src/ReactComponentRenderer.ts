@@ -37,7 +37,6 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
   },
 
   setup(props) {
-    console.log(props,'3280923809482034')
     const containerRef = ref<HTMLElement | null>(null)
     const reactRootRef = ref<any>(null)
 
@@ -49,11 +48,25 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
 
       const React = (window as any).React
       const ReactDOM = (window as any).ReactDOM
-      console.log(React,'React')
-      console.log(ReactDOM,'ReactDOMReactDOMReactDOM')
 
       if (!React || !ReactDOM) {
         console.error('[ReactComponentRenderer] React or ReactDOM not found on window')
+        return
+      }
+
+      // 防御性检查：确保 React 和 ReactDOM 是有效的对象而不是字符串或其他类型
+      if (typeof React !== 'function' && typeof React !== 'object') {
+        console.error('[ReactComponentRenderer] Invalid React instance:', typeof React)
+        return
+      }
+      if (typeof ReactDOM !== 'object' || ReactDOM === null) {
+        console.error('[ReactComponentRenderer] Invalid ReactDOM instance:', typeof ReactDOM)
+        return
+      }
+
+      // 检查 React 是否有有效的 hooks
+      if (!React.useCallback || !React.useState) {
+        console.error('[ReactComponentRenderer] React instance is missing hooks')
         return
       }
 
