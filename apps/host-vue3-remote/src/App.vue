@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
-import { VueRemoteModuleProvider, useVueRemoteModule, ReactComponentRenderer } from 'remote-reload-utils/vue'
+import { VueRemoteModuleProvider, useVueRemoteModule, ReactComponentRenderer } from '@react-mf-lib/vue-adapter'
 
 // 示例：使用组件方式加载远程 React 组件
 const handleLoad = (component: any) => {
