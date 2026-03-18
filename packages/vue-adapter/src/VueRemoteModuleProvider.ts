@@ -3,6 +3,7 @@ import {
   ref,
   watch,
   h,
+  nextTick,
   onMounted,
   onBeforeUnmount,
   type VNode,
@@ -259,16 +260,20 @@ export function createVueRemoteModuleProvider() {
 
       // 监听组件变化并渲染（只在组件挂载后执行）
       watch(
-        () => [state.value.component, props.componentProps],
-        () => {
-          // 确保组件已挂载且容器可用
-          if (isMounted.value && state.value.component && containerRef.value) {
-            setTimeout(() => {
-              renderReactComponent(state.value.component, props.componentProps || {})
-            }, 0)
+        () => [state.value.component, props.componentProps, state.value.loading],
+        async () => {
+          // 等待 loading 结束并在 DOM 提交后再渲染，避免容器 ref 尚未就绪
+          if (!isMounted.value || !state.value.component || state.value.loading) {
+            return
+          }
+
+          await nextTick()
+
+          if (containerRef.value) {
+            renderReactComponent(state.value.component, props.componentProps || {})
           }
         },
-        { immediate: true },
+        { deep: true, immediate: true, flush: 'post' },
       )
 
       // 监听 props 变化和 retryKey 变化，重新加载
