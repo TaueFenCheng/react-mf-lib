@@ -64,6 +64,7 @@ const {
         version="1.0.7"
         moduleName="Card"
         scopeName="react_mf_lib"
+        :component-props="{ title: 'Card Title', subtitle: 'From VueRemoteModuleProvider', children: '示例1内容' }"
         class-name="remote-module-container"
         @load="handleLoad"
         @error="handleError"
@@ -135,6 +136,7 @@ const {
           :component="RemoteCard"
           :mf="cardMf"
           class="remote-component"
+          :component-props="{ title: 'Card Title', subtitle: 'From Hook', children: '示例3内容' }"
         />
       </div>
     </section>

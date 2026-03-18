@@ -128,6 +128,9 @@ export interface LoadResult {
   mf: ReturnType<typeof createInstance>
 }
 
+const mfInstanceCache = new Map<string, ReturnType<typeof createInstance>>()
+const mfInstanceLoadingCache = new Map<string, Promise<LoadResult>>()
+
 /**
  * 尝试加载单个远程模块 URL，包含重试逻辑
  */
@@ -139,36 +142,59 @@ export async function tryLoadRemote(
   sharedConfig: Record<string, any>,
   plugins: ModuleFederationRuntimePlugin[],
 ): Promise<LoadResult> {
-  let lastError: Error | unknown
+  const cacheKey = `${scopeName}::${url}`
 
-  for (let i = 0; i < retries; i++) {
-    try {
-      const mf = createInstance({
-        name: 'host',
-        remotes: [
-          {
-            name: scopeName,
-            entry: url,
-          },
-        ],
-        shared: sharedConfig,
-        plugins: [...plugins, fallbackPlugin()],
-      })
-
-      return { scopeName, mf }
-    } catch (e) {
-      lastError = e
-      console.warn(`[MF] URL ${url} 加载失败，第 ${i + 1} 次重试...`)
-      if (i < retries - 1) {
-        await new Promise((res) => setTimeout(res, delay))
-      }
-    }
+  const cachedMfs = mfInstanceCache.get(cacheKey)
+  if (cachedMfs) {
+    return { scopeName, mf: cachedMfs }
   }
 
-  // 抛出最后一次具体的错误信息
-  throw new Error(`[MF] URL ${url} 经过 ${retries} 次重试仍加载失败。`, {
-    cause: lastError,
-  })
+  const loadingMfs = mfInstanceLoadingCache.get(cacheKey)
+  if (loadingMfs) {
+    return loadingMfs
+  }
+
+  const createProcess = (async () => {
+    let lastError: Error | unknown
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        const mf = createInstance({
+          name: 'host',
+          remotes: [
+            {
+              name: scopeName,
+              entry: url,
+            },
+          ],
+          shared: sharedConfig,
+          plugins: [...plugins, fallbackPlugin()],
+        })
+
+        const result = { scopeName, mf }
+        mfInstanceCache.set(cacheKey, mf)
+        return result
+      } catch (e) {
+        lastError = e
+        console.warn(`[MF] URL ${url} 加载失败，第 ${i + 1} 次重试...`)
+        if (i < retries - 1) {
+          await new Promise((res) => setTimeout(res, delay))
+        }
+      }
+    }
+
+    // 抛出最后一次具体的错误信息
+    throw new Error(`[MF] URL ${url} 经过 ${retries} 次重试仍加载失败。`, {
+      cause: lastError,
+    })
+  })()
+
+  mfInstanceLoadingCache.set(cacheKey, createProcess)
+  try {
+    return await createProcess
+  } finally {
+    mfInstanceLoadingCache.delete(cacheKey)
+  }
 }
 
 /**
