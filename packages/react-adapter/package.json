@@ -65,5 +65,8 @@
   },
   "dependencies": {
     "remote-reload-utils": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
