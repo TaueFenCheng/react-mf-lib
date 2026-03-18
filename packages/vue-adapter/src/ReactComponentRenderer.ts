@@ -79,7 +79,8 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
       if (!containerRef.value || !props.component) return
 
       const React = runtimeReactRef.value || (window as any).React
-      const ReactDOM = runtimeReactDOMClientRef.value || (window as any).ReactDOM
+      const ReactDOM =
+        runtimeReactDOMClientRef.value || (window as any).ReactDOM || (window as any).ReactDOMClient
 
       if (!React || !ReactDOM) {
         console.error('[ReactComponentRenderer] React or ReactDOM not found on window')
@@ -91,7 +92,7 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
         console.error('[ReactComponentRenderer] Invalid React instance:', typeof React)
         return
       }
-      if (typeof ReactDOM !== 'object' || ReactDOM === null) {
+      if ((typeof ReactDOM !== 'object' && typeof ReactDOM !== 'function') || ReactDOM === null) {
         console.error('[ReactComponentRenderer] Invalid ReactDOM instance:', typeof ReactDOM)
         return
       }

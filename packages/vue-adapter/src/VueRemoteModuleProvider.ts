@@ -2,7 +2,6 @@ import {
   defineComponent,
   ref,
   watch,
-  watchEffect,
   h,
   onMounted,
   onBeforeUnmount,
@@ -72,7 +71,7 @@ export function createVueRemoteModuleProvider() {
 
     emits: ['load', 'error', 'ready'],
 
-    setup(props: VueRemoteModuleCardProps, { emit }) {
+    setup(props: VueRemoteModuleCardProps, { emit, slots }) {
       const state = ref<ModuleState>({
         loading: true,
         error: null,
@@ -203,7 +202,8 @@ export function createVueRemoteModuleProvider() {
         if (!containerRef.value || !Component) return
 
         const React = runtimeReactRef.value || (window as any).React
-        const ReactDOM = runtimeReactDOMClientRef.value || (window as any).ReactDOM
+        const ReactDOM =
+          runtimeReactDOMClientRef.value || (window as any).ReactDOM || (window as any).ReactDOMClient
 
         if (!React || !ReactDOM) {
           console.error('[VueRemoteModuleProvider] React not found on window')
@@ -211,7 +211,11 @@ export function createVueRemoteModuleProvider() {
         }
 
         // 验证 React 实例有效性
-        if (typeof React !== 'object' || typeof ReactDOM !== 'object') {
+        if (
+          (typeof React !== 'function' && typeof React !== 'object') ||
+          (typeof ReactDOM !== 'object' && typeof ReactDOM !== 'function') ||
+          ReactDOM === null
+        ) {
           console.error('[VueRemoteModuleProvider] Invalid React/ReactDOM instance')
           return
         }
@@ -268,9 +272,13 @@ export function createVueRemoteModuleProvider() {
       )
 
       // 监听 props 变化和 retryKey 变化，重新加载
-      watchEffect(() => {
-        loadModule()
-      })
+      watch(
+        () => [props.pkg, props.version, props.moduleName, props.scopeName, retryKey.value],
+        () => {
+          void loadModule()
+        },
+        { immediate: true },
+      )
 
       // 组件卸载时清理 React 实例
       onBeforeUnmount(() => {
@@ -281,6 +289,10 @@ export function createVueRemoteModuleProvider() {
 
       // 渲染加载状态
       function renderLoading() {
+        if (slots.loading) {
+          return slots.loading()
+        }
+
         if (props.loadingFallback) {
           if (typeof props.loadingFallback === 'function') {
             try {
@@ -302,6 +314,10 @@ export function createVueRemoteModuleProvider() {
       // 渲染错误状态
       function renderError() {
         const error = state.value.error!
+
+        if (slots.error) {
+          return slots.error({ error, retry })
+        }
 
         if (props.errorFallback) {
           if (typeof props.errorFallback === 'function') {
