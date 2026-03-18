@@ -2,8 +2,8 @@ import {
   defineComponent,
   ref,
   watch,
-  watchEffect,
   h,
+  nextTick,
   onMounted,
   onBeforeUnmount,
   type VNode,
@@ -72,7 +72,7 @@ export function createVueRemoteModuleProvider() {
 
     emits: ['load', 'error', 'ready'],
 
-    setup(props: VueRemoteModuleCardProps, { emit }) {
+    setup(props: VueRemoteModuleCardProps, { emit, slots }) {
       const state = ref<ModuleState>({
         loading: true,
         error: null,
@@ -84,42 +84,56 @@ export function createVueRemoteModuleProvider() {
       const retryKey = ref(0)
       const containerRef = ref<HTMLElement | null>(null)
       const reactRootRef = ref<any>(null)
+      const runtimeReactRef = ref<any>(null)
+      const runtimeReactDOMClientRef = ref<any>(null)
       const isMounted = ref(false)
+
+      function normalizeSharedModule(mod: any) {
+        if (!mod) return null
+        if (typeof mod === 'object' && 'default' in mod && mod.default) return mod.default
+        return mod
+      }
+
+      async function resolveRuntimeReact(mfInstance: any) {
+        if (!mfInstance?.loadShare) return
+
+        try {
+          const [reactGetter, reactDomClientGetter, reactDomGetter] = await Promise.all([
+            mfInstance.loadShare('react'),
+            mfInstance.loadShare('react-dom/client'),
+            mfInstance.loadShare('react-dom'),
+          ])
+
+          const sharedReact =
+            typeof reactGetter === 'function' ? normalizeSharedModule(reactGetter()) : null
+
+          const sharedReactDOMClient =
+            typeof reactDomClientGetter === 'function'
+              ? normalizeSharedModule(reactDomClientGetter())
+              : typeof reactDomGetter === 'function'
+                ? normalizeSharedModule(reactDomGetter())
+                : null
+
+          if (sharedReact && sharedReactDOMClient) {
+            runtimeReactRef.value = sharedReact
+            runtimeReactDOMClientRef.value = sharedReactDOMClient
+            console.log('[VueRemoteModuleProvider] Using runtime shared React instance')
+          }
+        } catch (e) {
+          console.warn('[VueRemoteModuleProvider] Failed to resolve runtime shared React, fallback to window', e)
+        }
+      }
 
       async function loadModule() {
         try {
           state.value.loading = true
           state.value.error = null
 
-          // 获取全局 React/ReactDOM 实例
-          const globalReact = (window as any).React
-          const globalReactDOM = (window as any).ReactDOM
-
-          // 构建共享配置，确保远程组件使用与 Vue 适配器相同的 React 实例
-          const sharedConfig: Record<string, any> = {}
-          if (globalReact && globalReactDOM) {
-            sharedConfig.react = {
-              singleton: true,
-              eager: true,
-              requiredVersion: false,
-              import: false, // 使用全局的 React
-              version: globalReact.version || '18.0.0',
-            }
-            sharedConfig['react-dom'] = {
-              singleton: true,
-              eager: true,
-              requiredVersion: false,
-              import: false, // 使用全局的 ReactDOM
-              version: globalReactDOM.version || '18.0.0',
-            }
-          }
-
           const { mf } = await loadRemoteMultiVersion(
             {
               name: props.scopeName,
               pkg: props.pkg,
               version: props.version,
-              shared: sharedConfig,
             },
             [],
           )
@@ -129,6 +143,7 @@ export function createVueRemoteModuleProvider() {
           state.value.mf = mf
           state.value.scopeName = props.scopeName
 
+          await resolveRuntimeReact(mf)
           emit('ready', props.scopeName, mf)
 
           const mod: any = await mf.loadRemote(`${props.scopeName}/${props.moduleName}`)
@@ -187,8 +202,9 @@ export function createVueRemoteModuleProvider() {
       function renderReactComponent(Component: any, componentProps: Record<string, any> = {}) {
         if (!containerRef.value || !Component) return
 
-        const React = (window as any).React
-        const ReactDOM = (window as any).ReactDOM
+        const React = runtimeReactRef.value || (window as any).React
+        const ReactDOM =
+          runtimeReactDOMClientRef.value || (window as any).ReactDOM || (window as any).ReactDOMClient
 
         if (!React || !ReactDOM) {
           console.error('[VueRemoteModuleProvider] React not found on window')
@@ -196,7 +212,11 @@ export function createVueRemoteModuleProvider() {
         }
 
         // 验证 React 实例有效性
-        if (typeof React !== 'object' || typeof ReactDOM !== 'object') {
+        if (
+          (typeof React !== 'function' && typeof React !== 'object') ||
+          (typeof ReactDOM !== 'object' && typeof ReactDOM !== 'function') ||
+          ReactDOM === null
+        ) {
           console.error('[VueRemoteModuleProvider] Invalid React/ReactDOM instance')
           return
         }
@@ -240,22 +260,30 @@ export function createVueRemoteModuleProvider() {
 
       // 监听组件变化并渲染（只在组件挂载后执行）
       watch(
-        () => [state.value.component, props.componentProps],
-        () => {
-          // 确保组件已挂载且容器可用
-          if (isMounted.value && state.value.component && containerRef.value) {
-            setTimeout(() => {
-              renderReactComponent(state.value.component, props.componentProps || {})
-            }, 0)
+        () => [state.value.component, props.componentProps, state.value.loading],
+        async () => {
+          // 等待 loading 结束并在 DOM 提交后再渲染，避免容器 ref 尚未就绪
+          if (!isMounted.value || !state.value.component || state.value.loading) {
+            return
+          }
+
+          await nextTick()
+
+          if (containerRef.value) {
+            renderReactComponent(state.value.component, props.componentProps || {})
           }
         },
-        { immediate: true },
+        { deep: true, immediate: true, flush: 'post' },
       )
 
       // 监听 props 变化和 retryKey 变化，重新加载
-      watchEffect(() => {
-        loadModule()
-      })
+      watch(
+        () => [props.pkg, props.version, props.moduleName, props.scopeName, retryKey.value],
+        () => {
+          void loadModule()
+        },
+        { immediate: true },
+      )
 
       // 组件卸载时清理 React 实例
       onBeforeUnmount(() => {
@@ -266,6 +294,10 @@ export function createVueRemoteModuleProvider() {
 
       // 渲染加载状态
       function renderLoading() {
+        if (slots.loading) {
+          return slots.loading()
+        }
+
         if (props.loadingFallback) {
           if (typeof props.loadingFallback === 'function') {
             try {
@@ -287,6 +319,10 @@ export function createVueRemoteModuleProvider() {
       // 渲染错误状态
       function renderError() {
         const error = state.value.error!
+
+        if (slots.error) {
+          return slots.error({ error, retry })
+        }
 
         if (props.errorFallback) {
           if (typeof props.errorFallback === 'function') {

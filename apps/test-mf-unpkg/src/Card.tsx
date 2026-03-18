@@ -88,6 +88,7 @@ export default function Card({
       {title && <div style={cardStyles.title}>{title}</div>}
       {subtitle && <div style={cardStyles.subtitle}>{subtitle}</div>}
       {children && <div style={cardStyles.content}>{children}</div>}
+      这是Test远程Card组件
     </div>
   );
 }

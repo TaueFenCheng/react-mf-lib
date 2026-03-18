@@ -20,10 +20,11 @@ const {
   component: RemoteButton,
   loading: buttonLoading,
   error: buttonError,
+  mf: buttonMf,
   retry: buttonRetry,
 } = useVueRemoteModule({
   pkg: 'test-mf-unpkg',
-  version: '1.0.6',
+  version: '1.0.7',
   moduleName: 'Button',
   scopeName: 'react_mf_lib',
   onLoad: (comp) => console.log('Hook 方式加载 Button 成功:', comp),
@@ -35,10 +36,11 @@ const {
   component: RemoteCard,
   loading: cardLoading,
   error: cardError,
+  mf: cardMf,
   retry: cardRetry,
 } = useVueRemoteModule({
   pkg: 'test-mf-unpkg',
-  version: '1.0.6',
+  version: '1.0.7',
   moduleName: 'Card',
   scopeName: 'react_mf_lib',
   onLoad: (comp) => console.log('Hook 方式加载 Card 成功:', comp),
@@ -59,9 +61,10 @@ const {
 
       <VueRemoteModuleProvider
         pkg="test-mf-unpkg"
-        version="1.0.6"
+        version="1.0.7"
         moduleName="Card"
         scopeName="react_mf_lib"
+        :component-props="{ title: 'Card Title', subtitle: 'From VueRemoteModuleProvider', children: '示例1内容' }"
         class-name="remote-module-container"
         @load="handleLoad"
         @error="handleError"
@@ -105,7 +108,9 @@ const {
         <ReactComponentRenderer
           v-else-if="RemoteButton"
           :component="RemoteButton"
+          :mf="buttonMf"
           class="remote-component"
+          :component-props="{ title: 'Hello World' }"
         />
       </div>
     </section>
@@ -129,7 +134,9 @@ const {
         <ReactComponentRenderer
           v-else-if="RemoteCard"
           :component="RemoteCard"
+          :mf="cardMf"
           class="remote-component"
+          :component-props="{ title: 'Card Title', subtitle: 'From Hook', children: '示例3内容' }"
         />
       </div>
     </section>
@@ -141,7 +148,7 @@ const {
         <h3>当前配置</h3>
         <ul>
           <li><strong>React 版本:</strong> 18 (已挂载到全局 window 对象)</li>
-          <li><strong>远程组件包:</strong> test-mf-unpkg@1.0.6</li>
+          <li><strong>远程组件包:</strong> test-mf-unpkg@1.0.7</li>
           <li><strong>远程模块:</strong> Button, Card</li>
           <li><strong>作用域:</strong> react_mf_lib</li>
         </ul>

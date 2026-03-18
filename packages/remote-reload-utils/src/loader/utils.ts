@@ -3,7 +3,6 @@ import {
   ModuleFederationRuntimePlugin,
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
-import { initSharedScope } from '../plugins/register-shared-react'
 import type { VersionCache } from '../types'
 
 // --- 核心配置抽象 ---
@@ -14,17 +13,52 @@ const DEFAULT_CDN_TEMPLATES = [
   'https://unpkg.com/{pkg}@{version}/dist/remoteEntry.js',
 ]
 
-/** 默认的共享模块配置 (React/ReactDOM) */
-const DEFAULT_SHARED_CONFIG = {
+/** 默认的共享模块配置（使用 runtime 期望的 shareConfig 结构） */
+const DEFAULT_SHARED_CONFIG: Record<string, any> = {
   react: {
-    singleton: true,
-    eager: true, // 是否提前加载
-    requiredVersion: false,
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
   },
   'react-dom': {
-    singleton: true,
-    eager: true, // 是否提前加载
-    requiredVersion: false,
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
+  },
+  'react-dom/client': {
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
+  },
+  'react/jsx-runtime': {
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
+  },
+  'react/jsx-dev-runtime': {
+    shareConfig: {
+      singleton: true,
+      eager: true,
+      requiredVersion: false,
+      strictVersion: false,
+    },
+    strategy: 'loaded-first',
   },
 }
 
@@ -94,6 +128,9 @@ export interface LoadResult {
   mf: ReturnType<typeof createInstance>
 }
 
+const mfInstanceCache = new Map<string, ReturnType<typeof createInstance>>()
+const mfInstanceLoadingCache = new Map<string, Promise<LoadResult>>()
+
 /**
  * 尝试加载单个远程模块 URL，包含重试逻辑
  */
@@ -105,39 +142,59 @@ export async function tryLoadRemote(
   sharedConfig: Record<string, any>,
   plugins: ModuleFederationRuntimePlugin[],
 ): Promise<LoadResult> {
-  let lastError: Error | unknown
+  const cacheKey = `${scopeName}::${url}`
 
-  for (let i = 0; i < retries; i++) {
-    try {
-      // 在创建 MF 实例之前先初始化共享作用域
-      initSharedScope()
-
-      const mf = createInstance({
-        name: 'host',
-        remotes: [
-          {
-            name: scopeName,
-            entry: url,
-          },
-        ],
-        shared: sharedConfig,
-        plugins: [...plugins, fallbackPlugin()],
-      })
-
-      return { scopeName, mf }
-    } catch (e) {
-      lastError = e
-      console.warn(`[MF] URL ${url} 加载失败，第 ${i + 1} 次重试...`)
-      if (i < retries - 1) {
-        await new Promise((res) => setTimeout(res, delay))
-      }
-    }
+  const cachedMfs = mfInstanceCache.get(cacheKey)
+  if (cachedMfs) {
+    return { scopeName, mf: cachedMfs }
   }
 
-  // 抛出最后一次具体的错误信息
-  throw new Error(`[MF] URL ${url} 经过 ${retries} 次重试仍加载失败。`, {
-    cause: lastError,
-  })
+  const loadingMfs = mfInstanceLoadingCache.get(cacheKey)
+  if (loadingMfs) {
+    return loadingMfs
+  }
+
+  const createProcess = (async () => {
+    let lastError: Error | unknown
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        const mf = createInstance({
+          name: 'host',
+          remotes: [
+            {
+              name: scopeName,
+              entry: url,
+            },
+          ],
+          shared: sharedConfig,
+          plugins: [...plugins, fallbackPlugin()],
+        })
+
+        const result = { scopeName, mf }
+        mfInstanceCache.set(cacheKey, mf)
+        return result
+      } catch (e) {
+        lastError = e
+        console.warn(`[MF] URL ${url} 加载失败，第 ${i + 1} 次重试...`)
+        if (i < retries - 1) {
+          await new Promise((res) => setTimeout(res, delay))
+        }
+      }
+    }
+
+    // 抛出最后一次具体的错误信息
+    throw new Error(`[MF] URL ${url} 经过 ${retries} 次重试仍加载失败。`, {
+      cause: lastError,
+    })
+  })()
+
+  mfInstanceLoadingCache.set(cacheKey, createProcess)
+  try {
+    return await createProcess
+  } finally {
+    mfInstanceLoadingCache.delete(cacheKey)
+  }
 }
 
 /**
@@ -153,25 +210,114 @@ export function getFinalSharedConfig(
   const globalShared: Record<string, any> = {}
 
   if (globalReact && globalReactDOM) {
-    // 如果全局有 React，使用全局实例作为共享模块
-    // 使用 import: false 表示这个模块从外部提供
-    globalShared.react = {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      import: false,
-      version: globalReact.version || '18.0.0',
+    // 验证 React 实例是否有效
+    const isValidReact = typeof globalReact === 'object' && typeof globalReact.useCallback === 'function'
+
+    if (isValidReact) {
+      // 注意：runtime shared 需要使用 shareConfig，而不是直接 singleton/eager 顶层字段
+      globalShared.react = {
+        version: globalReact.version || '18.0.0',
+        lib: () => globalReact,
+        shareConfig: {
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          strictVersion: false,
+        },
+        strategy: 'loaded-first',
+      }
+      globalShared['react-dom'] = {
+        version: globalReactDOM.version || '18.0.0',
+        lib: () => globalReactDOM,
+        shareConfig: {
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          strictVersion: false,
+        },
+        strategy: 'loaded-first',
+      }
+      globalShared['react-dom/client'] = {
+        version: globalReactDOM.version || '18.0.0',
+        lib: () => globalReactDOM,
+        shareConfig: {
+          singleton: true,
+          eager: true,
+          requiredVersion: false,
+          strictVersion: false,
+        },
+        strategy: 'loaded-first',
+      }
+
+      console.log('[getFinalSharedConfig] Using global React instance', {
+        version: globalReact.version,
+      })
+    } else {
+      console.warn('[getFinalSharedConfig] Global React found but is invalid', {
+        type: typeof globalReact,
+        useCallback: typeof globalReact?.useCallback,
+      })
     }
-    globalShared['react-dom'] = {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      import: false,
-      version: globalReactDOM.version || '18.0.0',
+  } else {
+    console.log('[getFinalSharedConfig] No global React found, using default shared config')
+  }
+
+  const mergedShared = {
+    ...DEFAULT_SHARED_CONFIG,
+    ...globalShared,
+    ...(customShared || {}),
+  }
+
+  // 保证 React 关键共享模块总是单例 + loaded-first
+  const keepSingletonPackages = [
+    'react',
+    'react-dom',
+    'react-dom/client',
+    'react/jsx-runtime',
+    'react/jsx-dev-runtime',
+  ]
+
+  for (const pkgName of keepSingletonPackages) {
+    const base = mergedShared[pkgName] || {}
+    mergedShared[pkgName] = {
+      ...base,
+      strategy: 'loaded-first',
+      shareConfig: {
+        singleton: true,
+        eager: true,
+        requiredVersion: false,
+        strictVersion: false,
+        ...(base.shareConfig || {}),
+      },
     }
   }
 
-  return { ...DEFAULT_SHARED_CONFIG, ...globalShared, ...(customShared || {}) }
+  // 如果全局存在 React，则优先保留 host 侧 lib，避免 remote 侧 React 抢占
+  if (typeof globalShared.react?.lib === 'function') {
+    mergedShared.react = {
+      ...(mergedShared.react || {}),
+      lib: globalShared.react.lib,
+      version: globalShared.react.version,
+    }
+  }
+
+  if (typeof globalShared['react-dom']?.lib === 'function') {
+    mergedShared['react-dom'] = {
+      ...(mergedShared['react-dom'] || {}),
+      lib: globalShared['react-dom'].lib,
+      version: globalShared['react-dom'].version,
+    }
+  }
+
+  if (typeof globalShared['react-dom/client']?.lib === 'function') {
+    mergedShared['react-dom/client'] = {
+      ...(mergedShared['react-dom/client'] || {}),
+      lib: globalShared['react-dom/client'].lib,
+      version: globalShared['react-dom/client'].version,
+    }
+  }
+
+  return mergedShared
 }
 
 /**

@@ -1,12 +1,4 @@
-import {
-  defineComponent,
-  h,
-  ref,
-  onMounted,
-  onBeforeUnmount,
-  watch,
-  type PropType,
-} from 'vue'
+import { defineComponent, h, ref, onBeforeUnmount, watch, type PropType } from 'vue'
 
 /**
  * React 组件渲染器 Props
@@ -16,6 +8,8 @@ export interface ReactComponentRendererProps {
   component: any
   /** 传递给 React 组件的 props */
   componentProps?: Record<string, any>
+  /** 运行时 MF 实例（可选，用于解析与远程一致的 React 实例） */
+  mf?: any
   /** 容器类名 */
   className?: string
   /** 容器样式 */
@@ -32,6 +26,7 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
   props: {
     component: { type: [Object, Function] as PropType<any>, required: true },
     componentProps: { type: Object, default: () => ({}) },
+    mf: { type: Object as PropType<any>, default: null },
     className: { type: String, default: '' },
     style: { type: Object, default: () => ({}) },
   },
@@ -39,6 +34,43 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
   setup(props) {
     const containerRef = ref<HTMLElement | null>(null)
     const reactRootRef = ref<any>(null)
+    const runtimeReactRef = ref<any>(null)
+    const runtimeReactDOMClientRef = ref<any>(null)
+
+    function normalizeSharedModule(mod: any) {
+      if (!mod) return null
+      if (typeof mod === 'object' && 'default' in mod && mod.default) return mod.default
+      return mod
+    }
+
+    async function resolveRuntimeReact() {
+      if (!props.mf?.loadShare) return
+
+      try {
+        const [reactGetter, reactDomClientGetter, reactDomGetter] = await Promise.all([
+          props.mf.loadShare('react'),
+          props.mf.loadShare('react-dom/client'),
+          props.mf.loadShare('react-dom'),
+        ])
+
+        const sharedReact =
+          typeof reactGetter === 'function' ? normalizeSharedModule(reactGetter()) : null
+
+        const sharedReactDOMClient =
+          typeof reactDomClientGetter === 'function'
+            ? normalizeSharedModule(reactDomClientGetter())
+            : typeof reactDomGetter === 'function'
+              ? normalizeSharedModule(reactDomGetter())
+              : null
+
+        if (sharedReact && sharedReactDOMClient) {
+          runtimeReactRef.value = sharedReact
+          runtimeReactDOMClientRef.value = sharedReactDOMClient
+        }
+      } catch (e) {
+        console.warn('[ReactComponentRenderer] Failed to resolve runtime shared React, fallback to window', e)
+      }
+    }
 
     /**
      * 渲染 React 组件到容器
@@ -46,8 +78,9 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
     function renderReactComponent() {
       if (!containerRef.value || !props.component) return
 
-      const React = (window as any).React
-      const ReactDOM = (window as any).ReactDOM
+      const React = runtimeReactRef.value || (window as any).React
+      const ReactDOM =
+        runtimeReactDOMClientRef.value || (window as any).ReactDOM || (window as any).ReactDOMClient
 
       if (!React || !ReactDOM) {
         console.error('[ReactComponentRenderer] React or ReactDOM not found on window')
@@ -59,7 +92,7 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
         console.error('[ReactComponentRenderer] Invalid React instance:', typeof React)
         return
       }
-      if (typeof ReactDOM !== 'object' || ReactDOM === null) {
+      if ((typeof ReactDOM !== 'object' && typeof ReactDOM !== 'function') || ReactDOM === null) {
         console.error('[ReactComponentRenderer] Invalid ReactDOM instance:', typeof ReactDOM)
         return
       }
@@ -94,9 +127,22 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
       }
     }
 
+    watch(
+      () => props.mf,
+      () => {
+        void resolveRuntimeReact()
+      },
+      { immediate: true },
+    )
+
     // 监听 component 和 componentProps 变化
     watch(
-      () => [props.component, props.componentProps],
+      () => [
+        props.component,
+        props.componentProps,
+        runtimeReactRef.value,
+        runtimeReactDOMClientRef.value,
+      ],
       () => {
         // 等待下一个 tick 确保 DOM 已更新
         setTimeout(() => {
