@@ -57,9 +57,6 @@ importers:
       '@react-mf-lib/vue-adapter':
         specifier: workspace:*
         version: link:../../packages/vue-adapter
-      remote-reload-utils:
-        specifier: workspace:*
-        version: link:../../packages/remote-reload-utils
       vue:
         specifier: ^3.5.30
         version: 3.5.30(typescript@5.9.3)
@@ -159,12 +156,6 @@ importers:
       '@module-federation/enhanced':
         specifier: 0.18.3
         version: 0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
-      '@react-mf-lib/react-adapter':
-        specifier: workspace:*
-        version: link:../react-adapter
-      '@react-mf-lib/vue-adapter':
-        specifier: workspace:*
-        version: link:../vue-adapter
       react:
         specifier: '>=17.0.0'
         version: 18.3.1

@@ -91,8 +91,6 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "@module-federation/enhanced": "0.18.3",
-    "@react-mf-lib/vue-adapter": "workspace:*",
-    "@react-mf-lib/react-adapter": "workspace:*"
+    "@module-federation/enhanced": "0.18.3"
   }
 }
