@@ -3,7 +3,7 @@ import {
   ModuleFederationRuntimePlugin,
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
-import { initSharedScope } from '../plugins/register-shared-react'
+import { initSharedScope, registerSharedReact } from '../plugins/register-shared-react'
 import type { VersionCache } from '../types'
 
 // --- 核心配置抽象 ---
@@ -121,7 +121,7 @@ export async function tryLoadRemote(
           },
         ],
         shared: sharedConfig,
-        plugins: [...plugins, fallbackPlugin()],
+        plugins: [...plugins, fallbackPlugin(), registerSharedReact()],
       })
 
       return { scopeName, mf }
@@ -153,22 +153,37 @@ export function getFinalSharedConfig(
   const globalShared: Record<string, any> = {}
 
   if (globalReact && globalReactDOM) {
-    // 如果全局有 React，使用全局实例作为共享模块
-    // 使用 import: false 表示这个模块从外部提供
-    globalShared.react = {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      import: false,
-      version: globalReact.version || '18.0.0',
+    // 验证 React 实例是否有效
+    const isValidReact = typeof globalReact === 'object' && typeof globalReact.useCallback === 'function'
+
+    if (isValidReact) {
+      // 如果全局有有效的 React，使用全局实例作为共享模块
+      // 使用 get 函数返回全局 React 实例
+      globalShared.react = {
+        singleton: true,
+        eager: true,
+        requiredVersion: false,
+        get: () => () => globalReact,
+        version: globalReact.version || '18.0.0',
+      }
+      globalShared['react-dom'] = {
+        singleton: true,
+        eager: true,
+        requiredVersion: false,
+        get: () => () => globalReactDOM,
+        version: globalReactDOM.version || '18.0.0',
+      }
+      console.log('[getFinalSharedConfig] Using global React instance', {
+        version: globalReact.version,
+      })
+    } else {
+      console.warn('[getFinalSharedConfig] Global React found but is invalid', {
+        type: typeof globalReact,
+        useCallback: typeof globalReact?.useCallback,
+      })
     }
-    globalShared['react-dom'] = {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      import: false,
-      version: globalReactDOM.version || '18.0.0',
-    }
+  } else {
+    console.log('[getFinalSharedConfig] No global React found, using default shared config')
   }
 
   return { ...DEFAULT_SHARED_CONFIG, ...globalShared, ...(customShared || {}) }
