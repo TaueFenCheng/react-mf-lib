@@ -75,6 +75,7 @@ export class ErrorBoundary extends React.Component<
           <p className="text-red-700">{this.state.error.message}</p>
           <button
             onClick={this.handleReset}
+            type='button'
             className="mt-3 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 cursor-pointer transition-colors"
           >
             Try again
