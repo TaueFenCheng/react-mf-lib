@@ -11,7 +11,7 @@ export interface LoadRemoteOptions {
   localFallback?: string // 本地兜底
   cacheTTL?: number // 缓存时间
   revalidate?: boolean // 灰度更新
-  shared?: Record<string, ModuleFederationRuntimePlugin> // 自定义 shared 配置
+  shared?: Record<string, any> // 自定义 shared 配置
 }
 
 export interface VersionCache {

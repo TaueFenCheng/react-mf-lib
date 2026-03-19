@@ -128,8 +128,29 @@ export interface LoadResult {
   mf: ReturnType<typeof createInstance>
 }
 
+export type RuntimeRemote = Parameters<
+  ReturnType<typeof createInstance>['registerRemotes']
+>[0][number]
+
 const mfInstanceCache = new Map<string, ReturnType<typeof createInstance>>()
 const mfInstanceLoadingCache = new Map<string, Promise<LoadResult>>()
+
+function buildRemotesIdentity(remotes: RuntimeRemote[]): string {
+  if (remotes.length === 0) return ''
+  return remotes
+    .map((remote) =>
+      JSON.stringify({
+        name: remote.name,
+        entry: 'entry' in remote ? remote.entry : '',
+        version: 'version' in remote ? remote.version : '',
+        alias: remote.alias || '',
+        type: remote.type || '',
+        entryGlobalName: remote.entryGlobalName || '',
+      }),
+    )
+    .sort()
+    .join('|')
+}
 
 /**
  * 尝试加载单个远程模块 URL
@@ -142,8 +163,11 @@ export async function tryLoadRemote(
   _delay: number,
   sharedConfig: Record<string, any>,
   plugins: ModuleFederationRuntimePlugin[],
+  extraRemotes: RuntimeRemote[] = [],
+  registerOptions: { force?: boolean } = {},
 ): Promise<LoadResult> {
-  const cacheKey = `${scopeName}::${url}`
+  const remotesIdentity = buildRemotesIdentity(extraRemotes)
+  const cacheKey = `${scopeName}::${url}::${remotesIdentity}::${registerOptions.force ? 'force' : 'normal'}`
 
   // 检查缓存
   const cachedMfs = mfInstanceCache.get(cacheKey)
@@ -170,6 +194,10 @@ export async function tryLoadRemote(
       shared: sharedConfig,
       plugins: [...plugins, fallbackPlugin()],
     })
+
+    if (extraRemotes.length > 0) {
+      mf.registerRemotes(extraRemotes, registerOptions)
+    }
 
     const result = { scopeName, mf }
     mfInstanceCache.set(cacheKey, mf)
@@ -199,7 +227,9 @@ export function getFinalSharedConfig(
 
   if (globalReact && globalReactDOM) {
     // 验证 React 实例是否有效
-    const isValidReact = typeof globalReact === 'object' && typeof globalReact.useCallback === 'function'
+    const isValidReact =
+      typeof globalReact === 'object' &&
+      typeof globalReact.useCallback === 'function'
 
     if (isValidReact) {
       // 注意：runtime shared 需要使用 shareConfig，而不是直接 singleton/eager 顶层字段
@@ -247,7 +277,9 @@ export function getFinalSharedConfig(
       })
     }
   } else {
-    console.log('[getFinalSharedConfig] No global React found, using default shared config')
+    console.log(
+      '[getFinalSharedConfig] No global React found, using default shared config',
+    )
   }
 
   const mergedShared = {

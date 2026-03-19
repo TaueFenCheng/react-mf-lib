@@ -168,7 +168,8 @@ async function loadMultipleComponents() {
 ```typescript
 function loadRemoteMultiVersion(
   options: LoadRemoteOptions,
-  plugins: ModuleFederationRuntimePlugin[]
+  plugins?: ModuleFederationRuntimePlugin[],
+  extraOptions?: LoadRemoteExtraOptions,
 ): Promise<LoadResult>
 ```
 
@@ -191,6 +192,14 @@ function loadRemoteMultiVersion(
 **plugins**: `ModuleFederationRuntimePlugin[]`
 
 Module Federation 运行时插件数组，默认会添加 `fallbackPlugin()`。
+
+**extraOptions**: `LoadRemoteExtraOptions`
+
+| 属性 | 类型 | 必填 | 默认值 | 描述 |
+|------|------|------|--------|------|
+| `baseRemotes` | `RuntimeRemote[]` | ❌ | `[]` | 直接注册的附加 remote 列表 |
+| `remoteSourcePlugins` | `RemoteSourcePlugin[]` | ❌ | `[]` | 通过插件动态返回并注册 remote 列表 |
+| `registerOptions` | `{ force?: boolean }` | ❌ | `{}` | 透传给 `registerRemotes` 的配置 |
 
 #### 返回值
 
@@ -869,6 +878,38 @@ const { mf } = await loadRemoteMultiVersion(options, [
 ]);
 ```
 
+#### 4. 通过 `registerRemotes` 动态注册多个来源
+
+```typescript
+import { loadRemoteMultiVersion, createRemoteSourcePlugin } from 'remote-reload-utils';
+
+const remoteSourcePlugin = createRemoteSourcePlugin('multi-remote-source', [
+  {
+    name: 'remote_ui_v2',
+    entry: 'https://cdn.example.com/remote-ui-v2/dist/remoteEntry.js',
+  },
+  {
+    name: 'remote_widget',
+    entry: 'https://cdn.example.com/remote-widget/dist/remoteEntry.js',
+  },
+]);
+
+const { scopeName, mf } = await loadRemoteMultiVersion(
+  {
+    name: 'react_mf_lib',
+    pkg: 'test-mf-unpkg',
+    version: 'latest',
+  },
+  [],
+  {
+    remoteSourcePlugins: [remoteSourcePlugin],
+  },
+);
+
+const Button = await mf.loadRemote(`${scopeName}/Button`);
+const Widget = await mf.loadRemote('remote_widget/Widget');
+```
+
 #### 2. 监控加载状态
 
 ```typescript
@@ -1238,7 +1279,31 @@ interface LoadRemoteOptions {
   localFallback?: string;  // 本地兜底
   cacheTTL?: number;  // 缓存时间
   revalidate?: boolean;  // 灰度更新
-  shared?: Record<string, ModuleFederationRuntimePlugin>;  // 自定义 shared 配置
+  shared?: Record<string, any>;  // 自定义 shared 配置
+}
+
+interface LoadRemoteExtraOptions {
+  remoteSourcePlugins?: RemoteSourcePlugin[];
+  baseRemotes?: RuntimeRemote[];
+  registerOptions?: {
+    force?: boolean;
+  };
+}
+
+interface RemoteSourcePluginContext {
+  options: LoadRemoteOptions;
+  scopeName: string;
+  pkg: string;
+  finalVersion: string;
+  currentEntry: string;
+  allEntries: string[];
+}
+
+interface RemoteSourcePlugin {
+  name: string;
+  registerRemotes?: (
+    context: RemoteSourcePluginContext
+  ) => RuntimeRemote[] | void | Promise<RuntimeRemote[] | void>;
 }
 
 interface VersionCache {
