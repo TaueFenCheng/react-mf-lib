@@ -12,6 +12,7 @@
 
 - `packages/remote-reload-utils`：核心运行时加载工具库（已发布 npm）
 - `packages/vue-adapter`：Vue 3 适配层（在 Vue 中加载 React 远程组件）
+- `packages/react-adapter`：React 适配层（简化的 React 组件封装）
 - `apps/test-mf-unpkg`：远程组件示例应用（React）
 - `apps/host-rsbuild-remote`：宿主示例应用（React）
 - `apps/host-vue3-remote`：宿主示例应用（Vue 3）
@@ -58,31 +59,34 @@ async function loadRemoteComponent() {
 }
 ```
 
-### React Hooks 方式
+### React Lazy + Suspense 方式
 
 ```typescript
-import { useRemoteModuleHook } from 'remote-reload-utils';
+import { lazyRemote } from 'remote-reload-utils';
+import { Suspense } from 'react';
 
-function MyComponent() {
-  const { component: RemoteButton, loading, error } = useRemoteModuleHook({
-    pkg: '@myorg/remote-app',
-    version: '^1.0.0',
-    moduleName: 'Button',
-    scopeName: 'myorg',
-  });
+const RemoteDashboard = lazyRemote({
+  pkg: '@myorg/remote-app',
+  version: '^1.0.0',
+  moduleName: 'Dashboard',
+  scopeName: 'myorg',
+  maxRetries: 3,
+  retryDelay: 1000,
+});
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-  if (!RemoteButton) return null;
-
-  return <RemoteButton onClick={() => console.log('clicked')} />;
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RemoteDashboard userId={123} />
+    </Suspense>
+  );
 }
 ```
 
 ### 使用 RemoteModuleProvider
 
 ```typescript
-import { RemoteModuleProvider } from 'remote-reload-utils';
+import { RemoteModuleProvider } from '@react-mf-lib/react-adapter';
 
 function App() {
   return (
@@ -132,6 +136,80 @@ const { scopeName, mf } = await loadRemoteMultiVersion(options, plugins);
 | `shared` | `Record<string, any>` | ❌ | - | 自定义共享模块配置 |
 
 **返回值**: `Promise<{ scopeName: string, mf: ModuleFederationInstance }>`
+
+**MF 实例方法**:
+
+```typescript
+const { scopeName, mf } = await loadRemoteMultiVersion(options);
+
+// 加载暴露的模块
+const module = await mf.loadRemote(`${scopeName}/Button`);
+const Button = module.default;
+```
+
+### 预加载
+
+```typescript
+import { preloadRemote, preloadRemoteList } from 'remote-reload-utils';
+
+// 预加载单个模块
+await preloadRemote({
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  name: 'myorg',
+  priority: 'idle', // 'idle' | 'high'
+  force: false,
+});
+
+// 预加载多个模块
+await preloadRemoteList([
+  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
+  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
+], (loaded, total) => {
+  console.log(`Progress: ${loaded}/${total}`);
+});
+```
+
+### 卸载
+
+```typescript
+import { unloadRemote, unloadAll } from 'remote-reload-utils';
+
+// 卸载特定模块
+await unloadRemote({
+  name: 'myorg',
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  clearCache: true,
+});
+
+// 卸载所有模块
+await unloadAll(true); // true = 清除所有缓存
+```
+
+### 健康检查
+
+```typescript
+import { checkRemoteHealth, getRemoteHealthReport } from 'remote-reload-utils';
+
+// 检查单个远程模块健康状态
+const health = await checkRemoteHealth({
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  name: 'myorg',
+});
+
+console.log(health.status); // 'healthy' | 'degraded' | 'unhealthy'
+console.log(health.latency); // 延迟（毫秒）
+
+// 生成健康报告
+const report = await getRemoteHealthReport([
+  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
+  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
+]);
+
+console.log(report.overall); // 'healthy' | 'degraded' | 'unhealthy'
+```
 
 ### 预加载
 
@@ -274,7 +352,7 @@ getStableVersions(versions); // ['1.0.0', '2.0.0']
 #### ErrorBoundary
 
 ```typescript
-import { ErrorBoundary } from 'remote-reload-utils';
+import { ErrorBoundary } from '@react-mf-lib/react-adapter';
 
 <ErrorBoundary
   fallback={(error, reset) => (
@@ -292,26 +370,10 @@ import { ErrorBoundary } from 'remote-reload-utils';
 </ErrorBoundary>
 ```
 
-#### SuspenseRemoteLoader
-
-```typescript
-import { SuspenseRemoteLoader } from 'remote-reload-utils';
-
-<SuspenseRemoteLoader
-  pkg="@myorg/remote-app"
-  version="^1.0.0"
-  moduleName="Dashboard"
-  scopeName="myorg"
-  fallback={<Spinner />}
-  errorFallback={(error) => <div>Error: {error.message}</div>}
-  componentProps={{ userId: 123 }}
-/>
-```
-
 #### lazyRemote
 
 ```typescript
-import { lazyRemote } from 'remote-reload-utils';
+import { lazyRemote } from '@react-mf-lib/react-adapter';
 import { Suspense } from 'react';
 
 const RemoteDashboard = lazyRemote({
@@ -330,6 +392,22 @@ function App() {
     </Suspense>
   );
 }
+```
+
+#### SuspenseRemoteLoader
+
+```typescript
+import { SuspenseRemoteLoader } from '@react-mf-lib/react-adapter';
+
+<SuspenseRemoteLoader
+  pkg="@myorg/remote-app"
+  version="^1.0.0"
+  moduleName="Dashboard"
+  scopeName="myorg"
+  fallback={<Spinner />}
+  errorFallback={(error) => <div>Error: {error.message}</div>}
+  componentProps={{ userId: 123 }}
+/>
 ```
 
 ### 工具函数
@@ -364,6 +442,12 @@ import {
 } from 'remote-reload-utils';
 ```
 
+## 相关文档
+
+- **[remote-reload-utils 详细文档](./packages/remote-reload-utils/loadRemote.md)** - 核心工具库完整 API
+- **[vue-adapter 文档](./packages/vue-adapter/README.md)** - Vue 3 适配层使用指南
+- **[react-adapter 文档](./packages/react-adapter/README.md)** - React 适配层使用指南
+
 ## 项目结构
 
 ```
@@ -380,24 +464,22 @@ react-mf-lib/
 │   │   │   ├── health/               # 健康检查
 │   │   │   ├── version/              # 版本工具
 │   │   │   ├── event-bus/            # 事件总线
-│   │   │   ├── components/           # React 组件
-│   │   │   │   ├── ErrorBoundary.tsx
-│   │   │   │   ├── RemoteModuleProvider.tsx
-│   │   │   │   └── SuspenseLoader.tsx
 │   │   │   └── plugins/              # 插件系统
 │   │   ├── __tests__/                # 单元测试
-│   │   │   ├── loader.test.ts
-│   │   │   ├── preload.test.ts
-│   │   │   ├── unload.test.ts
-│   │   │   ├── health.test.ts
-│   │   │   ├── eventBus.test.ts
-│   │   │   ├── versionCheck.test.ts
-│   │   │   ├── fallback.test.ts
-│   │   │   ├── loadRemote.test.ts
-│   │   │   └── types.test.ts
 │   │   ├── package.json
 │   │   └── tsconfig.json
-│   └── vue-adapter/                  # Vue 3 适配层
+│   ├── vue-adapter/                  # Vue 3 适配层
+│   │   ├── src/
+│   │   │   ├── components/           # Vue 组件
+│   │   │   ├── hooks/                # Vue Hooks
+│   │   │   ├── composables/          # Composables
+│   │   │   └── types/                # 类型定义
+│   │   └── README.md
+│   └── react-adapter/                # React 适配层
+│       ├── src/
+│       │   ├── components/           # React 组件
+│       │   └── hooks/                # React Hooks
+│       └── README.md
 └── apps/
     ├── test-mf-unpkg/                # 远程组件示例（React）
     ├── host-rsbuild-remote/          # 宿主应用示例（React）
