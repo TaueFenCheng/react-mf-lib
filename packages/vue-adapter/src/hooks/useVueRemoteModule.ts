@@ -1,5 +1,6 @@
 import { ref, watchEffect, type Ref } from 'vue'
 import { loadRemoteMultiVersion } from 'remote-reload-utils'
+import type { MFInstance } from '../types'
 
 /**
  * Vue Hook 选项：加载远程模块
@@ -11,7 +12,6 @@ export interface UseVueRemoteModuleOptions {
   scopeName: string
   onError?: (error: Error) => void
   onLoad?: (component: any) => void
-  retryKey?: number
 }
 
 /**
@@ -21,9 +21,9 @@ export interface UseVueRemoteModuleResult {
   loading: Ref<boolean>
   error: Ref<Error | null>
   component: Ref<any | null>
-  mf: Ref<any | null>
+  /** 运行时 MF 实例（用于解析与远程一致的 React 实例） */
+  mf: Ref<MFInstance | null>
   scopeName: Ref<string | null>
-  retry: () => void
 }
 
 /**
@@ -31,7 +31,7 @@ export interface UseVueRemoteModuleResult {
  *
  * @example
  * ```ts
- * const { component, loading, error, retry } = useVueRemoteModule({
+ * const { component, loading, error } = useVueRemoteModule({
  *   pkg: 'my-react-components',
  *   version: '1.0.0',
  *   moduleName: 'Button',
@@ -46,15 +46,12 @@ export function useVueRemoteModule({
   scopeName,
   onError,
   onLoad,
-  retryKey = 0,
-}: UseVueRemoteModuleOptions): UseVueRemoteModuleResult {
+}: Omit<UseVueRemoteModuleOptions, 'retryKey'>): UseVueRemoteModuleResult {
   const loading = ref(true)
   const error = ref<Error | null>(null)
   const component = ref<any>(null)
-  const mf = ref<any | null>(null)
+  const mf = ref<MFInstance | null>(null)
   const resolvedScopeName = ref<string | null>(null)
-
-  const internalRetryKey = ref(0)
 
   async function loadModule() {
     try {
@@ -72,7 +69,7 @@ export function useVueRemoteModule({
 
       if (!mfInstance) return
 
-      mf.value = mfInstance
+      mf.value = mfInstance as unknown as MFInstance
       resolvedScopeName.value = scopeName
 
       const mod = await mfInstance.loadRemote(`${scopeName}/${moduleName}`)
@@ -120,10 +117,6 @@ export function useVueRemoteModule({
     }
   }
 
-  function retry() {
-    internalRetryKey.value++
-  }
-
   watchEffect(() => {
     loadModule()
   })
@@ -132,8 +125,7 @@ export function useVueRemoteModule({
     loading,
     error,
     component,
-    mf,
+    mf: mf as Ref<MFInstance | null>,
     scopeName: resolvedScopeName,
-    retry,
   }
 }

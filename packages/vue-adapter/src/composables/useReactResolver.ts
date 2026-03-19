@@ -1,9 +1,10 @@
 import { ref, type Ref } from 'vue'
+import type { MFInstance, ReactInstance, ReactDOMInstance } from '../types'
 
 export interface ReactResolverResult {
-  runtimeReact: Ref<any>
-  runtimeReactDOMClient: Ref<any>
-  resolve: (mf: any) => Promise<void>
+  runtimeReact: Ref<ReactInstance | null>
+  runtimeReactDOMClient: Ref<ReactDOMInstance | null>
+  resolve: (mf: MFInstance) => Promise<void>
 }
 
 function normalizeSharedModule(mod: any) {
@@ -18,10 +19,10 @@ function normalizeSharedModule(mod: any) {
  * @returns React 和 ReactDOM 的引用
  */
 export function useReactResolver(): ReactResolverResult {
-  const runtimeReactRef = ref<any>(null)
-  const runtimeReactDOMClientRef = ref<any>(null)
+  const runtimeReactRef = ref<ReactInstance | null>(null)
+  const runtimeReactDOMClientRef = ref<ReactDOMInstance | null>(null)
 
-  async function resolve(mf: any) {
+  async function resolve(mf: MFInstance) {
     if (!mf?.loadShare) return
 
     try {

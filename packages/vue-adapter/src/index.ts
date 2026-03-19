@@ -57,12 +57,11 @@
  * ```
  */
 
-// Vue 组件导出
-export {
-  createVueRemoteModuleProvider,
-  VueRemoteModuleProvider,
-} from './VueRemoteModuleProvider'
-export type { VueRemoteModuleCardProps } from './VueRemoteModuleProvider'
+// 导出所有模块
+export * from './components'
+export * from './hooks'
+export * from './composables'
+export * from './types'
 
 // React 全局挂载工具
 export {
@@ -74,14 +73,3 @@ export {
   unmountReactFromGlobal,
   createReactComponentRenderer,
 } from './mountReactToGlobal'
-
-// Vue Hook 导出
-export { useVueRemoteModule } from './useVueRemoteModule'
-export type {
-  UseVueRemoteModuleOptions,
-  UseVueRemoteModuleResult,
-} from './useVueRemoteModule'
-
-// React 组件渲染器 (用于在 Vue 中渲染 React 组件)
-export { ReactComponentRenderer } from './ReactComponentRenderer'
-export type { ReactComponentRendererProps } from './ReactComponentRenderer'

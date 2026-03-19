@@ -1,26 +1,10 @@
-// React 组件导出
-export { ErrorBoundary } from './ErrorBoundary'
-export type { ErrorBoundaryProps } from './ErrorBoundary'
+/**
+ * React Adapter for remote-reload-utils
+ *
+ * 使 React 项目能够加载和使用远程模块
+ * 提供多种加载远程组件的方式：Provider、Hook、Lazy + Suspense
+ */
 
-export {
-  RemoteModuleProvider,
-  RemoteModuleRenderer,
-  useRemoteModule,
-} from './RemoteModuleProvider'
-export type {
-  RemoteModuleCardProps,
-  UseRemoteModuleOptions,
-} from './RemoteModuleProvider'
-
-export {
-  lazyRemote,
-  SuspenseRemote,
-  SuspenseRemoteLoader,
-  withRemote,
-  useRemoteModuleHook,
-} from './SuspenseLoader'
-export type {
-  LazyRemoteOptions,
-  SuspenseRemoteProps,
-  SuspenseRemoteWithPropsProps,
-} from './SuspenseLoader'
+// 导出所有模块
+export * from './components'
+export * from './hooks'
