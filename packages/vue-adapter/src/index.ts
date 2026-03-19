@@ -77,11 +77,23 @@ export {
 
 // Vue Hook 导出
 export { useVueRemoteModule } from './useVueRemoteModule'
+export { useReactResolver } from './composables/useReactResolver'
 export type {
   UseVueRemoteModuleOptions,
   UseVueRemoteModuleResult,
 } from './useVueRemoteModule'
+export type { ReactResolverResult } from './composables/useReactResolver'
 
 // React 组件渲染器 (用于在 Vue 中渲染 React 组件)
 export { ReactComponentRenderer } from './ReactComponentRenderer'
 export type { ReactComponentRendererProps } from './ReactComponentRenderer'
+
+// 类型导出
+export type {
+  MFInstance,
+  ReactInstance,
+  ReactDOMInstance,
+  ReactDOMRoot,
+  ReactComponentType,
+  RemoteModuleResult,
+} from './types'
