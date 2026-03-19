@@ -1,12 +1,14 @@
+import type { ReactInstance, ReactDOMInstance } from './types'
+
 /**
  * 全局 React 版本缓存
  */
 interface GlobalReactCache {
-  React?: any
-  ReactDOM?: any
+  React?: ReactInstance | null
+  ReactDOM?: ReactDOMInstance | null
   version?: string
   loaded?: boolean
-  loading?: Promise<{ React: any; ReactDOM: any }>
+  loading?: Promise<{ React: ReactInstance; ReactDOM: ReactDOMInstance }>
 }
 
 const globalReactCache: GlobalReactCache = {
@@ -64,8 +66,8 @@ export function createReactComponentRenderer(
   props: Record<string, any> = {},
   container: HTMLElement,
 ) {
-  const React = (window as any).React
-  const ReactDOM = (window as any).ReactDOM
+  const React = (window as any).React as ReactInstance
+  const ReactDOM = (window as any).ReactDOM as ReactDOMInstance
 
   if (!React || !ReactDOM) {
     throw new Error('React or ReactDOM not found on window. Call mountReactToGlobal first.')
@@ -77,12 +79,12 @@ export function createReactComponentRenderer(
   // 优先使用 ReactDOM 18+ 的 createRoot API（如果可用）
   if (ReactDOM.createRoot) {
     const root = ReactDOM.createRoot(container)
-    root.render(element)
+    root.render?.(element)
     return () => root.unmount()
   } else if (ReactDOM.render) {
     // 使用旧的 ReactDOM.render API (React 17 及更早版本)
     ReactDOM.render(element, container)
-    return () => ReactDOM.unmountComponentAtNode(container)
+    return () => { ReactDOM.unmountComponentAtNode?.(container) }
   } else {
     throw new Error('No suitable React rendering API found')
   }
@@ -93,14 +95,14 @@ export function createReactComponentRenderer(
  * 通过动态加载 UMD 文件的方式
  *
  * @param version - React 版本号 ('17' | '18' | '19')
- * @returns Promise<{ React: any, ReactDOM: any }>
+ * @returns Promise<{ React: ReactInstance, ReactDOM: ReactDOMInstance }>
  */
 export async function mountReactToGlobal(
   version: '17' | '18' | '19' = '18',
-): Promise<{ React: any; ReactDOM: any }> {
+): Promise<{ React: ReactInstance; ReactDOM: ReactDOMInstance }> {
   // 首先检查全局是否已经有有效的 React/ReactDOM
-  const existingReact = (window as any).React
-  const existingReactDOM = (window as any).ReactDOM
+  const existingReact = (window as any).React as ReactInstance | undefined
+  const existingReactDOM = (window as any).ReactDOM as ReactDOMInstance | undefined
 
   // 如果全局已经有有效的 React 和 ReactDOM，直接使用
   if (
@@ -140,8 +142,8 @@ export async function mountReactToGlobal(
         loadScript(reactDomUrl, 'ReactDOM'),
       ])
 
-      const React = (window as any).React
-      const ReactDOM = (window as any).ReactDOM
+      const React = (window as any).React as ReactInstance
+      const ReactDOM = (window as any).ReactDOM as ReactDOMInstance
 
       if (!React || !ReactDOM) {
         throw new Error('React or ReactDOM not found on window after loading')
@@ -198,7 +200,7 @@ export function getGlobalReactVersion(): string | undefined {
 /**
  * 获取全局 React 实例
  */
-export function getGlobalReact(): any {
+export function getGlobalReact(): ReactInstance | null {
   if (typeof window === 'undefined') return null
   return (window as any).React || null
 }
@@ -206,7 +208,7 @@ export function getGlobalReact(): any {
 /**
  * 获取全局 ReactDOM 实例
  */
-export function getGlobalReactDOM(): any {
+export function getGlobalReactDOM(): ReactDOMInstance | null {
   if (typeof window === 'undefined') return null
   return (window as any).ReactDOM || null
 }

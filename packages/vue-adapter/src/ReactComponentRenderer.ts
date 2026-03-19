@@ -1,4 +1,5 @@
 import { defineComponent, h, ref, onBeforeUnmount, watch, type PropType } from 'vue'
+import type { MFInstance, ReactInstance, ReactDOMInstance, ReactDOMRoot } from './types'
 import { useReactResolver } from './composables/useReactResolver'
 
 /**
@@ -10,7 +11,7 @@ export interface ReactComponentRendererProps {
   /** 传递给 React 组件的 props */
   componentProps?: Record<string, any>
   /** 运行时 MF 实例（可选，用于解析与远程一致的 React 实例） */
-  mf?: any
+  mf?: MFInstance | null
   /** 容器类名 */
   className?: string
   /** 容器样式 */
@@ -34,7 +35,7 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
 
   setup(props) {
     const containerRef = ref<HTMLElement | null>(null)
-    const reactRootRef = ref<any>(null)
+    const reactRootRef = ref<ReactDOMRoot | null>(null)
     const { runtimeReact, runtimeReactDOMClient, resolve } = useReactResolver()
 
     /**
@@ -76,15 +77,21 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
       // 创建 React 元素
       const element = React.createElement(props.component, props.componentProps || {})
 
+      const reactVersion = ReactDOM.version || ''
+      const isReact18 = reactVersion.startsWith('18.')
+      const isReact17 = reactVersion.startsWith('17.')
+      // const isReact19 = reactVersion.startsWith('19.')
+
       // 优先使用 ReactDOM 18+ 的 createRoot API
-      if (ReactDOM.createRoot) {
+      if (ReactDOM.createRoot && isReact18) {
         const root = ReactDOM.createRoot(containerRef.value)
         root.render(element)
         reactRootRef.value = root
-      } else if (ReactDOM.render) {
+      } else if (ReactDOM.render && isReact17) {
         // 使用旧的 ReactDOM.render API (React 17 及更早版本)
         ReactDOM.render(element, containerRef.value)
         reactRootRef.value = {
+          render: () => {},
           unmount: () => ReactDOM.unmountComponentAtNode(containerRef.value!),
         }
       } else {
@@ -95,7 +102,9 @@ export const ReactComponentRenderer = defineComponent<ReactComponentRendererProp
     watch(
       () => props.mf,
       () => {
-        void resolve(props.mf)
+        if (props.mf) {
+          void resolve(props.mf)
+        }
       },
       { immediate: true },
     )
