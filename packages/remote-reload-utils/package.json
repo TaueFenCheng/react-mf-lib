@@ -1,6 +1,6 @@
 {
   "name": "remote-reload-utils",
-  "version": "0.0.17",
+  "version": "1.0.0",
   "type": "module",
   "description": "Utilities for remote reload in Module Federation & React Component",
   "exports": {
@@ -89,6 +89,9 @@
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.2",
     "vitest": "^2.1.8"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@module-federation/enhanced": "0.18.3"

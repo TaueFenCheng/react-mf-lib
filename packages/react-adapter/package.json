@@ -1,6 +1,6 @@
 {
   "name": "@react-mf-lib/react-adapter",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "description": "React adapter for remote-reload-utils - React components for loading remote modules",
   "exports": {
@@ -38,7 +38,7 @@
   "peerDependencies": {
     "react": ">=17.0.0",
     "react-dom": ">=17.0.0",
-    "remote-reload-utils": ">=0.0.15"
+    "remote-reload-utils": ">=1.0.0"
   },
   "peerDependenciesMeta": {
     "remote-reload-utils": {

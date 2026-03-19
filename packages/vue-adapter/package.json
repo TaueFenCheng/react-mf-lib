@@ -1,6 +1,6 @@
 {
   "name": "@react-mf-lib/vue-adapter",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "description": "Vue adapter for remote-reload-utils - enables Vue 3 apps to load React remote components",
   "exports": {
@@ -37,7 +37,7 @@
   ],
   "peerDependencies": {
     "vue": ">=3.0.0",
-    "remote-reload-utils": ">=0.0.15"
+    "remote-reload-utils": ">=1.0.0"
   },
   "peerDependenciesMeta": {
     "remote-reload-utils": {

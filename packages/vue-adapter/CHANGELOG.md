@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [9306c65]
+  - remote-reload-utils@1.0.0
+
 ## 0.0.1 (2026-03-18)
 
 ### Features
@@ -19,11 +26,11 @@ npm install @react-mf-lib/vue-adapter remote-reload-utils
 
 ```ts
 // In main.ts
-import { mountReactToGlobal } from '@react-mf-lib/vue-adapter'
-await mountReactToGlobal('18')
+import { mountReactToGlobal } from "@react-mf-lib/vue-adapter";
+await mountReactToGlobal("18");
 
 // In Vue component
-import { VueRemoteModuleProvider } from '@react-mf-lib/vue-adapter'
+import { VueRemoteModuleProvider } from "@react-mf-lib/vue-adapter";
 ```
 
 ### License
