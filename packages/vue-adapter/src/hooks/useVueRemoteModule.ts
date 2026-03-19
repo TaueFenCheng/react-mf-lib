@@ -1,6 +1,6 @@
 import { ref, watchEffect, type Ref } from 'vue'
 import { loadRemoteMultiVersion } from 'remote-reload-utils'
-import type { MFInstance } from './types'
+import type { MFInstance } from '../types'
 
 /**
  * Vue Hook 选项：加载远程模块

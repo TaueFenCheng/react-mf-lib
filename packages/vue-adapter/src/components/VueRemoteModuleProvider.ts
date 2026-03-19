@@ -13,10 +13,9 @@ import {
 import { loadRemoteMultiVersion } from "remote-reload-utils";
 import type {
   MFInstance,
-  ReactInstance,
-  ReactDOMInstance,
   ReactDOMRoot,
-} from "./types";
+} from "../types";
+import { useReactResolver, type ReactResolverResult } from "../composables/useReactResolver";
 
 /**
  * Vue 3 远程模块提供者 Props
@@ -56,13 +55,6 @@ interface ModuleState {
   scopeName: string | null;
 }
 
-function normalizeSharedModule(mod: any) {
-  if (!mod) return null;
-  if (typeof mod === "object" && "default" in mod && mod.default)
-    return mod.default;
-  return mod;
-}
-
 /**
  * 创建 Vue 远程模块提供者组件
  */
@@ -97,47 +89,10 @@ export function createVueRemoteModuleProvider() {
       const retryKey = ref(0);
       const containerRef = ref<HTMLElement | null>(null);
       const reactRootRef = ref<ReactDOMRoot | null>(null);
-      const runtimeReactRef = ref<ReactInstance | null>(null);
-      const runtimeReactDOMClientRef = ref<ReactDOMInstance | null>(null);
       const isMounted = ref(false);
 
-      async function resolveRuntimeReact(mfInstance: MFInstance) {
-        if (!mfInstance?.loadShare) return;
-
-        try {
-          const [reactGetter, reactDomClientGetter, reactDomGetter] =
-            await Promise.all([
-              mfInstance.loadShare("react"),
-              mfInstance.loadShare("react-dom/client"),
-              mfInstance.loadShare("react-dom"),
-            ]);
-
-          const sharedReact =
-            typeof reactGetter === "function"
-              ? normalizeSharedModule(reactGetter())
-              : null;
-
-          const sharedReactDOMClient =
-            typeof reactDomClientGetter === "function"
-              ? normalizeSharedModule(reactDomClientGetter())
-              : typeof reactDomGetter === "function"
-              ? normalizeSharedModule(reactDomGetter())
-              : null;
-
-          if (sharedReact && sharedReactDOMClient) {
-            runtimeReactRef.value = sharedReact;
-            runtimeReactDOMClientRef.value = sharedReactDOMClient;
-            console.log(
-              "[VueRemoteModuleProvider] Using runtime shared React instance"
-            );
-          }
-        } catch (e) {
-          console.warn(
-            "[VueRemoteModuleProvider] Failed to resolve runtime shared React, fallback to window",
-            e
-          );
-        }
-      }
+      // 使用 useReactResolver composable
+      const reactResolver: ReactResolverResult = useReactResolver();
 
       async function loadModule() {
         try {
@@ -158,7 +113,8 @@ export function createVueRemoteModuleProvider() {
           state.value.mf = mf as unknown as MFInstance;
           state.value.scopeName = props.scopeName;
 
-          await resolveRuntimeReact(mf as unknown as MFInstance);
+          // 使用 useReactResolver 解析 React 共享模块
+          await reactResolver.resolve(mf as unknown as MFInstance);
           emit("ready", props.scopeName, mf);
 
           const mod: any = await mf.loadRemote(
@@ -224,9 +180,9 @@ export function createVueRemoteModuleProvider() {
       ) {
         if (!containerRef.value || !Component) return;
 
-        const React = runtimeReactRef.value || (window as any).React;
+        const React = reactResolver.runtimeReact.value || (window as any).React;
         const ReactDOM =
-          runtimeReactDOMClientRef.value ||
+          reactResolver.runtimeReactDOMClient.value ||
           (window as any).ReactDOM ||
           (window as any).ReactDOMClient;
 

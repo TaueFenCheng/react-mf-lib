@@ -1,6 +1,6 @@
 import { defineComponent, h, ref, onBeforeUnmount, watch, type PropType } from 'vue'
-import type { MFInstance, ReactInstance, ReactDOMInstance, ReactDOMRoot } from './types'
-import { useReactResolver } from './composables/useReactResolver'
+import type { MFInstance, ReactInstance, ReactDOMInstance, ReactDOMRoot } from '../types'
+import { useReactResolver } from '../composables/useReactResolver'
 
 /**
  * React 组件渲染器 Props
