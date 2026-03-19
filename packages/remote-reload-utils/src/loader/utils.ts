@@ -128,70 +128,86 @@ export interface LoadResult {
   mf: ReturnType<typeof createInstance>
 }
 
+export type RuntimeRemote = Parameters<
+  ReturnType<typeof createInstance>['registerRemotes']
+>[0][number]
+
 const mfInstanceCache = new Map<string, ReturnType<typeof createInstance>>()
 const mfInstanceLoadingCache = new Map<string, Promise<LoadResult>>()
 
+function buildRemotesIdentity(remotes: RuntimeRemote[]): string {
+  if (remotes.length === 0) return ''
+  return remotes
+    .map((remote) =>
+      JSON.stringify({
+        name: remote.name,
+        entry: 'entry' in remote ? remote.entry : '',
+        version: 'version' in remote ? remote.version : '',
+        alias: remote.alias || '',
+        type: remote.type || '',
+        entryGlobalName: remote.entryGlobalName || '',
+      }),
+    )
+    .sort()
+    .join('|')
+}
+
 /**
- * 尝试加载单个远程模块 URL，包含重试逻辑
+ * 尝试加载单个远程模块 URL
+ * 注意：实际的重试机制在外层 loadRemoteMultiVersion 的 URL 遍历中实现
  */
 export async function tryLoadRemote(
   scopeName: string,
   url: string,
-  retries: number,
-  delay: number,
+  _retries: number,
+  _delay: number,
   sharedConfig: Record<string, any>,
   plugins: ModuleFederationRuntimePlugin[],
+  extraRemotes: RuntimeRemote[] = [],
+  registerOptions: { force?: boolean } = {},
 ): Promise<LoadResult> {
-  const cacheKey = `${scopeName}::${url}`
+  const remotesIdentity = buildRemotesIdentity(extraRemotes)
+  const cacheKey = `${scopeName}::${url}::${remotesIdentity}::${registerOptions.force ? 'force' : 'normal'}`
 
+  // 检查缓存
   const cachedMfs = mfInstanceCache.get(cacheKey)
   if (cachedMfs) {
     return { scopeName, mf: cachedMfs }
   }
 
+  // 检查是否正在加载中
   const loadingMfs = mfInstanceLoadingCache.get(cacheKey)
   if (loadingMfs) {
     return loadingMfs
   }
 
-  const createProcess = (async () => {
-    let lastError: Error | unknown
+  // 创建 MF 实例并缓存 Promise
+  const loadPromise = Promise.resolve().then(() => {
+    const mf = createInstance({
+      name: 'host',
+      remotes: [
+        {
+          name: scopeName,
+          entry: url,
+        },
+      ],
+      shared: sharedConfig,
+      plugins: [...plugins, fallbackPlugin()],
+    })
 
-    for (let i = 0; i < retries; i++) {
-      try {
-        const mf = createInstance({
-          name: 'host',
-          remotes: [
-            {
-              name: scopeName,
-              entry: url,
-            },
-          ],
-          shared: sharedConfig,
-          plugins: [...plugins, fallbackPlugin()],
-        })
-
-        const result = { scopeName, mf }
-        mfInstanceCache.set(cacheKey, mf)
-        return result
-      } catch (e) {
-        lastError = e
-        console.warn(`[MF] URL ${url} 加载失败，第 ${i + 1} 次重试...`)
-        if (i < retries - 1) {
-          await new Promise((res) => setTimeout(res, delay))
-        }
-      }
+    if (extraRemotes.length > 0) {
+      mf.registerRemotes(extraRemotes, registerOptions)
     }
 
-    // 抛出最后一次具体的错误信息
-    throw new Error(`[MF] URL ${url} 经过 ${retries} 次重试仍加载失败。`, {
-      cause: lastError,
-    })
-  })()
+    const result = { scopeName, mf }
+    mfInstanceCache.set(cacheKey, mf)
+    return result
+  })
 
-  mfInstanceLoadingCache.set(cacheKey, createProcess)
+  mfInstanceLoadingCache.set(cacheKey, loadPromise)
+
   try {
-    return await createProcess
+    return await loadPromise
   } finally {
     mfInstanceLoadingCache.delete(cacheKey)
   }
@@ -211,7 +227,9 @@ export function getFinalSharedConfig(
 
   if (globalReact && globalReactDOM) {
     // 验证 React 实例是否有效
-    const isValidReact = typeof globalReact === 'object' && typeof globalReact.useCallback === 'function'
+    const isValidReact =
+      typeof globalReact === 'object' &&
+      typeof globalReact.useCallback === 'function'
 
     if (isValidReact) {
       // 注意：runtime shared 需要使用 shareConfig，而不是直接 singleton/eager 顶层字段
@@ -259,7 +277,9 @@ export function getFinalSharedConfig(
       })
     }
   } else {
-    console.log('[getFinalSharedConfig] No global React found, using default shared config')
+    console.log(
+      '[getFinalSharedConfig] No global React found, using default shared config',
+    )
   }
 
   const mergedShared = {

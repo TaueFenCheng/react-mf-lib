@@ -16,7 +16,13 @@ export {
 } from './version'
 
 // 核心加载模块
-export { loadRemoteMultiVersion } from './loader'
+export {
+  loadRemoteMultiVersion,
+  createRemoteSourcePlugin,
+  type RemoteSourcePlugin,
+  type RemoteSourcePluginContext,
+  type LoadRemoteExtraOptions,
+} from './loader'
 export {
   fetchLatestVersion,
   getVersionCache,
@@ -27,6 +33,7 @@ export {
   resolveFinalVersion,
   buildFinalUrls,
   type LoadResult,
+  type RuntimeRemote,
 } from './loader/utils'
 
 // 预加载模块

@@ -154,6 +154,8 @@ describe('loader/index', () => {
         1000,
         {},
         plugins,
+        [],
+        {},
       )
     })
 
@@ -173,7 +175,7 @@ describe('loader/index', () => {
         [],
       )
 
-      expect(tryLoadRemote).toHaveBeenCalledWith('my-scope', expect.any(String), expect.any(Number), expect.any(Number), expect.any(Object), expect.any(Array))
+      expect(tryLoadRemote).toHaveBeenCalledWith('my-scope', expect.any(String), expect.any(Number), expect.any(Number), expect.any(Object), expect.any(Array), [], {})
     })
 
     it('should handle retries parameter', async () => {
@@ -200,6 +202,8 @@ describe('loader/index', () => {
         expect.any(Number),
         expect.any(Object),
         [],
+        [],
+        {},
       )
     })
 
@@ -227,6 +231,55 @@ describe('loader/index', () => {
         5000,
         expect.any(Object),
         [],
+        [],
+        {},
+      )
+    })
+
+    it('should collect remotes from remote source plugins', async () => {
+      vi.mocked(resolveFinalVersion).mockResolvedValue('1.0.0')
+      vi.mocked(buildFinalUrls).mockReturnValue([
+        'http://cdn1.com/remoteEntry.js',
+      ])
+      vi.mocked(getFinalSharedConfig).mockReturnValue({})
+      vi.mocked(tryLoadRemote).mockResolvedValue({ scopeName: 'test-module', mf: {} })
+
+      const remoteSourcePlugins = [
+        {
+          name: 'custom-remote-source',
+          registerRemotes: () => [
+            {
+              name: 'remote-a',
+              entry: 'https://cdn.example.com/remote-a/remoteEntry.js',
+            },
+            {
+              name: 'remote-b',
+              entry: 'https://cdn.example.com/remote-b/remoteEntry.js',
+            },
+          ],
+        },
+      ]
+
+      await loadRemoteMultiVersion(baseOptions, [], { remoteSourcePlugins })
+
+      expect(tryLoadRemote).toHaveBeenCalledWith(
+        'test-module',
+        'http://cdn1.com/remoteEntry.js',
+        3,
+        1000,
+        {},
+        [],
+        [
+          {
+            name: 'remote-a',
+            entry: 'https://cdn.example.com/remote-a/remoteEntry.js',
+          },
+          {
+            name: 'remote-b',
+            entry: 'https://cdn.example.com/remote-b/remoteEntry.js',
+          },
+        ],
+        {},
       )
     })
   })
