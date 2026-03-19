@@ -12,7 +12,6 @@ export interface UseVueRemoteModuleOptions {
   scopeName: string
   onError?: (error: Error) => void
   onLoad?: (component: any) => void
-  retryKey?: number
 }
 
 /**
@@ -25,7 +24,6 @@ export interface UseVueRemoteModuleResult {
   /** 运行时 MF 实例（用于解析与远程一致的 React 实例） */
   mf: Ref<MFInstance | null>
   scopeName: Ref<string | null>
-  retry: () => void
 }
 
 /**
@@ -33,7 +31,7 @@ export interface UseVueRemoteModuleResult {
  *
  * @example
  * ```ts
- * const { component, loading, error, retry } = useVueRemoteModule({
+ * const { component, loading, error } = useVueRemoteModule({
  *   pkg: 'my-react-components',
  *   version: '1.0.0',
  *   moduleName: 'Button',
@@ -48,15 +46,12 @@ export function useVueRemoteModule({
   scopeName,
   onError,
   onLoad,
-  retryKey = 0,
-}: UseVueRemoteModuleOptions): UseVueRemoteModuleResult {
+}: Omit<UseVueRemoteModuleOptions, 'retryKey'>): UseVueRemoteModuleResult {
   const loading = ref(true)
   const error = ref<Error | null>(null)
   const component = ref<any>(null)
   const mf = ref<MFInstance | null>(null)
   const resolvedScopeName = ref<string | null>(null)
-
-  const internalRetryKey = ref(0)
 
   async function loadModule() {
     try {
@@ -122,10 +117,6 @@ export function useVueRemoteModule({
     }
   }
 
-  function retry() {
-    internalRetryKey.value++
-  }
-
   watchEffect(() => {
     loadModule()
   })
@@ -136,6 +127,5 @@ export function useVueRemoteModule({
     component,
     mf: mf as Ref<MFInstance | null>,
     scopeName: resolvedScopeName,
-    retry,
   }
 }
