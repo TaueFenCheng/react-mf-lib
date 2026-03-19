@@ -10,12 +10,20 @@
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
-    "check": "pnpm -r run check"
+    "check": "pnpm -r run check",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "publish": "changeset publish",
+    "add": "changeset add",
+    "pre": "changeset pre",
+    "status": "changeset status",
+    "release": "./release.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
-    "@rslib/core": "0.17.0",
+    "@changesets/cli": "^2.30.0",
     "@rsbuild/core": "^1.4.13",
+    "@rslib/core": "0.17.0",
     "typescript": "^5.9.2"
   }
 }
