@@ -135,6 +135,9 @@ export type RuntimeRemote = Parameters<
 const mfInstanceCache = new Map<string, ReturnType<typeof createInstance>>()
 const mfInstanceLoadingCache = new Map<string, Promise<LoadResult>>()
 
+// 导出缓存用于测试
+export { mfInstanceCache, mfInstanceLoadingCache }
+
 function buildRemotesIdentity(remotes: RuntimeRemote[]): string {
   if (remotes.length === 0) return ''
   return remotes
@@ -159,8 +162,8 @@ function buildRemotesIdentity(remotes: RuntimeRemote[]): string {
 export async function tryLoadRemote(
   scopeName: string,
   url: string,
-  _retries: number,
-  _delay: number,
+  retries: number,
+  delay: number,
   sharedConfig: Record<string, any>,
   plugins: ModuleFederationRuntimePlugin[],
   extraRemotes: RuntimeRemote[] = [],
@@ -182,26 +185,37 @@ export async function tryLoadRemote(
   }
 
   // 创建 MF 实例并缓存 Promise
-  const loadPromise = Promise.resolve().then(() => {
-    const mf = createInstance({
-      name: 'host',
-      remotes: [
-        {
-          name: scopeName,
-          entry: url,
-        },
-      ],
-      shared: sharedConfig,
-      plugins: [...plugins, fallbackPlugin()],
-    })
+  const loadPromise = Promise.resolve().then(async () => {
+    let lastError: Error | undefined
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        if (attempt > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delay))
+        }
+        const mf = createInstance({
+          name: 'host',
+          remotes: [
+            {
+              name: scopeName,
+              entry: url,
+            },
+          ],
+          shared: sharedConfig,
+          plugins: [...plugins, fallbackPlugin()],
+        })
 
-    if (extraRemotes.length > 0) {
-      mf.registerRemotes(extraRemotes, registerOptions)
+        if (extraRemotes.length > 0) {
+          mf.registerRemotes(extraRemotes, registerOptions)
+        }
+
+        const result = { scopeName, mf }
+        mfInstanceCache.set(cacheKey, mf)
+        return result
+      } catch (e) {
+        lastError = e as Error
+      }
     }
-
-    const result = { scopeName, mf }
-    mfInstanceCache.set(cacheKey, mf)
-    return result
+    throw lastError || new Error('Unknown error')
   })
 
   mfInstanceLoadingCache.set(cacheKey, loadPromise)

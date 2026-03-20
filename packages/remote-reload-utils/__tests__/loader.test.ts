@@ -19,9 +19,14 @@ vi.mock('@module-federation/enhanced/runtime', () => ({
 }))
 
 describe('loader/utils', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
     localStorage.clear()
+    // 清除模块内部的缓存
+    const utils = await import('../src/loader/utils')
+    // 重置缓存 Map
+    utils.mfInstanceCache.clear()
+    utils.mfInstanceLoadingCache.clear()
   })
 
   afterEach(() => {
@@ -163,14 +168,49 @@ describe('loader/utils', () => {
       const result = getFinalSharedConfig()
       expect(result).toEqual({
         react: {
-          singleton: true,
-          eager: true,
-          requiredVersion: false,
+          shareConfig: {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+            strictVersion: false,
+          },
+          strategy: 'loaded-first',
         },
         'react-dom': {
-          singleton: true,
-          eager: true,
-          requiredVersion: false,
+          shareConfig: {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+            strictVersion: false,
+          },
+          strategy: 'loaded-first',
+        },
+        'react-dom/client': {
+          shareConfig: {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+            strictVersion: false,
+          },
+          strategy: 'loaded-first',
+        },
+        'react/jsx-runtime': {
+          shareConfig: {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+            strictVersion: false,
+          },
+          strategy: 'loaded-first',
+        },
+        'react/jsx-dev-runtime': {
+          shareConfig: {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+            strictVersion: false,
+          },
+          strategy: 'loaded-first',
         },
       })
     })
