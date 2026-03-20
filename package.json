@@ -17,7 +17,8 @@
     "add": "changeset add",
     "pre": "changeset pre",
     "status": "changeset status",
-    "release": "./release.sh"
+    "release": "./release.sh",
+    "changeset:auto": "node scripts/auto-changeset.js"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
