@@ -4,6 +4,32 @@
 
 ## 快速开始
 
+### 首次配置
+
+**1. 设置 npm token（避免浏览器验证）**
+
+```bash
+# 获取 npm token
+# 方式一：命令行登录（会创建 token）
+npm login
+
+# 方式二：在 npm 官网生成 Automation Token
+# https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+
+# 设置环境变量
+export NPM_TOKEN="npm_xxxxxxxxxxxxxxxxxxxxx"
+
+# 添加到 ~/.zshrc 或 ~/.bashrc 永久生效
+echo 'export NPM_TOKEN="npm_xxxxxxxxxxxxxxxxxxxxx"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**2. 项目已配置好以下文件：**
+
+- `.nvmrc` - Node.js 版本管理
+- `.npmrc` - npm 认证配置（使用 `${NPM_TOKEN}` 环境变量）
+- `.gitignore` - 已忽略 `.npmrc` 防止 token 泄露
+
 ### 使用 npm/pnpm 脚本
 
 ```bash
@@ -122,15 +148,28 @@ pnpm pre exit
 
 ## 故障排查
 
-### 发布失败
+### 发布失败 - npm token 问题
 
-检查 npm token 是否有效：
+**检查 token 是否有效：**
 
 ```bash
+# 验证当前登录状态
 npm whoami
+
+# 如果显示错误，重新登录
+npm login
+
+# 或者手动设置 token
+export NPM_TOKEN="npm_xxxxxxxxxxxxxxxxxxxxx"
 ```
 
-### 版本冲突
+**Token 类型说明：**
+
+- `Publish` - 用于发布包（推荐用于 CI/CD）
+- `Automation` - 自动化 token，更安全
+- `Read` - 只读权限
+
+### 发布失败
 
 如果有冲突的 changeset，运行：
 
