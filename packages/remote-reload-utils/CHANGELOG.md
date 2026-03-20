@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+### Patch Changes
+
+- - chore: git 记录到 changelog 日志中
+
 ## 1.0.2
 
 ### Major Changes

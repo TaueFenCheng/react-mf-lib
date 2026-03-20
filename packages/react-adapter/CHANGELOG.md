@@ -1,5 +1,12 @@
 # @react-mf-lib/react-adapter
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies
+  - remote-reload-utils@1.0.3
+
 ## 1.0.0
 
 ### Patch Changes
