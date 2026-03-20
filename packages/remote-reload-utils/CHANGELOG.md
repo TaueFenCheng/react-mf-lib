@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.2
+
+### Major Changes
+
+- 8e4a168: test publish
+
+### Patch Changes
+
+- d5c8346: 完善单元测试 & runtime 实例重试机制
+
 ## 1.0.0
 
 ### Major Changes
@@ -18,7 +28,6 @@
 ### Release
 
 - Published version 1.0.1 with patch bump
-
 
 ## [0.0.17] - 2026-03-19
 
