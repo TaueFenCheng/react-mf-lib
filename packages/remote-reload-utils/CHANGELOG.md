@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.3
+
+### Patch Changes
+
+- - chore: git 记录到 changelog 日志中
+
+## 1.0.2
+
+### Major Changes
+
+- 8e4a168: test publish
+
+### Patch Changes
+
+- d5c8346: 完善单元测试 & runtime 实例重试机制
+
 ## 1.0.0
 
 ### Major Changes
@@ -12,6 +28,12 @@
 项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
 ## [未发布]
+
+## [1.0.1] - 2026-03-20
+
+### Release
+
+- Published version 1.0.1 with patch bump
 
 ## [0.0.17] - 2026-03-19
 
