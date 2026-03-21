@@ -18,7 +18,15 @@
     "pre": "changeset pre",
     "status": "changeset status",
     "release": "./release.sh",
-    "changeset:auto": "node scripts/auto-changeset.js"
+    "changeset:auto": "node scripts/auto-changeset.js",
+    "build:react-adapter": "pnpm --filter react-adapter run build",
+    "build:remote-reload-utils": "pnpm --filter remote-reload-utils run build",
+    "build:test-mf-unpkg": "pnpm --filter test-mf-unpkg run build",
+    "build:vue-adapter": "pnpm --filter vue-adapter run build",
+    "dev:react-adapter": "pnpm --filter react-adapter run dev",
+    "dev:remote-reload-utils": "pnpm --filter remote-reload-utils run dev",
+    "dev:test-mf-unpkg": "pnpm --filter test-mf-unpkg run dev",
+    "dev:vue-adapter": "pnpm --filter vue-adapter run dev"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
