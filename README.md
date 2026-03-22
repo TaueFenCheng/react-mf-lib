@@ -14,7 +14,7 @@
 - `packages/vue-adapter`：Vue 3 适配层（在 Vue 中加载 React 远程组件）
 - `packages/react-adapter`：React 适配层（简化的 React 组件封装）
 - `apps/test-mf-unpkg`：远程组件示例应用（React）
-- `apps/host-rsbuild-remote`：宿主示例应用（React）
+- `apps/host-react18-remote`：宿主示例应用（React）
 - `apps/host-vue3-remote`：宿主示例应用（Vue 3）
 
 ## 特性
@@ -482,7 +482,7 @@ react-mf-lib/
 │       └── README.md
 └── apps/
     ├── test-mf-unpkg/                # 远程组件示例（React）
-    ├── host-rsbuild-remote/          # 宿主应用示例（React）
+    ├── host-react18-remote/          # 宿主应用示例（React）
     └── host-vue3-remote/             # 宿主应用示例（Vue 3）
 ```
 
@@ -497,7 +497,7 @@ pnpm --filter test-mf-unpkg dev
 ### 2. 启动 React 宿主应用（host-react）
 
 ```bash
-pnpm --filter host-rsbuild-remote dev
+pnpm --filter host-react18-remote dev
 ```
 
 ### 3. 启动 Vue 宿主应用（host-vue）
