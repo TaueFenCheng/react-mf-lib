@@ -14,6 +14,7 @@ export default defineConfig({
     template: './index.html',
   },
   server: {
-    port: 5173,
+    port: 5174,
+    open: true,
   },
 })
