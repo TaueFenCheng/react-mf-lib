@@ -2,7 +2,7 @@
 
 /**
  * 自动根据 Git commits 生成 changeset 文件
- * 使用方法：node scripts/auto-changeset.js
+ * 使用方法：pnpm tsx scripts/auto-changeset.ts
  */
 
 import { execSync } from 'child_process'
@@ -14,8 +14,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')
 const changesetDir = path.join(rootDir, '.changeset')
 
+type ReleaseType = 'major' | 'minor' | 'patch'
+
 // 获取上次 tag 以来的 commits
-function getCommitsSinceLastTag() {
+function getCommitsSinceLastTag(): string[] {
   try {
     // 尝试获取上一个版本 tag
     const lastTag = execSync('git describe --tags --abbrev=0 2>/dev/null', {
@@ -41,7 +43,7 @@ function getCommitsSinceLastTag() {
 }
 
 // 判断变更类型
-function getReleaseType(commitMessage) {
+function getReleaseType(commitMessage: string): ReleaseType {
   const msg = commitMessage.toLowerCase()
   if (msg.includes('feat:') || msg.includes('feature:')) return 'minor'
   if (msg.includes('fix:') || msg.includes('bugfix:')) return 'patch'
@@ -50,7 +52,7 @@ function getReleaseType(commitMessage) {
 }
 
 // 生成 changeset ID
-function generateChangesetId() {
+function generateChangesetId(): string {
   const adjectives = ['fast', 'smart', 'bright', 'calm', 'eager', 'warm', 'cool', 'fresh']
   const nouns = ['pandas', 'eagles', 'waves', 'stars', 'clouds', 'winds', 'lights', 'seeds']
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)]
@@ -59,7 +61,7 @@ function generateChangesetId() {
 }
 
 // 主函数
-function main() {
+function main(): void {
   const args = process.argv.slice(2)
   const packages = args.length > 0 ? args : ['remote-reload-utils']
 
@@ -83,7 +85,7 @@ function main() {
     if (relevantCommits.length === 0) continue
 
     // 确定版本类型
-    let releaseType = 'patch'
+    let releaseType: ReleaseType = 'patch'
     for (const commit of relevantCommits) {
       const type = getReleaseType(commit)
       if (type === 'major') releaseType = 'major'

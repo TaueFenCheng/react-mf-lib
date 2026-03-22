@@ -18,7 +18,7 @@
     "pre": "changeset pre",
     "status": "changeset status",
     "release": "./release.sh",
-    "changeset:auto": "node scripts/auto-changeset.js",
+    "changeset:auto": "tsx scripts/auto-changeset.ts",
     "build:react-adapter": "pnpm --filter react-adapter run build",
     "build:remote-reload-utils": "pnpm --filter remote-reload-utils run build",
     "build:test-mf-unpkg": "pnpm --filter test-mf-unpkg run build",
