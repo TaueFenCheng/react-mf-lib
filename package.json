@@ -26,13 +26,17 @@
     "dev:react-adapter": "pnpm --filter react-adapter run dev",
     "dev:remote-reload-utils": "pnpm --filter remote-reload-utils run dev",
     "dev:test-mf-unpkg": "pnpm --filter test-mf-unpkg run dev",
-    "dev:vue-adapter": "pnpm --filter vue-adapter run dev"
+    "dev:vue-adapter": "pnpm --filter vue-adapter run dev",
+    "sync:types": "tsx scripts/sync-remote-types.ts",
+    "sync:types:help": "tsx scripts/sync-remote-types.ts --help"
   },
   "devDependencies": {
     "@biomejs/biome": "2.0.6",
     "@changesets/cli": "^2.30.0",
+    "@module-federation/typescript": "^3.1.6",
     "@rsbuild/core": "^1.4.13",
     "@rslib/core": "0.17.0",
+    "tsx": "^4.19.3",
     "typescript": "^5.9.2"
   }
 }

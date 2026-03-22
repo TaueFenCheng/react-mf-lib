@@ -22,7 +22,11 @@
     "noUnusedParameters": true,
 
     /* paths */
-    "types": ["react", "react-dom"]
+    "types": ["react", "react-dom"],
+    "baseUrl": ".",
+    "paths": {
+      "*": ["./@mf-types/*"]
+    }
   },
   "include": ["src"]
 }
