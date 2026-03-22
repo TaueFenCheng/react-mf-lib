@@ -26,10 +26,10 @@ This is a monorepo for React Module Federation utilities built with TypeScript a
 - `pnpm --filter test-mf-unpkg build` - Build for production
 - `pnpm --filter test-mf-unpkg preview` - Preview production build
 
-### App: `apps/host-rsbuild-remote`
-- `pnpm --filter host-rsbuild-remote dev` - Start development server
-- `pnpm --filter host-rsbuild-remote build` - Build for production
-- `pnpm --filter host-rsbuild-remote preview` - Preview production build
+### App: `apps/host-react18-remote`
+- `pnpm --filter host-react18-remote dev` - Start development server
+- `pnpm --filter host-react18-remote build` - Build for production
+- `pnpm --filter host-react18-remote preview` - Preview production build
 
 ## Running Single Test
 

@@ -1,4 +1,4 @@
-# host-rsbuild-remote
+# host-react18-remote
 
 ## 1.0.2
 

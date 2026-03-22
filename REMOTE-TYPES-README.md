@@ -27,7 +27,7 @@ react-mf-lib/
 │   │   ├── package.json        # 包含 types 字段
 │   │   └── tsconfig.json       # 启用 declaration
 │   │
-│   ├── host-rsbuild-remote/    # React Host 项目
+│   ├── host-react18-remote/    # React Host 项目
 │   │   ├── @mf-types/          # 自动生成的远程类型（.gitignore）
 │   │   ├── src/components/
 │   │   │   └── RemoteLoader.tsx # 类型化的远程组件
@@ -133,7 +133,7 @@ pnpm sync:types
 
 ```bash
 # 同步 React Host
-pnpm tsx scripts/sync-remote-types.ts --target host-rsbuild-remote
+pnpm tsx scripts/sync-remote-types.ts --target host-react18-remote
 
 # 同步 Vue Host
 pnpm tsx scripts/sync-remote-types.ts --target host-vue3-remote
@@ -148,7 +148,7 @@ pnpm tsx scripts/sync-remote-types.ts --config mf-types.config.json
 ### 在 Host 项目目录同步
 
 ```bash
-cd apps/host-rsbuild-remote
+cd apps/host-react18-remote
 pnpm sync:types
 ```
 
@@ -222,7 +222,7 @@ pnpm build:all
 pnpm sync:types
 
 # 或在 Host 项目目录
-cd apps/host-rsbuild-remote
+cd apps/host-react18-remote
 pnpm sync:types
 ```
 
@@ -334,7 +334,7 @@ pnpm tsx scripts/sync-remote-types.ts [选项]
 
 ```bash
 # 清理缓存
-rm -rf apps/host-rsbuild-remote/@mf-types
+rm -rf apps/host-react18-remote/@mf-types
 
 # 重新同步
 pnpm sync:types

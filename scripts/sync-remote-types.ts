@@ -7,7 +7,7 @@
  * 使用方法:
  *   pnpm tsx scripts/sync-remote-types.ts                    # 使用默认配置
  *   pnpm tsx scripts/sync-remote-types.ts --config mf-types.config.json
- *   pnpm tsx scripts/sync-remote-types.ts --target host-rsbuild-remote
+ *   pnpm tsx scripts/sync-remote-types.ts --target host-react18-remote
  */
 
 import * as fs from 'fs';
@@ -331,7 +331,7 @@ Module Federation 类型同步工具
   pnpm tsx scripts/sync-remote-types.ts
 
   # 同步指定项目
-  pnpm tsx scripts/sync-remote-types.ts --target host-rsbuild-remote
+  pnpm tsx scripts/sync-remote-types.ts --target host-react18-remote
 
   # 使用自定义配置
   pnpm tsx scripts/sync-remote-types.ts --config mf-types.config.json
