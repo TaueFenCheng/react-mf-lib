@@ -2,15 +2,15 @@
 
 一个用于运行时动态加载远程 React 组件的工具库，支持多版本共存、CDN 故障转移和完整的模块生命周期管理。
 
-[![npm version](https://img.shields.io/npm/v/mf-runtime-libs.svg)](https://www.npmjs.com/package/mf-runtime-libs)
-[![License](https://img.shields.io/npm/l/mf-runtime-libs.svg)](https://github.com/TaueFenCheng/react-mf-lib/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/remote-reload-utils.svg)](https://www.npmjs.com/package/remote-reload-utils)
+[![License](https://img.shields.io/npm/l/remote-reload-utils.svg)](https://github.com/TaueFenCheng/react-mf-lib/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
 ## 仓库概览
 
 这是一个 pnpm monorepo，当前包含：
 
-- `packages/mf-runtime-libs`：核心运行时加载工具库（已发布 npm）
+- `packages/remote-reload-utils`：核心运行时加载工具库（已发布 npm）
 - `packages/vue-adapter`：Vue 3 适配层（在 Vue 中加载 React 远程组件）
 - `packages/react-adapter`：React 适配层（简化的 React 组件封装）
 - `apps/test-mf-unpkg`：远程组件示例应用（React）
@@ -33,7 +33,7 @@
 ## 安装
 
 ```bash
-npm install mf-runtime-libs
+npm install remote-reload-utils
 # 或
 pnpm add remote-reload-utils
 # 或
@@ -45,7 +45,7 @@ yarn add remote-reload-utils
 ### 基本使用
 
 ```typescript
-import { loadRemoteMultiVersion } from 'mf-runtime-libs';
+import { loadRemoteMultiVersion } from 'remote-reload-utils';
 
 async function loadRemoteComponent() {
   const { scopeName, mf } = await loadRemoteMultiVersion({
@@ -62,7 +62,7 @@ async function loadRemoteComponent() {
 ### React Lazy + Suspense 方式
 
 ```typescript
-import { lazyRemote } from 'mf-runtime-libs';
+import { lazyRemote } from 'remote-reload-utils';
 import { Suspense } from 'react';
 
 const RemoteDashboard = lazyRemote({
@@ -116,7 +116,7 @@ function App() {
 动态加载远程模块，支持多版本和故障转移。
 
 ```typescript
-import { loadRemoteMultiVersion } from 'mf-runtime-libs';
+import { loadRemoteMultiVersion } from 'remote-reload-utils';
 
 const { scopeName, mf } = await loadRemoteMultiVersion(options, plugins);
 ```
@@ -444,7 +444,7 @@ import {
 
 ## 相关文档
 
-- **[mf-runtime-libs 详细文档](./packages/mf-runtime-libs/loadRemote.md)** - 核心工具库完整 API
+- **[remote-reload-utils 详细文档](./packages/remote-reload-utils/loadRemote.md)** - 核心工具库完整 API
 - **[vue-adapter 文档](./packages/vue-adapter/README.md)** - Vue 3 适配层使用指南
 - **[react-adapter 文档](./packages/react-adapter/README.md)** - React 适配层使用指南
 
@@ -453,7 +453,7 @@ import {
 ```
 react-mf-lib/
 ├── packages/
-│   ├── mf-runtime-libs/          # 核心工具库
+│   ├── remote-reload-utils/          # 核心工具库
 │   │   ├── src/
 │   │   │   ├── index.ts              # 主入口
 │   │   │   ├── loader/
@@ -521,36 +521,36 @@ pnpm install
 
 ```bash
 # 构建工具库
-pnpm --filter mf-runtime-libs build
+pnpm --filter remote-reload-utils build
 
 # 构建 Vue 适配器
 pnpm --filter @react-mf-lib/vue-adapter build
 
 # 监听模式
-pnpm --filter mf-runtime-libs dev
+pnpm --filter remote-reload-utils dev
 ```
 
 ### 测试
 
 ```bash
 # 运行所有测试
-pnpm --filter mf-runtime-libs test
+pnpm --filter remote-reload-utils test
 
 # 监听模式
-pnpm --filter mf-runtime-libs test:watch
+pnpm --filter remote-reload-utils test:watch
 
 # 生成覆盖率报告
-pnpm --filter mf-runtime-libs test --coverage
+pnpm --filter remote-reload-utils test --coverage
 ```
 
 ### 代码检查
 
 ```bash
 # 格式化代码
-pnpm --filter mf-runtime-libs format
+pnpm --filter remote-reload-utils format
 
 # 代码检查
-pnpm --filter mf-runtime-libs check
+pnpm --filter remote-reload-utils check
 
 # Vue 适配器格式化/检查
 pnpm --filter @react-mf-lib/vue-adapter lint
@@ -659,7 +659,7 @@ useEffect(() => {
 - 新增：事件总线模块
 - 新增：版本兼容性检查
 
-[查看详细更新日志](./packages/mf-runtime-libs/CHANGELOG.md)
+[查看详细更新日志](./packages/remote-reload-utils/CHANGELOG.md)
 
 ## 许可证
 
@@ -677,11 +677,11 @@ ISC
 
 ## 相关链接
 
-- [mf-runtime-libs 详细文档](./packages/mf-runtime-libs/loadRemote.md)
+- [remote-reload-utils 详细文档](./packages/remote-reload-utils/loadRemote.md)
 - [vue-adapter 文档（中文）](./packages/vue-adapter/README.md)
 - [vue-adapter docs (English)](./packages/vue-adapter/README.en.md)
 - [vue-adapter 源码文档](./packages/vue-adapter/src/README.md)
 - [host-vue3-remote 使用说明](./apps/host-vue3-remote/README.md)
 - [Module Federation 官方文档](https://module-federation.io/)
 - [Rsbuild 文档](https://rsbuild.dev/)
-- [npm 包页面](https://www.npmjs.com/package/mf-runtime-libs)
+- [npm 包页面](https://www.npmjs.com/package/remote-reload-utils)
