@@ -88,7 +88,7 @@ For each issue found, provide:
 This is a pnpm monorepo for Module Federation utilities:
 
 **Packages**:
-- `remote-reload-utils` - Core runtime loading library
+- `mf-runtime-libs` - Core runtime loading library
 - `@react-mf-lib/react-adapter` - React adapter
 - `@react-mf-lib/vue-adapter` - Vue 3 adapter
 

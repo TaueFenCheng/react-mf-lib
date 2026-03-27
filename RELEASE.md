@@ -129,7 +129,7 @@ pnpm pre exit
 
 ```markdown
 ---
-'remote-reload-utils': minor
+'mf-runtime-libs': minor
 '@react-mf-lib/react-adapter': patch
 ---
 
@@ -182,6 +182,6 @@ pnpm status --verbose
 如需手动控制发布过程：
 
 ```bash
-cd packages/remote-reload-utils
+cd packages/mf-runtime-libs
 npm publish --access public
 ```

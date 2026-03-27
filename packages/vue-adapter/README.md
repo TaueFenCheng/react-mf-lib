@@ -2,7 +2,7 @@
 
 在 Vue 3 项目中加载并渲染 React 远程组件（Module Federation）。
 
-`@react-mf-lib/vue-adapter` 基于 `remote-reload-utils`，提供三种能力：
+`@react-mf-lib/vue-adapter` 基于 `mf-runtime-libs`，提供三种能力：
 
 - 将 React/ReactDOM 挂载到全局 `window`
 - 用 `VueRemoteModuleProvider` 直接在模板里加载远程 React 组件
@@ -17,7 +17,7 @@
 ## 安装
 
 ```bash
-pnpm add @react-mf-lib/vue-adapter remote-reload-utils
+pnpm add @react-mf-lib/vue-adapter mf-runtime-libs
 ```
 
 ## 快速开始

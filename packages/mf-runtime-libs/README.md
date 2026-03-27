@@ -27,7 +27,7 @@ pnpm dev
 #### 1. 基础加载远程模块
 
 ```ts
-import { loadRemoteMultiVersion } from 'remote-reload-utils';
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
 const [comp, setComp] = useState(null);
 useEffect(() => {
   async function init() {
@@ -58,7 +58,7 @@ useEffect(() => {
 #### 2. 使用 React 组件加载远程模块
 
 ```tsx
-import { RemoteModuleProvider, ErrorBoundary, lazyRemote } from 'remote-reload-utils';
+import { RemoteModuleProvider, ErrorBoundary, lazyRemote } from 'mf-runtime-libs';
 import React, { Suspense } from 'react';
 
 // 方式一：使用 RemoteModuleProvider 组件（推荐）

@@ -2,7 +2,7 @@
   "name": "@react-mf-lib/vue-adapter",
   "version": "1.0.1",
   "type": "module",
-  "description": "Vue adapter for remote-reload-utils - enables Vue 3 apps to load React remote components",
+  "description": "Vue adapter for mf-runtime-libs - enables Vue 3 apps to load React remote components",
   "exports": {
     ".": {
       "import": {
@@ -37,10 +37,10 @@
   ],
   "peerDependencies": {
     "vue": ">=3.0.0",
-    "remote-reload-utils": ">=1.0.3"
+    "mf-runtime-libs": ">=1.0.3"
   },
   "peerDependenciesMeta": {
-    "remote-reload-utils": {
+    "mf-runtime-libs": {
       "optional": false
     }
   },
@@ -63,7 +63,7 @@
     "vue": "^3.5.30"
   },
   "dependencies": {
-    "remote-reload-utils": "workspace:*"
+    "mf-runtime-libs": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

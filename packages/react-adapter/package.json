@@ -2,7 +2,7 @@
   "name": "@react-mf-lib/react-adapter",
   "version": "1.0.1",
   "type": "module",
-  "description": "React adapter for remote-reload-utils - React components for loading remote modules",
+  "description": "React adapter for mf-runtime-libs - React components for loading remote modules",
   "exports": {
     ".": {
       "import": {
@@ -38,10 +38,10 @@
   "peerDependencies": {
     "react": ">=17.0.0",
     "react-dom": ">=17.0.0",
-    "remote-reload-utils": ">=1.0.3"
+    "mf-runtime-libs": ">=1.0.3"
   },
   "peerDependenciesMeta": {
-    "remote-reload-utils": {
+    "mf-runtime-libs": {
       "optional": false
     }
   },
@@ -64,7 +64,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "remote-reload-utils": "workspace:*"
+    "mf-runtime-libs": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

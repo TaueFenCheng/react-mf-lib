@@ -1,4 +1,4 @@
-import { loadRemoteMultiVersion } from 'remote-reload-utils'
+import { loadRemoteMultiVersion } from 'mf-runtime-libs'
 import React, {
   lazy,
   Suspense,

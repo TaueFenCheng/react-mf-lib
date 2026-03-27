@@ -9,7 +9,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <h1>React Module Federation Demo</h1>
-        <p>Remote components loaded with remote-reload-utils</p>
+        <p>Remote components loaded with mf-runtime-libs</p>
       </header>
 
       <main className="app-main">

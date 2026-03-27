@@ -1,5 +1,5 @@
 /**
- * Vue Adapter for remote-reload-utils
+ * Vue Adapter for mf-runtime-libs
  *
  * 使 Vue 3 项目能够加载和使用 React 远程组件
  * 自动将 React/ReactDOM 挂载到全局 window 对象

@@ -1,5 +1,5 @@
 {
-  "name": "remote-reload-utils",
+  "name": "mf-runtime-libs",
   "version": "1.0.3",
   "type": "module",
   "description": "Utilities for remote reload in Module Federation & React Component",
@@ -45,7 +45,7 @@
   "gitRepository": {
     "type": "git",
     "url": "https://github.com/TaueFenCheng/react-mf-lib.git",
-    "directory": "packages/remote-reload-utils"
+    "directory": "packages/mf-runtime-libs"
   },
   "peerDependencies": {
     "react": ">=17.0.0",

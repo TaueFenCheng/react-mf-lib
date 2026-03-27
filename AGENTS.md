@@ -4,22 +4,22 @@ This file provides guidelines for AI agents working on this repository.
 
 ## Repository Overview
 
-This is a monorepo for React Module Federation utilities built with TypeScript and pnpm. It contains a library package (`remote-reload-utils`) for loading remote components with multi-version support, and demo applications.
+This is a monorepo for React Module Federation utilities built with TypeScript and pnpm. It contains a library package (`mf-runtime-libs`) for loading remote components with multi-version support, and demo applications.
 
 ## Build Commands
 
 ### Root Level
 - `pnpm install` - Install dependencies (workspace-aware)
 
-### Package: `packages/remote-reload-utils`
-- `pnpm --filter remote-reload-utils build` - Build ESM and CJS outputs
-- `pnpm --filter remote-reload-utils dev` - Build in watch mode
-- `pnpm --filter remote-reload-utils test` - Run all tests with Vitest
-- `pnpm --filter remote-reload-utils test run` - Run tests once
-- `pnpm --filter remote-reload-utils lint` - Format and check code with Biome
-- `pnpm --filter remote-reload-utils format` - Format code with Biome
-- `pnpm --filter remote-reload-utils check` - Run Biome check and auto-fix
-- `pnpm --filter remote-reload-utils prepublishOnly` - Build before publishing
+### Package: `packages/mf-runtime-libs`
+- `pnpm --filter mf-runtime-libs build` - Build ESM and CJS outputs
+- `pnpm --filter mf-runtime-libs dev` - Build in watch mode
+- `pnpm --filter mf-runtime-libs test` - Run all tests with Vitest
+- `pnpm --filter mf-runtime-libs test run` - Run tests once
+- `pnpm --filter mf-runtime-libs lint` - Format and check code with Biome
+- `pnpm --filter mf-runtime-libs format` - Format code with Biome
+- `pnpm --filter mf-runtime-libs check` - Run Biome check and auto-fix
+- `pnpm --filter mf-runtime-libs prepublishOnly` - Build before publishing
 
 ### Package: `packages/test-mf-unpkg`
 - `pnpm --filter test-mf-unpkg dev` - Start development server
@@ -35,12 +35,12 @@ This is a monorepo for React Module Federation utilities built with TypeScript a
 
 Tests are run with Vitest. To run a single test file:
 ```bash
-pnpm --filter remote-reload-utils test path/to/test-file.test.ts
+pnpm --filter mf-runtime-libs test path/to/test-file.test.ts
 ```
 
 Or use the pattern matching:
 ```bash
-pnpm --filter remote-reload-utils test --run --grep "test name"
+pnpm --filter mf-runtime-libs test --run --grep "test name"
 ```
 
 ## Code Style Guidelines
@@ -60,7 +60,7 @@ pnpm --filter remote-reload-utils test --run --grep "test name"
 
 ### Formatting (Biome)
 - Configuration extends `base-biome-config/biome`
-- Run `pnpm --filter remote-reload-utils lint` before committing
+- Run `pnpm --filter mf-runtime-libs lint` before committing
 - Use 2-space indentation
 - Use single quotes for strings
 - Add semicolons

@@ -10,7 +10,7 @@ import {
   type Component,
   type PropType,
 } from "vue";
-import { loadRemoteMultiVersion } from "remote-reload-utils";
+import { loadRemoteMultiVersion } from "mf-runtime-libs";
 import type {
   MFInstance,
   ReactDOMRoot,

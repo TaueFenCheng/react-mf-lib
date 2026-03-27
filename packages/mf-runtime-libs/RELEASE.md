@@ -1,11 +1,11 @@
 # Release Guide
 
-本指南说明如何使用发布脚本管理 `remote-reload-utils` 的版本发布流程。
+本指南说明如何使用发布脚本管理 `mf-runtime-libs` 的版本发布流程。
 
 ## 目录结构
 
 ```
-packages/remote-reload-utils/
+packages/mf-runtime-libs/
 ├── scripts/              # 发布脚本
 │   ├── generateReleasePr.mjs  # 生成发布 PR
 │   └── finalizeRelease.mjs    # 完成发布

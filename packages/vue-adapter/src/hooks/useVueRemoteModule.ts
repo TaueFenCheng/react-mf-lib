@@ -1,5 +1,5 @@
 import { ref, watchEffect, type Ref } from 'vue'
-import { loadRemoteMultiVersion } from 'remote-reload-utils'
+import { loadRemoteMultiVersion } from 'mf-runtime-libs'
 import type { MFInstance } from '../types'
 
 /**

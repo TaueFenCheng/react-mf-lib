@@ -117,48 +117,11 @@ importers:
         specifier: ^5.8.3
         version: 5.9.3
 
-  packages/react-adapter:
-    dependencies:
-      react:
-        specifier: '>=17.0.0'
-        version: 18.3.1
-      react-dom:
-        specifier: '>=17.0.0'
-        version: 18.3.1(react@18.3.1)
-      remote-reload-utils:
-        specifier: workspace:*
-        version: link:../remote-reload-utils
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 2.0.6
-        version: 2.0.6
-      '@rslib/core':
-        specifier: 0.17.0
-        version: 0.17.0(typescript@5.9.3)
-      '@types/node':
-        specifier: ^22.17.2
-        version: 22.17.2
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.24
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.7(@types/react@18.3.24)
-      base-biome-config:
-        specifier: 0.0.8
-        version: 0.0.8(@biomejs/biome@2.0.6)(@rsbuild/core@1.6.0)
-      rsbuild-plugin-publint:
-        specifier: ^0.3.3
-        version: 0.3.3(@rsbuild/core@1.6.0)
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.3
-
-  packages/remote-reload-utils:
+  packages/mf-runtime-libs:
     dependencies:
       '@module-federation/enhanced':
         specifier: 0.18.3
-        version: 0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))(webpack@5.105.4)
+        version: 0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))(webpack@5.105.4)
       react:
         specifier: '>=17.0.0'
         version: 18.3.1
@@ -167,7 +130,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       vue:
         specifier: '>=3.0.0'
-        version: 3.5.30(typescript@5.9.2)
+        version: 3.5.30(typescript@5.9.3)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.6
@@ -177,7 +140,7 @@ importers:
         version: 0.2.1
       '@rslib/core':
         specifier: 0.17.0
-        version: 0.17.0(typescript@5.9.2)
+        version: 0.17.0(typescript@5.9.3)
       '@tailwindcss/postcss':
         specifier: ^4.2.1
         version: 4.2.1
@@ -210,16 +173,53 @@ importers:
         version: 4.2.1
       typescript:
         specifier: ^5.9.2
-        version: 5.9.2
+        version: 5.9.3
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.17.2)(@vitest/ui@2.1.9)(happy-dom@20.8.4)(lightningcss@1.32.0)(terser@5.46.1)
 
+  packages/react-adapter:
+    dependencies:
+      mf-runtime-libs:
+        specifier: workspace:*
+        version: link:../mf-runtime-libs
+      react:
+        specifier: '>=17.0.0'
+        version: 18.3.1
+      react-dom:
+        specifier: '>=17.0.0'
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.0.6
+        version: 2.0.6
+      '@rslib/core':
+        specifier: 0.17.0
+        version: 0.17.0(typescript@5.9.3)
+      '@types/node':
+        specifier: ^22.17.2
+        version: 22.17.2
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.24
+      '@types/react-dom':
+        specifier: ^18.2.0
+        version: 18.3.7(@types/react@18.3.24)
+      base-biome-config:
+        specifier: 0.0.8
+        version: 0.0.8(@biomejs/biome@2.0.6)(@rsbuild/core@1.6.0)
+      rsbuild-plugin-publint:
+        specifier: ^0.3.3
+        version: 0.3.3(@rsbuild/core@1.6.0)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+
   packages/vue-adapter:
     dependencies:
-      remote-reload-utils:
+      mf-runtime-libs:
         specifier: workspace:*
-        version: link:../remote-reload-utils
+        version: link:../mf-runtime-libs
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.6
@@ -1874,9 +1874,6 @@ packages:
     resolution: {integrity: sha512-+ys997U96po4Kx/ABpBCqhA9EuxJaQWDQg7295H4hBphv3IZg0boBKuwYpt4YXp6MZ5AmZQnU/tyMTlRpaSejg==}
     engines: {node: '>= 0.4'}
 
-  caniuse-lite@1.0.30001737:
-    resolution: {integrity: sha512-BiloLiXtQNrY5UyF0+1nSJLXUENuhka2pzy2Fx5pGxqavdrxSCW4U6Pn/PoG3Efspi2frRbHpBV2XsrPE6EDlw==}
-
   caniuse-lite@1.0.30001780:
     resolution: {integrity: sha512-llngX0E7nQci5BPJDqoZSbuZ5Bcs9F5db7EtgfwBerX9XGtkkiO4NwfDDIRzHTTwcYC8vC7bmeUEPGrKlR/TkQ==}
 
@@ -2568,7 +2565,6 @@ packages:
   keygrip@1.1.0:
     resolution: {integrity: sha512-iYSchDJ+liQ8iwbSI2QqsQOvqv58eJCEanyJPJi+Khyu8smkcKSFUCbPwzFcL7YVtZ6eONjqRX/38caJ7QjRAQ==}
     engines: {node: '>= 0.6'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   koa-compose@4.1.0:
     resolution: {integrity: sha512-8ODW8TrDuMYvXRwra/Kh7/rJo9BtOfPc6qO8eAfC80CnCvSjSl0bkRM24X6/XBBEyj0v1nRUQ1LyOy3dbqOWXw==}
@@ -3463,11 +3459,6 @@ packages:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
 
-  typescript@5.9.2:
-    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
@@ -4314,7 +4305,7 @@ snapshots:
   '@modern-js/utils@2.68.2':
     dependencies:
       '@swc/helpers': 0.5.17
-      caniuse-lite: 1.0.30001737
+      caniuse-lite: 1.0.30001780
       lodash: 4.17.21
       rslog: 1.2.11
 
@@ -4324,10 +4315,10 @@ snapshots:
       '@types/semver': 7.5.8
       semver: 7.6.3
 
-  '@module-federation/cli@0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))':
+  '@module-federation/cli@0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))':
     dependencies:
       '@modern-js/node-bundle-require': 2.68.2
-      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
+      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
       '@module-federation/sdk': 0.18.3
       chalk: 3.0.0
       commander: 11.1.0
@@ -4347,7 +4338,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@module-federation/dts-plugin@0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))':
+  '@module-federation/dts-plugin@0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))':
     dependencies:
       '@module-federation/error-codes': 0.18.3
       '@module-federation/managers': 0.18.3
@@ -4364,35 +4355,35 @@ snapshots:
       log4js: 6.9.1
       node-schedule: 2.1.1
       rambda: 9.4.2
-      typescript: 5.9.2
+      typescript: 5.9.3
       ws: 8.18.0
     optionalDependencies:
-      vue-tsc: 3.2.5(typescript@5.9.2)
+      vue-tsc: 3.2.5(typescript@5.9.3)
     transitivePeerDependencies:
       - bufferutil
       - debug
       - supports-color
       - utf-8-validate
 
-  '@module-federation/enhanced@0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))(webpack@5.105.4)':
+  '@module-federation/enhanced@0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))(webpack@5.105.4)':
     dependencies:
       '@module-federation/bridge-react-webpack-plugin': 0.18.3
-      '@module-federation/cli': 0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
+      '@module-federation/cli': 0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
       '@module-federation/data-prefetch': 0.18.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
+      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
       '@module-federation/error-codes': 0.18.3
       '@module-federation/inject-external-runtime-core-plugin': 0.18.3(@module-federation/runtime-tools@0.18.3)
       '@module-federation/managers': 0.18.3
-      '@module-federation/manifest': 0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
-      '@module-federation/rspack': 0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
+      '@module-federation/manifest': 0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
+      '@module-federation/rspack': 0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
       '@module-federation/runtime-tools': 0.18.3
       '@module-federation/sdk': 0.18.3
       btoa: 1.2.1
-      schema-utils: 4.3.2
+      schema-utils: 4.3.3
       upath: 2.0.1
     optionalDependencies:
-      typescript: 5.9.2
-      vue-tsc: 3.2.5(typescript@5.9.2)
+      typescript: 5.9.3
+      vue-tsc: 3.2.5(typescript@5.9.3)
       webpack: 5.105.4
     transitivePeerDependencies:
       - '@rspack/core'
@@ -4417,9 +4408,9 @@ snapshots:
       find-pkg: 2.0.0
       fs-extra: 9.1.0
 
-  '@module-federation/manifest@0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))':
+  '@module-federation/manifest@0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))':
     dependencies:
-      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
+      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
       '@module-federation/managers': 0.18.3
       '@module-federation/sdk': 0.18.3
       chalk: 3.0.0
@@ -4432,20 +4423,20 @@ snapshots:
       - utf-8-validate
       - vue-tsc
 
-  '@module-federation/rspack@0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))':
+  '@module-federation/rspack@0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))':
     dependencies:
       '@module-federation/bridge-react-webpack-plugin': 0.18.3
-      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
+      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
       '@module-federation/inject-external-runtime-core-plugin': 0.18.3(@module-federation/runtime-tools@0.18.3)
       '@module-federation/managers': 0.18.3
-      '@module-federation/manifest': 0.18.3(typescript@5.9.2)(vue-tsc@3.2.5(typescript@5.9.2))
+      '@module-federation/manifest': 0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))
       '@module-federation/runtime-tools': 0.18.3
       '@module-federation/sdk': 0.18.3
       '@rspack/core': 1.6.0(@swc/helpers@0.5.17)
       btoa: 1.2.1
     optionalDependencies:
-      typescript: 5.9.2
-      vue-tsc: 3.2.5(typescript@5.9.2)
+      typescript: 5.9.3
+      vue-tsc: 3.2.5(typescript@5.9.3)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -4639,15 +4630,6 @@ snapshots:
       - '@rspack/core'
       - '@vue/compiler-sfc'
       - vue
-
-  '@rslib/core@0.17.0(typescript@5.9.2)':
-    dependencies:
-      '@rsbuild/core': 1.6.0
-      rsbuild-plugin-dts: 0.17.0(@rsbuild/core@1.6.0)(typescript@5.9.2)
-    optionalDependencies:
-      typescript: 5.9.2
-    transitivePeerDependencies:
-      - '@typescript/native-preview'
 
   '@rslib/core@0.17.0(typescript@5.9.3)':
     dependencies:
@@ -5087,12 +5069,6 @@ snapshots:
       '@vue/shared': 3.5.30
       csstype: 3.2.3
 
-  '@vue/server-renderer@3.5.30(vue@3.5.30(typescript@5.9.2))':
-    dependencies:
-      '@vue/compiler-ssr': 3.5.30
-      '@vue/shared': 3.5.30
-      vue: 3.5.30(typescript@5.9.2)
-
   '@vue/server-renderer@3.5.30(vue@3.5.30(typescript@5.9.3))':
     dependencies:
       '@vue/compiler-ssr': 3.5.30
@@ -5337,8 +5313,6 @@ snapshots:
     dependencies:
       call-bind-apply-helpers: 1.0.2
       get-intrinsic: 1.3.0
-
-  caniuse-lite@1.0.30001737: {}
 
   caniuse-lite@1.0.30001780: {}
 
@@ -6557,13 +6531,6 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.57.1
       fsevents: 2.3.3
 
-  rsbuild-plugin-dts@0.17.0(@rsbuild/core@1.6.0)(typescript@5.9.2):
-    dependencies:
-      '@ast-grep/napi': 0.37.0
-      '@rsbuild/core': 1.6.0
-    optionalDependencies:
-      typescript: 5.9.2
-
   rsbuild-plugin-dts@0.17.0(@rsbuild/core@1.6.0)(typescript@5.9.3):
     dependencies:
       '@ast-grep/napi': 0.37.0
@@ -6917,8 +6884,6 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.1
 
-  typescript@5.9.2: {}
-
   typescript@5.9.3: {}
 
   undici-types@6.21.0: {}
@@ -7018,22 +6983,12 @@ snapshots:
   vscode-uri@3.1.0:
     optional: true
 
-  vue-tsc@3.2.5(typescript@5.9.2):
+  vue-tsc@3.2.5(typescript@5.9.3):
     dependencies:
       '@volar/typescript': 2.4.28
       '@vue/language-core': 3.2.5
-      typescript: 5.9.2
+      typescript: 5.9.3
     optional: true
-
-  vue@3.5.30(typescript@5.9.2):
-    dependencies:
-      '@vue/compiler-dom': 3.5.30
-      '@vue/compiler-sfc': 3.5.30
-      '@vue/runtime-dom': 3.5.30
-      '@vue/server-renderer': 3.5.30(vue@3.5.30(typescript@5.9.2))
-      '@vue/shared': 3.5.30
-    optionalDependencies:
-      typescript: 5.9.2
 
   vue@3.5.30(typescript@5.9.3):
     dependencies:

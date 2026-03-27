@@ -1,6 +1,6 @@
 # Vue Adapter 使用文档
 
-`remote-reload-utils` 的 Vue 适配器使 Vue 3 项目能够加载和使用 React 远程组件。
+`mf-runtime-libs` 的 Vue 适配器使 Vue 3 项目能够加载和使用 React 远程组件。
 
 ## 目录
 
@@ -23,7 +23,7 @@ Vue 适配器提供了以下功能：
 ## 安装
 
 ```bash
-pnpm add remote-reload-utils vue
+pnpm add mf-runtime-libs vue
 ```
 
 ## 快速开始
@@ -34,7 +34,7 @@ pnpm add remote-reload-utils vue
 
 ```typescript
 import { createApp } from 'vue'
-import { mountReactToGlobal } from 'remote-reload-utils/vue'
+import { mountReactToGlobal } from 'mf-runtime-libs/vue'
 import App from './App.vue'
 
 // 异步初始化 React
@@ -53,7 +53,7 @@ bootstrap()
 
 ```vue
 <script setup lang="ts">
-import { VueRemoteModuleProvider } from 'remote-reload-utils/vue'
+import { VueRemoteModuleProvider } from 'mf-runtime-libs/vue'
 
 const handleLoad = (component) => {
   console.log('远程组件已加载:', component)
@@ -93,7 +93,7 @@ const handleError = (error) => {
 
 ```vue
 <script setup lang="ts">
-import { useVueRemoteModule } from 'remote-reload-utils/vue'
+import { useVueRemoteModule } from 'mf-runtime-libs/vue'
 
 const { component, loading, error, retry } = useVueRemoteModule({
   pkg: 'my-react-components',
@@ -246,7 +246,7 @@ function useVueRemoteModule(options: UseVueRemoteModuleOptions): UseVueRemoteMod
 
 ```vue
 <script setup lang="ts">
-import { VueRemoteModuleProvider } from 'remote-reload-utils/vue'
+import { VueRemoteModuleProvider } from 'mf-runtime-libs/vue'
 </script>
 
 <template>
@@ -263,7 +263,7 @@ import { VueRemoteModuleProvider } from 'remote-reload-utils/vue'
 
 ```vue
 <script setup lang="ts">
-import { VueRemoteModuleProvider } from 'remote-reload-utils/vue'
+import { VueRemoteModuleProvider } from 'mf-runtime-libs/vue'
 </script>
 
 <template>
@@ -285,7 +285,7 @@ import { VueRemoteModuleProvider } from 'remote-reload-utils/vue'
 
 ```vue
 <script setup lang="ts">
-import { VueRemoteModuleProvider } from 'remote-reload-utils/vue'
+import { VueRemoteModuleProvider } from 'mf-runtime-libs/vue'
 </script>
 
 <template>
@@ -311,7 +311,7 @@ import { VueRemoteModuleProvider } from 'remote-reload-utils/vue'
 
 ```vue
 <script setup lang="ts">
-import { useVueRemoteModule, mountReactToGlobal } from 'remote-reload-utils/vue'
+import { useVueRemoteModule, mountReactToGlobal } from 'mf-runtime-libs/vue'
 
 const {
   component: Button,

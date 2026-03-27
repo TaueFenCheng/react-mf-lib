@@ -1,5 +1,5 @@
 ---
-"remote-reload-utils": minor
+"mf-runtime-libs": minor
 ---
 
 - docs: 添加远程类型同步文档和配置文件

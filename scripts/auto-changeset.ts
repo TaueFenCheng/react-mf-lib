@@ -63,7 +63,7 @@ function generateChangesetId(): string {
 // 主函数
 function main(): void {
   const args = process.argv.slice(2)
-  const packages = args.length > 0 ? args : ['remote-reload-utils']
+  const packages = args.length > 0 ? args : ['mf-runtime-libs']
 
   // 确保 .changeset 目录存在
   if (!fs.existsSync(changesetDir)) {

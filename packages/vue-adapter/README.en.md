@@ -2,7 +2,7 @@
 
 Load and render React remote components in Vue 3 (via Module Federation).
 
-This package is built on top of `remote-reload-utils` and provides:
+This package is built on top of `mf-runtime-libs` and provides:
 
 - Global React/ReactDOM mounting to `window`
 - `VueRemoteModuleProvider` for template-first usage
@@ -11,7 +11,7 @@ This package is built on top of `remote-reload-utils` and provides:
 ## Install
 
 ```bash
-pnpm add @react-mf-lib/vue-adapter remote-reload-utils
+pnpm add @react-mf-lib/vue-adapter mf-runtime-libs
 ```
 
 ## Quick Start

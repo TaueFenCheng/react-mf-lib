@@ -1,6 +1,6 @@
 # loadRemote 使用文档
 
-`remote-reload-utils` 是一个用于运行时动态加载远程 React 组件的工具库。本文档提供详细的使用指南和 API 参考。
+`mf-runtime-libs` 是一个用于运行时动态加载远程 React 组件的工具库。本文档提供详细的使用指南和 API 参考。
 
 ## 目录
 
@@ -89,13 +89,13 @@ const { mf } = await loadRemoteMultiVersion({
 ## 安装
 
 ```bash
-pnpm add remote-reload-utils
+pnpm add mf-runtime-libs
 ```
 
 或从 workspace 安装：
 
 ```bash
-pnpm add remote-reload-utils --workspace
+pnpm add mf-runtime-libs --workspace
 ```
 
 ## 快速开始
@@ -103,7 +103,7 @@ pnpm add remote-reload-utils --workspace
 ### 1. 基础使用
 
 ```typescript
-import { loadRemoteMultiVersion } from 'remote-reload-utils';
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
 import { useEffect, useState } from 'react';
 
 function App() {
@@ -501,7 +501,7 @@ npm 包名，用于从 CDN 加载。
 ### 示例 1: React Hook 封装
 
 ```typescript
-import { loadRemoteMultiVersion } from 'remote-reload-utils';
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
 
 function useRemoteComponent(
   pkg: string,
@@ -881,7 +881,7 @@ const { mf } = await loadRemoteMultiVersion(options, [
 #### 4. 通过 `registerRemotes` 动态注册多个来源
 
 ```typescript
-import { loadRemoteMultiVersion, createRemoteSourcePlugin } from 'remote-reload-utils';
+import { loadRemoteMultiVersion, createRemoteSourcePlugin } from 'mf-runtime-libs';
 
 const remoteSourcePlugin = createRemoteSourcePlugin('multi-remote-source', [
   {
@@ -944,7 +944,7 @@ function buildCdnUrls(pkg: string, version: string) {
 使用 `preloadRemote` 预加载远程模块，提升用户体验。
 
 ```typescript
-import { preloadRemote } from 'remote-reload-utils';
+import { preloadRemote } from 'mf-runtime-libs';
 
 // 空闲时预加载
 preloadRemote({
@@ -980,7 +980,7 @@ clearPreloadCache();
 使用 `unloadRemote` 卸载已加载的远程模块，释放资源。
 
 ```typescript
-import { unloadRemote, unloadAll, getLoadedRemotes } from 'remote-reload-utils';
+import { unloadRemote, unloadAll, getLoadedRemotes } from 'mf-runtime-libs';
 
 // 卸载指定模块
 await unloadRemote({
@@ -1003,7 +1003,7 @@ console.log(loaded);
 使用 `checkRemoteHealth` 检查远程模块的可用性和性能。
 
 ```typescript
-import { checkRemoteHealth, getRemoteHealthReport, formatHealthStatus } from 'remote-reload-utils';
+import { checkRemoteHealth, getRemoteHealthReport, formatHealthStatus } from 'mf-runtime-libs';
 
 // 检查单个远程模块
 const health = await checkRemoteHealth({
@@ -1029,7 +1029,7 @@ console.log('总体状态:', report.overall);
 提供 `useRemote` 和 `useRemoteList` Hooks，简化 React 中的使用。
 
 ```typescript
-import { useRemote, useRemoteList, onRemoteReady, onRemoteError } from 'remote-reload-utils';
+import { useRemote, useRemoteList, onRemoteReady, onRemoteError } from 'mf-runtime-libs';
 
 // 单个远程组件
 function MyComponent() {
@@ -1084,7 +1084,7 @@ onRemoteError('ui-lib', (error) => {
 使用 `createSharedContext` 在不同远程模块间共享状态。
 
 ```typescript
-import { createSharedContext } from 'remote-reload-utils';
+import { createSharedContext } from 'mf-runtime-libs';
 
 // 创建共享上下文
 const { Provider, useContext, useSharedState, useSelector, setValue, getValue, reset, destroy } =
@@ -1122,7 +1122,7 @@ destroy();  // 销毁上下文
 使用 `eventBus` 实现跨模块通信。
 
 ```typescript
-import { eventBus, createEventBus } from 'remote-reload-utils';
+import { eventBus, createEventBus } from 'mf-runtime-libs';
 
 // 监听事件
 const unsubscribe = eventBus.on('user-login', (user) => {
@@ -1171,7 +1171,7 @@ import {
   sortVersions,
   getLatestVersion,
   getStableVersions,
-} from 'remote-reload-utils';
+} from 'mf-runtime-libs';
 
 // 检查版本兼容性
 const result = checkVersionCompatibility('18.2.0', '^18.0.0', 'react');
@@ -1200,7 +1200,7 @@ const stable = getStableVersions(available);  // 过滤掉 alpha/beta/rc 版本
 提供多种方式在 React 中使用远程组件。
 
 ```typescript
-import { RemoteComponent, SuspenseRemote, ErrorBoundary, withRemote, lazyRemote } from 'remote-reload-utils';
+import { RemoteComponent, SuspenseRemote, ErrorBoundary, withRemote, lazyRemote } from 'mf-runtime-libs';
 
 // 1. 直接使用 RemoteComponent
 function App() {

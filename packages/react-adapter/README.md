@@ -1,6 +1,6 @@
 # @react-mf-lib/react-adapter
 
-React adapter for remote-reload-utils - enables React apps to load remote components with Module Federation.
+React adapter for mf-runtime-libs - enables React apps to load remote components with Module Federation.
 
 ## Features
 
@@ -12,7 +12,7 @@ React adapter for remote-reload-utils - enables React apps to load remote compon
 ## Installation
 
 ```bash
-npm install @react-mf-lib/react-adapter remote-reload-utils
+npm install @react-mf-lib/react-adapter mf-runtime-libs
 ```
 
 ## Usage
