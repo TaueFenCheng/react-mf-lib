@@ -60,7 +60,7 @@
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm run build",
     "format": "biome format --write",
     "check": "biome check --write",
     "test": "vitest run",
@@ -94,6 +94,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "packageManager": "pnpm@10.6.5",
   "dependencies": {
     "@module-federation/enhanced": "0.18.3"
   }
