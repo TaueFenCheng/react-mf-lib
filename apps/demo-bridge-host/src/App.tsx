@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import {
   createLazyComponent,
   loadRemoteMultiVersion,
+  prefetchComponent,
 } from 'mf-runtime-libs'
 
 // 使用 createLazyComponent 创建远程组件
@@ -73,6 +74,14 @@ function RemoteCardWrapper() {
 function App() {
   const [buttonClickCount, setButtonClickCount] = useState(0)
 
+  // 预加载 RemoteCard 组件
+  useEffect(() => {
+    prefetchComponent({
+      id: 'demo_provider/RemoteCard',
+      preloadComponentResource: true,
+    })
+  }, [])
+
   return (
     <div className="App">
       <header className="App-header">
@@ -102,6 +111,7 @@ function App() {
             <li>✅ createLazyComponent working</li>
             <li>✅ loadRemoteMultiVersion integration</li>
             <li>✅ Error handling with fallback</li>
+            <li>✅ prefetchComponent for preloading</li>
           </ul>
         </section>
       </main>

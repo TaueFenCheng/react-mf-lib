@@ -17,7 +17,18 @@ apps/
 
 ## 启动步骤
 
-### 1. 启动 Provider 应用
+### 方式 1：同时启动两个应用（推荐）
+
+在宿主应用目录下执行：
+
+```bash
+cd apps/demo-bridge-host
+pnpm dev:all
+```
+
+这将自动先启动 Provider 应用，等待 3 秒后启动 Host 应用。两个应用都会在终端显示输出，按 `Ctrl+C` 停止所有服务。
+
+### 方式 2.1：启动 Provider 应用
 
 ```bash
 cd apps/demo-bridge-provider
@@ -26,7 +37,7 @@ pnpm dev
 
 Provider 应用将在 http://localhost:3001 启动
 
-### 2. 启动 Host 应用
+### 方式 2.2：启动 Host 应用
 
 ```bash
 cd apps/demo-bridge-host
