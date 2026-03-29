@@ -96,6 +96,7 @@
   },
   "packageManager": "pnpm@10.6.5",
   "dependencies": {
+    "@module-federation/bridge-react": "latest",
     "@module-federation/enhanced": "0.18.3"
   }
 }

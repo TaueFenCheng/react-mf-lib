@@ -119,6 +119,9 @@ importers:
 
   packages/mf-runtime-libs:
     dependencies:
+      '@module-federation/bridge-react':
+        specifier: latest
+        version: 2.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@module-federation/enhanced':
         specifier: 0.18.3
         version: 0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))(webpack@5.105.4)
@@ -985,6 +988,25 @@ packages:
   '@module-federation/bridge-react-webpack-plugin@0.18.3':
     resolution: {integrity: sha512-6+zMzCnfMU6jSJ8fnT1yt5KkhdFwQpH7B3FkBCvdZVomwOJ4P9avAaQjjvplNo/ty7rqsrJfwX+SpE333KR2Rg==}
 
+  '@module-federation/bridge-react@2.3.0':
+    resolution: {integrity: sha512-Tw/JdnBitlrGmr2Jf3vGxw59t3tRguE1tQMNGfNj1kGEhJQnBU1DILmPBfYSEqLrdYZ9ty7bYzBnalKchtj98A==}
+    peerDependencies:
+      hono: ^4.12.7
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
+      react-router: ^6 || ^7
+      react-router-dom: ^4 || ^5 || ^6 || ^7
+    peerDependenciesMeta:
+      hono:
+        optional: true
+      react-router:
+        optional: true
+      react-router-dom:
+        optional: true
+
+  '@module-federation/bridge-shared@2.3.0':
+    resolution: {integrity: sha512-mnnIuc7p1FM1Yvt1sRLnsaNMHojyxX1Z74f6fdb/3R4ElVdJpZ5Nz/tr3Yupo/TqN/uLmbZtVpFcxeojJmCvSQ==}
+
   '@module-federation/cli@0.18.3':
     resolution: {integrity: sha512-HdcFPXx4mTY+2eqLJknJYn9ke4Ua+QCiP5Ey0T4+m73HQe8SBoRUAXR4uQbCI8gIQaLzwFqfCa8SN4FYIFu0Tg==}
     engines: {node: '>=16.0.0'}
@@ -1072,6 +1094,14 @@ packages:
 
   '@module-federation/sdk@0.21.2':
     resolution: {integrity: sha512-t2vHSJ1a9zjg7LLJoEghcytNLzeFCqOat5TbXTav5dgU0xXw82Cf0EfLrxiJL6uUpgbtyvUdqqa2DVAvMPjiiA==}
+
+  '@module-federation/sdk@2.3.0':
+    resolution: {integrity: sha512-xj90q4eILkFA1J30wVQYEIWAEh39tfLbCIw1dz3QXUL2TtD/h19H1rZlRkrtAyUxV6xKjp17EMkyGSHzstf1OA==}
+    peerDependencies:
+      node-fetch: ^3.3.2
+    peerDependenciesMeta:
+      node-fetch:
+        optional: true
 
   '@module-federation/third-party-dts-extractor@0.18.3':
     resolution: {integrity: sha512-hxGrTrU1C71dW2cFANoUGzYO5ovGXL5wDTu5nwwNQ81ao9DfhjNkYnCfkvHDHh5648N4wUhnuLjerUc8F8ZJxA==}
@@ -2751,6 +2781,9 @@ packages:
   loupe@3.2.1:
     resolution: {integrity: sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==}
 
+  lru-cache@10.4.3:
+    resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
+
   luxon@3.7.1:
     resolution: {integrity: sha512-RkRWjA926cTvz5rAb1BqyWkKbbjzCGchDUIKMCUvNi17j6f6j8uHGDV82Aqcqtzd+icoYpELmG3ksgGiFNNcNg==}
     engines: {node: '>=12'}
@@ -3036,6 +3069,11 @@ packages:
     resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
     peerDependencies:
       react: ^18.3.1
+
+  react-error-boundary@4.1.2:
+    resolution: {integrity: sha512-GQDxZ5Jd+Aq/qUxbCm1UtzmL/s++V7zKgE8yMktJiCQXCCFZnMZh9ng+6/Ne6PjNSXH0L9CjeOEREfRnq6Duag==}
+    peerDependencies:
+      react: '>=16.13.1'
 
   react-refresh@0.17.0:
     resolution: {integrity: sha512-z6F7K9bV85EfseRCp2bzrpyQ0Gkw1uLoCel9XBVWPg/TjRj94SkJzUTGfOa4bs7iJvBWtQG0Wq7wnI0syw3EBQ==}
@@ -4315,6 +4353,19 @@ snapshots:
       '@types/semver': 7.5.8
       semver: 7.6.3
 
+  '@module-federation/bridge-react@2.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@module-federation/bridge-shared': 2.3.0
+      '@module-federation/sdk': 2.3.0
+      lru-cache: 10.4.3
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-error-boundary: 4.1.2(react@18.3.1)
+    transitivePeerDependencies:
+      - node-fetch
+
+  '@module-federation/bridge-shared@2.3.0': {}
+
   '@module-federation/cli@0.18.3(typescript@5.9.3)(vue-tsc@3.2.5(typescript@5.9.3))':
     dependencies:
       '@modern-js/node-bundle-require': 2.68.2
@@ -4478,6 +4529,8 @@ snapshots:
   '@module-federation/sdk@0.18.3': {}
 
   '@module-federation/sdk@0.21.2': {}
+
+  '@module-federation/sdk@2.3.0': {}
 
   '@module-federation/third-party-dts-extractor@0.18.3':
     dependencies:
@@ -6212,6 +6265,8 @@ snapshots:
 
   loupe@3.2.1: {}
 
+  lru-cache@10.4.3: {}
+
   luxon@3.7.1: {}
 
   magic-string@0.30.21:
@@ -6429,6 +6484,11 @@ snapshots:
       loose-envify: 1.4.0
       react: 18.3.1
       scheduler: 0.23.2
+
+  react-error-boundary@4.1.2(react@18.3.1):
+    dependencies:
+      '@babel/runtime': 7.29.2
+      react: 18.3.1
 
   react-refresh@0.17.0: {}
 
