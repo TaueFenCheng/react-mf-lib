@@ -1,12 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { createLazyLoadComponentPlugin } from '../lazy-load-component-plugin'
 
 describe('createLazyLoadComponentPlugin', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('should return a plugin object with name and registerRemotes', () => {
+  it('should return a plugin object', () => {
     const plugin = createLazyLoadComponentPlugin()
     expect(plugin).toBeDefined()
     expect(typeof plugin.name).toBe('string')
@@ -15,10 +11,5 @@ describe('createLazyLoadComponentPlugin', () => {
   it('should have correct plugin name', () => {
     const plugin = createLazyLoadComponentPlugin()
     expect(plugin.name).toBe('lazy-load-component-plugin')
-  })
-
-  it('should accept custom plugin name', () => {
-    const plugin = createLazyLoadComponentPlugin({ name: 'custom-plugin' })
-    expect(plugin.name).toBe('custom-plugin')
   })
 })

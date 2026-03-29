@@ -83,9 +83,16 @@ export { fallbackPlugin } from './plugins/fallback'
 
 // Bridge 模块（懒加载组件）
 export {
-  useLazyComponent,
+  createLazyLoadComponentPlugin,
   createLazyComponent,
-  ERROR_TYPE,
-} from './bridge/create-lazy-component'
-export type { UseLazyComponentResult } from './bridge/create-lazy-component'
-export type { LazyComponentOptions, ErrorInfo } from './bridge/types'
+  useLazyComponent,
+  prefetchComponent,
+} from './bridge'
+export type {
+  LazyComponentOptions,
+  PrefetchOptions,
+  BridgePluginOptions,
+  ErrorInfo,
+  UseLazyComponentResult,
+} from './bridge'
+export { ERROR_TYPE } from './bridge/types'

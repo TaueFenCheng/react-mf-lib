@@ -14,6 +14,11 @@ export default defineConfig({
     },
     injectStyles: true,
   },
+  tools: {
+    rspack: {
+      externals: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
+  },
   lib: [
     {
       format: 'esm',

@@ -1,4 +1,5 @@
-import { useState, useEffect, type ComponentType } from 'react'
+/** @jsxImportSource react */
+import React, { useState, useEffect, type ComponentType } from 'react'
 import type { LazyComponentOptions, ErrorInfo } from './types'
 
 export { ERROR_TYPE } from './types'
@@ -65,10 +66,16 @@ export function useLazyComponent<T = unknown>(
         if (!mounted) return
 
         // 处理默认导出和具名导出
-        const exportedComponent =
-          exportName === 'default'
-            ? (module as { default?: ComponentType<T> }).default
-            : (module as Record<string, ComponentType<T>>)[exportName]
+        // Module Federation 可能返回直接组件或 { default: Component }
+        let exportedComponent: ComponentType<T> | undefined
+
+        if (exportName === 'default') {
+          // 尝试默认导出，如果不存在则使用模块本身
+          exportedComponent = (module as { default?: ComponentType<T> }).default || (module as ComponentType<T>)
+        } else {
+          // 具名导出
+          exportedComponent = (module as Record<string, ComponentType<T>>)[exportName]
+        }
 
         if (!exportedComponent) {
           throw new Error(`Export "${exportName}" not found in module`)
