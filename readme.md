@@ -2,20 +2,31 @@
 
 一个用于运行时动态加载远程 React 组件的工具库，支持多版本共存、CDN 故障转移和完整的模块生命周期管理。
 
-[![npm version](https://img.shields.io/npm/v/remote-reload-utils.svg)](https://www.npmjs.com/package/remote-reload-utils)
-[![License](https://img.shields.io/npm/l/remote-reload-utils.svg)](https://github.com/TaueFenCheng/react-mf-lib/blob/main/LICENSE)
+[![npm version](https://img.shields.io/npm/v/mf-runtime-libs.svg)](https://www.npmjs.com/package/mf-runtime-libs)
+[![License](https://img.shields.io/npm/l/mf-runtime-libs.svg)](https://github.com/TaueFenCheng/react-mf-lib/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
 ## 仓库概览
 
-这是一个 pnpm monorepo，当前包含：
+这是一个 pnpm monorepo，包含：
 
-- `packages/remote-reload-utils`：核心运行时加载工具库（已发布 npm）
-- `packages/vue-adapter`：Vue 3 适配层（在 Vue 中加载 React 远程组件）
-- `packages/react-adapter`：React 适配层（简化的 React 组件封装）
-- `apps/test-mf-unpkg`：远程组件示例应用（React）
-- `apps/host-react18-remote`：宿主示例应用（React）
-- `apps/host-vue3-remote`：宿主示例应用（Vue 3）
+### 已发布包
+
+| 包名 | 版本 | 说明 |
+|------|------|------|
+| `mf-runtime-libs` | v1.0.4 | 核心运行时加载工具库 |
+| `@react-mf-lib/react-adapter` | v1.0.1 | React 适配层 |
+| `@react-mf-lib/vue-adapter` | v1.0.1 | Vue 3 适配层（在 Vue 中加载 React 组件） |
+
+### 示例应用
+
+| 应用 | 说明 |
+|------|------|
+| `demo-bridge-host` | Bridge 模块宿主应用 demo |
+| `demo-bridge-provider` | Bridge 模块远程组件提供者 demo |
+| `test-mf-unpkg` | 远程组件示例应用（React） |
+| `host-react18-remote` | React 18 宿主应用示例 |
+| `host-vue3-remote` | Vue 3 宿主应用示例（消费 React 组件） |
 
 ## 特性
 
@@ -29,15 +40,16 @@
 - 📊 **性能优化** - 预加载、卸载、健康检查
 - 🔗 **事件总线** - 跨模块通信支持
 - ✅ **质量保障** - 155+ 单元测试，高覆盖率
+- 🌉 **Bridge 模块** - 支持懒加载远程组件和预加载
 
 ## 安装
 
 ```bash
-npm install remote-reload-utils
+npm install mf-runtime-libs
 # 或
-pnpm add remote-reload-utils
+pnpm add mf-runtime-libs
 # 或
-yarn add remote-reload-utils
+yarn add mf-runtime-libs
 ```
 
 ## 快速开始
@@ -45,7 +57,7 @@ yarn add remote-reload-utils
 ### 基本使用
 
 ```typescript
-import { loadRemoteMultiVersion } from 'remote-reload-utils';
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
 
 async function loadRemoteComponent() {
   const { scopeName, mf } = await loadRemoteMultiVersion({
@@ -59,19 +71,73 @@ async function loadRemoteComponent() {
 }
 ```
 
-### React Lazy + Suspense 方式
+### Bridge 模块 - 懒加载远程组件
 
 ```typescript
-import { lazyRemote } from 'remote-reload-utils';
+import { createLazyComponent, loadRemoteMultiVersion } from 'mf-runtime-libs';
+
+const RemoteButton = createLazyComponent({
+  loader: () => loadRemoteMultiVersion({
+    name: 'remote',
+    pkg: '@org/remote-pkg',
+    version: '1.0.0',
+  }).then(({ mf }) => mf.loadRemote('remote/Button')),
+  loading: <div>Loading...</div>,
+  fallback: ({ error }) => <div>Error: {error.message}</div>,
+});
+
+function App() {
+  return <RemoteButton variant="primary" />;
+}
+```
+
+### 预加载组件
+
+```typescript
+import { prefetchComponent } from 'mf-runtime-libs';
+
+// 预加载远程组件资源
+prefetchComponent({
+  id: 'remote/Button',
+  preloadComponentResource: true,
+});
+```
+
+### 使用 useLazyComponent Hook
+
+```typescript
+import { useLazyComponent, loadRemoteMultiVersion } from 'mf-runtime-libs';
+
+function MyComponent() {
+  const { loading, error, Component } = useLazyComponent({
+    loader: () => loadRemoteMultiVersion({
+      name: 'remote',
+      pkg: '@org/remote-pkg',
+      version: '1.0.0',
+    }),
+    loading: <div>Loading...</div>,
+    fallback: ({ error }) => <div>Error: {error.message}</div>,
+  });
+
+  if (loading) return null;
+  if (error) return <div>Error: {error.message}</div>;
+  if (Component) return <Component />;
+  return null;
+}
+```
+
+### React Adapter 方式
+
+```typescript
+import { lazyRemote, RemoteModuleProvider } from '@react-mf-lib/react-adapter';
 import { Suspense } from 'react';
 
+// 方式 1: lazyRemote
 const RemoteDashboard = lazyRemote({
   pkg: '@myorg/remote-app',
   version: '^1.0.0',
   moduleName: 'Dashboard',
   scopeName: 'myorg',
-  maxRetries: 3,
-  retryDelay: 1000,
 });
 
 function App() {
@@ -81,13 +147,8 @@ function App() {
     </Suspense>
   );
 }
-```
 
-### 使用 RemoteModuleProvider
-
-```typescript
-import { RemoteModuleProvider } from '@react-mf-lib/react-adapter';
-
+// 方式 2: RemoteModuleProvider
 function App() {
   return (
     <RemoteModuleProvider
@@ -98,8 +159,8 @@ function App() {
       loadingFallback={<Spinner />}
       errorFallback={(error, reset) => (
         <div>
-          <p>加载失败：{error.message}</p>
-          <button onClick={reset}>重试</button>
+          <p>Error: {error.message}</p>
+          <button onClick={reset}>Retry</button>
         </div>
       )}
     />
@@ -107,16 +168,93 @@ function App() {
 }
 ```
 
-## 完整 API 文档
+### Vue Adapter 方式
 
-### 核心加载
+```typescript
+import { VueRemoteModuleProvider } from '@react-mf-lib/vue-adapter';
 
-#### loadRemoteMultiVersion
+export default {
+  template: `
+    <VueRemoteModuleProvider
+      pkg="@myorg/remote-app"
+      version="^1.0.0"
+      moduleName="Dashboard"
+      scopeName="myorg"
+    />
+  `,
+};
+```
+
+## Bridge 模块 API
+
+### createLazyComponent
+
+创建懒加载远程组件的工厂函数。
+
+```typescript
+import { createLazyComponent } from 'mf-runtime-libs';
+
+const LazyComponent = createLazyComponent<T>(options);
+```
+
+**参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `loader` | `() => Promise<T>` | ✅ | 加载远程模块的函数 |
+| `loading` | `ReactNode` | ✅ | 加载中的 UI |
+| `fallback` | `(errorInfo) => ReactNode` | ✅ | 错误兜底 UI |
+| `export` | `string` | ❌ | 导出名称，默认 `'default'` |
+| `delayLoading` | `number` | ❌ | 延迟显示 loading 的毫秒数 |
+| `dataFetchParams` | `unknown` | ❌ | 数据获取参数 |
+| `noSSR` | `boolean` | ❌ | 是否禁用服务端渲染 |
+
+### useLazyComponent
+
+用于懒加载远程组件的 React Hook。
+
+```typescript
+import { useLazyComponent } from 'mf-runtime-libs';
+
+const { loading, error, Component } = useLazyComponent({
+  loader: () => loadRemoteMultiVersion(options),
+  loading: <div>Loading...</div>,
+  fallback: ({ error }) => <div>Error: {error.message}</div>,
+});
+```
+
+**返回值**:
+
+```typescript
+{
+  loading: boolean,      // 是否正在加载
+  error: ErrorInfo | null,  // 错误信息
+  Component: ComponentType<T> | null  // 加载完成的组件
+}
+```
+
+### prefetchComponent
+
+预加载远程组件资源。
+
+```typescript
+import { prefetchComponent } from 'mf-runtime-libs';
+
+prefetchComponent({
+  id: 'remote/Component',
+  preloadComponentResource: true,
+  dataFetchParams: { userId: 123 },
+});
+```
+
+## 核心 API 文档
+
+### loadRemoteMultiVersion
 
 动态加载远程模块，支持多版本和故障转移。
 
 ```typescript
-import { loadRemoteMultiVersion } from 'remote-reload-utils';
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
 
 const { scopeName, mf } = await loadRemoteMultiVersion(options, plugins);
 ```
@@ -147,138 +285,10 @@ const module = await mf.loadRemote(`${scopeName}/Button`);
 const Button = module.default;
 ```
 
-### 预加载
-
-```typescript
-import { preloadRemote, preloadRemoteList } from 'remote-reload-utils';
-
-// 预加载单个模块
-await preloadRemote({
-  pkg: '@myorg/remote-app',
-  version: '1.0.0',
-  name: 'myorg',
-  priority: 'idle', // 'idle' | 'high'
-  force: false,
-});
-
-// 预加载多个模块
-await preloadRemoteList([
-  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
-  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
-], (loaded, total) => {
-  console.log(`Progress: ${loaded}/${total}`);
-});
-```
-
-### 卸载
-
-```typescript
-import { unloadRemote, unloadAll } from 'remote-reload-utils';
-
-// 卸载特定模块
-await unloadRemote({
-  name: 'myorg',
-  pkg: '@myorg/remote-app',
-  version: '1.0.0',
-  clearCache: true,
-});
-
-// 卸载所有模块
-await unloadAll(true); // true = 清除所有缓存
-```
-
-### 健康检查
-
-```typescript
-import { checkRemoteHealth, getRemoteHealthReport } from 'remote-reload-utils';
-
-// 检查单个远程模块健康状态
-const health = await checkRemoteHealth({
-  pkg: '@myorg/remote-app',
-  version: '1.0.0',
-  name: 'myorg',
-});
-
-console.log(health.status); // 'healthy' | 'degraded' | 'unhealthy'
-console.log(health.latency); // 延迟（毫秒）
-
-// 生成健康报告
-const report = await getRemoteHealthReport([
-  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
-  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
-]);
-
-console.log(report.overall); // 'healthy' | 'degraded' | 'unhealthy'
-```
-
-### 预加载
-
-```typescript
-import { preloadRemote, preloadRemoteList } from 'remote-reload-utils';
-
-// 预加载单个模块
-await preloadRemote({
-  pkg: '@myorg/remote-app',
-  version: '1.0.0',
-  name: 'myorg',
-  priority: 'idle', // 'idle' | 'high'
-  force: false,
-});
-
-// 预加载多个模块
-await preloadRemoteList([
-  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
-  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
-], (loaded, total) => {
-  console.log(`Progress: ${loaded}/${total}`);
-});
-```
-
-### 卸载
-
-```typescript
-import { unloadRemote, unloadAll } from 'remote-reload-utils';
-
-// 卸载特定模块
-await unloadRemote({
-  name: 'myorg',
-  pkg: '@myorg/remote-app',
-  version: '1.0.0',
-  clearCache: true,
-});
-
-// 卸载所有模块
-await unloadAll(true); // true = 清除所有缓存
-```
-
-### 健康检查
-
-```typescript
-import { checkRemoteHealth, getRemoteHealthReport } from 'remote-reload-utils';
-
-// 检查单个远程模块健康状态
-const health = await checkRemoteHealth({
-  pkg: '@myorg/remote-app',
-  version: '1.0.0',
-  name: 'myorg',
-});
-
-console.log(health.status); // 'healthy' | 'degraded' | 'unhealthy'
-console.log(health.latency); // 延迟（毫秒）
-
-// 生成健康报告
-const report = await getRemoteHealthReport([
-  { pkg: '@myorg/app1', version: '1.0.0', name: 'app1' },
-  { pkg: '@myorg/app2', version: '2.0.0', name: 'app2' },
-]);
-
-console.log(report.overall); // 'healthy' | 'degraded' | 'unhealthy'
-```
-
 ### 事件总线
 
 ```typescript
-import { eventBus } from 'remote-reload-utils';
+import { eventBus } from 'mf-runtime-libs';
 
 // 订阅事件
 const unsubscribe = eventBus.on('user-login', (user, meta) => {
@@ -294,21 +304,11 @@ eventBus.once('notification', (msg) => {
   console.log('Received once:', msg);
 });
 
-// 带过滤器的订阅
-eventBus.on(
-  'message',
-  (data) => console.log('Received:', data),
-  { filter: (data) => data.priority === 'high' }
-);
-
 // 取消订阅
 unsubscribe();
 
 // 获取事件历史
 const history = eventBus.getHistory('user-login');
-
-// 获取所有事件
-const events = eventBus.getEvents();
 ```
 
 ### 版本工具
@@ -321,7 +321,7 @@ import {
   compareVersions,
   getLatestVersion,
   getStableVersions,
-} from 'remote-reload-utils';
+} from 'mf-runtime-libs';
 
 // 检查版本兼容性
 const result = checkVersionCompatibility('18.2.0', '^18.0.0', 'react');
@@ -331,183 +331,45 @@ console.log(result.severity); // 'info' | 'warning' | 'error'
 // 版本范围匹配
 satisfiesVersion('1.5.0', '^1.0.0'); // true
 satisfiesVersion('2.0.0', '~1.2.0'); // false
-satisfiesVersion('1.2.5', '>=1.2.0'); // true
-
-// 版本解析
-const parsed = parseVersion('1.2.3-alpha.1');
-// { major: 1, minor: 2, patch: 3, prerelease: 'alpha.1', raw: '1.2.3-alpha.1' }
 
 // 版本比较
 compareVersions('2.0.0', '1.0.0'); // > 0
 compareVersions('1.0.0', '1.0.0'); // 0
-
-// 获取最新稳定版本
-const versions = ['1.0.0', '2.0.0-alpha', '2.0.0', '3.0.0-beta'];
-getLatestVersion(versions); // '3.0.0-beta'
-getStableVersions(versions); // ['1.0.0', '2.0.0']
-```
-
-### React 组件
-
-#### ErrorBoundary
-
-```typescript
-import { ErrorBoundary } from '@react-mf-lib/react-adapter';
-
-<ErrorBoundary
-  fallback={(error, reset) => (
-    <div>
-      <p>Error: {error.message}</p>
-      <button onClick={reset}>Try again</button>
-    </div>
-  )}
-  onError={(error, errorInfo) => {
-    console.error('Caught error:', error, errorInfo);
-  }}
-  onReset={() => console.log('Reset clicked')}
->
-  <MyComponent />
-</ErrorBoundary>
-```
-
-#### lazyRemote
-
-```typescript
-import { lazyRemote } from '@react-mf-lib/react-adapter';
-import { Suspense } from 'react';
-
-const RemoteDashboard = lazyRemote({
-  pkg: '@myorg/remote-app',
-  version: '^1.0.0',
-  moduleName: 'Dashboard',
-  scopeName: 'myorg',
-  maxRetries: 3,
-  retryDelay: 1000,
-});
-
-function App() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <RemoteDashboard userId={123} />
-    </Suspense>
-  );
-}
-```
-
-#### SuspenseRemoteLoader
-
-```typescript
-import { SuspenseRemoteLoader } from '@react-mf-lib/react-adapter';
-
-<SuspenseRemoteLoader
-  pkg="@myorg/remote-app"
-  version="^1.0.0"
-  moduleName="Dashboard"
-  scopeName="myorg"
-  fallback={<Spinner />}
-  errorFallback={(error) => <div>Error: {error.message}</div>}
-  componentProps={{ userId: 123 }}
-/>
-```
-
-### 工具函数
-
-```typescript
-import {
-  // 版本缓存
-  getVersionCache,
-  setVersionCache,
-  fetchLatestVersion,
-
-  // URL 构建
-  buildCdnUrls,
-  buildFinalUrls,
-
-  // 共享配置
-  getFinalSharedConfig,
-
-  // 卸载状态
-  getLoadedRemotes,
-  isRemoteLoaded,
-  registerRemoteInstance,
-  registerLoadedModule,
-
-  // 预加载状态
-  getPreloadStatus,
-  clearPreloadCache,
-  cancelPreload,
-
-  // 格式化
-  formatHealthStatus,
-} from 'remote-reload-utils';
-```
-
-## 相关文档
-
-- **[remote-reload-utils 详细文档](./packages/remote-reload-utils/loadRemote.md)** - 核心工具库完整 API
-- **[vue-adapter 文档](./packages/vue-adapter/README.md)** - Vue 3 适配层使用指南
-- **[react-adapter 文档](./packages/react-adapter/README.md)** - React 适配层使用指南
-
-## 项目结构
-
-```
-react-mf-lib/
-├── packages/
-│   ├── remote-reload-utils/          # 核心工具库
-│   │   ├── src/
-│   │   │   ├── index.ts              # 主入口
-│   │   │   ├── loader/
-│   │   │   │   ├── index.ts          # loadRemoteMultiVersion
-│   │   │   │   └── utils.ts          # 加载工具函数
-│   │   │   ├── preload/              # 预加载模块
-│   │   │   ├── unload/               # 卸载管理
-│   │   │   ├── health/               # 健康检查
-│   │   │   ├── version/              # 版本工具
-│   │   │   ├── event-bus/            # 事件总线
-│   │   │   └── plugins/              # 插件系统
-│   │   ├── __tests__/                # 单元测试
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   ├── vue-adapter/                  # Vue 3 适配层
-│   │   ├── src/
-│   │   │   ├── components/           # Vue 组件
-│   │   │   ├── hooks/                # Vue Hooks
-│   │   │   ├── composables/          # Composables
-│   │   │   └── types/                # 类型定义
-│   │   └── README.md
-│   └── react-adapter/                # React 适配层
-│       ├── src/
-│       │   ├── components/           # React 组件
-│       │   └── hooks/                # React Hooks
-│       └── README.md
-└── apps/
-    ├── test-mf-unpkg/                # 远程组件示例（React）
-    ├── host-react18-remote/          # 宿主应用示例（React）
-    └── host-vue3-remote/             # 宿主应用示例（Vue 3）
 ```
 
 ## 运行示例
 
-### 1. 启动远程组件（remote）
+### Bridge Demo
 
 ```bash
+# 同时启动 Provider 和 Host（推荐）
+cd apps/demo-bridge-host
+pnpm dev:all
+
+# 或分别启动
+# 1. 启动 Provider (端口 3001)
+cd apps/demo-bridge-provider
+pnpm dev
+
+# 2. 启动 Host (端口 3002)
+cd apps/demo-bridge-host
+pnpm dev
+```
+
+访问 http://localhost:3002 查看效果
+
+### 传统 MF 示例
+
+```bash
+# 1. 启动远程组件
 pnpm --filter test-mf-unpkg dev
-```
 
-### 2. 启动 React 宿主应用（host-react）
-
-```bash
+# 2. 启动 React 宿主应用
 pnpm --filter host-react18-remote dev
-```
 
-### 3. 启动 Vue 宿主应用（host-vue）
-
-```bash
-pnpm --filter @react-mf-lib/vue-adapter build
+# 3. 启动 Vue 宿主应用（消费 React 组件）
 pnpm --filter host-vue3-remote dev
 ```
-
-按各应用控制台输出的地址访问运行效果。
 
 ## 开发
 
@@ -520,51 +382,97 @@ pnpm install
 ### 构建
 
 ```bash
-# 构建工具库
-pnpm --filter remote-reload-utils build
+# 构建所有包
+pnpm build
 
-# 构建 Vue 适配器
+# 构建单个包
+pnpm --filter mf-runtime-libs build
+pnpm --filter @react-mf-lib/react-adapter build
 pnpm --filter @react-mf-lib/vue-adapter build
 
 # 监听模式
-pnpm --filter remote-reload-utils dev
+pnpm --filter mf-runtime-libs dev
 ```
 
 ### 测试
 
 ```bash
 # 运行所有测试
-pnpm --filter remote-reload-utils test
+pnpm --filter mf-runtime-libs test
 
 # 监听模式
-pnpm --filter remote-reload-utils test:watch
+pnpm --filter mf-runtime-libs test:watch
 
 # 生成覆盖率报告
-pnpm --filter remote-reload-utils test --coverage
+pnpm --filter mf-runtime-libs test --coverage
 ```
 
 ### 代码检查
 
 ```bash
 # 格式化代码
-pnpm --filter remote-reload-utils format
+pnpm format
 
 # 代码检查
-pnpm --filter remote-reload-utils check
+pnpm check
 
-# Vue 适配器格式化/检查
-pnpm --filter @react-mf-lib/vue-adapter lint
-pnpm --filter @react-mf-lib/vue-adapter check
+# 单个包
+pnpm --filter mf-runtime-libs format
+pnpm --filter mf-runtime-libs check
+```
+
+## 项目结构
+
+```
+react-mf-lib/
+├── packages/
+│   ├── mf-runtime-libs/          # 核心工具库 (v1.0.4)
+│   │   ├── src/
+│   │   │   ├── index.ts          # 主入口
+│   │   │   ├── loader/           # loadRemoteMultiVersion
+│   │   │   ├── preload/          # 预加载模块
+│   │   │   ├── unload/           # 卸载管理
+│   │   │   ├── health/           # 健康检查
+│   │   │   ├── version/          # 版本工具
+│   │   │   ├── event-bus/        # 事件总线
+│   │   │   ├── plugins/          # 插件系统
+│   │   │   ├── hooks/            # React Hooks
+│   │   │   ├── shared-state/     # 共享状态
+│   │   │   └── bridge/           # Bridge 模块
+│   │   │       ├── index.ts
+│   │   │       ├── types.ts
+│   │   │       ├── create-lazy-component.tsx
+│   │   │       ├── prefetch.ts
+│   │   │       └── lazy-load-component-plugin.ts
+│   │   ├── __tests__/            # 单元测试
+│   │   ├── rslib.config.ts
+│   │   └── package.json
+│   ├── react-adapter/            # React 适配器 (v1.0.1)
+│   │   └── src/
+│   │       ├── components/       # RemoteModuleProvider, lazyRemote
+│   │       └── hooks/            # useRemoteModuleHook
+│   └── vue-adapter/              # Vue 适配器 (v1.0.1)
+│       └── src/
+│           ├── components/       # VueRemoteModuleProvider
+│           ├── hooks/            # useVueRemoteModule
+│           └── utils/            # mountReactToGlobal
+└── apps/
+    ├── demo-bridge-provider/     # Bridge Provider Demo (3001)
+    ├── demo-bridge-host/         # Bridge Host Demo (3002)
+    ├── test-mf-unpkg/            # 远程组件示例
+    ├── host-react18-remote/      # React 18 宿主
+    └── host-vue3-remote/         # Vue 3 宿主
 ```
 
 ## 技术栈
 
 - **构建工具**: Rslib, Rsbuild, Rspack
-- **运行时**: @module-federation/enhanced
+- **运行时**: @module-federation/enhanced, @module-federation/bridge-react
 - **包管理**: pnpm (workspace)
 - **代码规范**: Biome
-- **测试框架**: Vitest
+- **测试框架**: Vitest + happy-dom
 - **类型检查**: TypeScript
+- **版本管理**: Changesets
 
 ## 最佳实践
 
@@ -588,38 +496,45 @@ await loadRemoteMultiVersion({
 });
 ```
 
-### 2. 错误处理
+### 2. 预加载优化
 
 ```typescript
-try {
-  const { mf } = await loadRemoteMultiVersion(options);
-  const mod = await mf.loadRemote(`${scopeName}/MyComponent`);
-} catch (error) {
-  console.error('Failed to load remote module:', error);
-  // 显示降级 UI
-}
-```
-
-### 3. 预加载优化
-
-```typescript
-// 在应用空闲时预加载
-preloadRemote({
-  pkg: '@myorg/remote-app',
-  version: '1.0.0',
-  priority: 'idle',
-});
+// 在用户可能访问的路由预加载
+useEffect(() => {
+  prefetchComponent({
+    id: 'remote/Dashboard',
+    preloadComponentResource: true,
+  });
+}, []);
 
 // 高优先级立即加载
-preloadRemote({
-  pkg: '@myorg/critical-module',
+prefetchComponent({
+  id: 'remote/CriticalModule',
   priority: 'high',
+});
+```
+
+### 3. 错误处理
+
+```typescript
+const MyLazyComponent = createLazyComponent({
+  loader: () => loadRemoteMultiVersion(options),
+  loading: <Spinner />,
+  fallback: ({ error, errorType }) => (
+    <ErrorFallback
+      error={error}
+      type={errorType} // 'LOAD_REMOTE' | 'DATA_FETCH' | 'RENDER'
+      onRetry={() => window.location.reload()}
+    />
+  ),
 });
 ```
 
 ### 4. 资源清理
 
 ```typescript
+import { unloadRemote } from 'mf-runtime-libs';
+
 // 组件卸载时清理
 useEffect(() => {
   return () => {
@@ -636,6 +551,22 @@ useEffect(() => {
 2. 查看浏览器控制台的错误信息
 3. 验证远程组件是否正确构建
 4. 检查 Module Federation 配置是否匹配
+5. 确认 `remoteEntry.js` 可访问
+
+### "React is not defined" 错误
+
+确保库的构建配置正确外部化 React：
+
+```typescript
+// rslib.config.ts
+export default defineConfig({
+  tools: {
+    rspack: {
+      externals: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
+  },
+});
+```
 
 ### 版本冲突
 
@@ -649,17 +580,30 @@ useEffect(() => {
 2. 检查 TypeScript 配置
 3. 使用 `import type` 导入类型
 
+## 相关文档
+
+- **[mf-runtime-libs 详细文档](./packages/mf-runtime-libs/loadRemote.md)** - 核心工具库完整 API
+- **[vue-adapter 文档](./packages/vue-adapter/README.md)** - Vue 3 适配层使用指南
+- **[react-adapter 文档](./packages/react-adapter/README.md)** - React 适配层使用指南
+
 ## 更新日志
+
+### v1.0.4 (mf-runtime-libs)
+
+- 新增 Bridge 模块：`createLazyComponent`、`useLazyComponent`
+- 新增 `prefetchComponent` 预加载功能
+- 新增 `createLazyLoadComponentPlugin` 导出
+- 完善错误处理和类型定义
 
 ### v0.0.12
 
-- 重构：使用 remote-reload-utils 替换 RemoteModuleCard
+- 重构：使用 mf-runtime-libs 替换 RemoteModuleCard
 - 新增：完整的单元测试覆盖（155+ 测试）
 - 新增：健康检查模块
 - 新增：事件总线模块
 - 新增：版本兼容性检查
 
-[查看详细更新日志](./packages/remote-reload-utils/CHANGELOG.md)
+[查看详细更新日志](./packages/mf-runtime-libs/CHANGELOG.md)
 
 ## 许可证
 
@@ -677,11 +621,9 @@ ISC
 
 ## 相关链接
 
-- [remote-reload-utils 详细文档](./packages/remote-reload-utils/loadRemote.md)
-- [vue-adapter 文档（中文）](./packages/vue-adapter/README.md)
-- [vue-adapter docs (English)](./packages/vue-adapter/README.en.md)
-- [vue-adapter 源码文档](./packages/vue-adapter/src/README.md)
-- [host-vue3-remote 使用说明](./apps/host-vue3-remote/README.md)
+- [npm - mf-runtime-libs](https://www.npmjs.com/package/mf-runtime-libs)
+- [npm - @react-mf-lib/react-adapter](https://www.npmjs.com/package/@react-mf-lib/react-adapter)
+- [npm - @react-mf-lib/vue-adapter](https://www.npmjs.com/package/@react-mf-lib/vue-adapter)
 - [Module Federation 官方文档](https://module-federation.io/)
 - [Rsbuild 文档](https://rsbuild.dev/)
-- [npm 包页面](https://www.npmjs.com/package/remote-reload-utils)
+- [Rslib 文档](https://rslib.dev/)
