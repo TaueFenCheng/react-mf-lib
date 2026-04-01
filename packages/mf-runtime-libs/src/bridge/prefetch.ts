@@ -5,6 +5,7 @@ import type { PrefetchOptions } from './types'
  * 允许测试时注入 mock
  */
 function getDefaultInstance() {
+  // 动态 require 以避免循环依赖和确保运行时加载
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { getInstance } = require('@module-federation/enhanced/runtime')
   return getInstance()
@@ -32,15 +33,17 @@ function getDefaultInstance() {
  */
 export function prefetchComponent(
   options: PrefetchOptions,
-  getInstanceFn?: () => unknown
+  getInstanceFn?: () => unknown,
 ): void {
   try {
     const getInstance = getInstanceFn ?? getDefaultInstance
-    const instance = getInstance() as { prefetch?: (opts: PrefetchOptions) => void }
+    const instance = getInstance() as {
+      prefetch?: (opts: PrefetchOptions) => void
+    }
 
     if (!instance || typeof instance.prefetch !== 'function') {
       console.warn(
-        '[mf-runtime-libs/bridge] instance.prefetch 不可用，请确保已注册 lazyLoadComponentPlugin 插件'
+        '[mf-runtime-libs/bridge] instance.prefetch 不可用，请确保已注册 lazyLoadComponentPlugin 插件',
       )
       return
     }
@@ -53,7 +56,7 @@ export function prefetchComponent(
   } catch (error) {
     console.warn(
       '[mf-runtime-libs/bridge] 预加载失败:',
-      error instanceof Error ? error.message : error
+      error instanceof Error ? error.message : error,
     )
   }
 }

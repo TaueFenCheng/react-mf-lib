@@ -1,9 +1,10 @@
 /** @jsxImportSource react */
-import React, { useState, useEffect, type ComponentType } from 'react'
-import type { LazyComponentOptions, ErrorInfo } from './types'
+import React, { type ComponentType, useEffect, useState } from 'react'
+import type { ErrorInfo, LazyComponentOptions } from './types'
+import { ERROR_TYPE } from './types'
 
-export { ERROR_TYPE } from './types'
 export type { ErrorInfo } from './types'
+export { ERROR_TYPE } from './types'
 
 export interface UseLazyComponentResult<T> {
   loading: boolean
@@ -27,7 +28,7 @@ export interface UseLazyComponentResult<T> {
  * ```
  */
 export function useLazyComponent<T = unknown>(
-  options: LazyComponentOptions<T>
+  options: LazyComponentOptions<T>,
 ): UseLazyComponentResult<T> {
   const {
     loader,
@@ -71,10 +72,14 @@ export function useLazyComponent<T = unknown>(
 
         if (exportName === 'default') {
           // 尝试默认导出，如果不存在则使用模块本身
-          exportedComponent = (module as { default?: ComponentType<T> }).default || (module as ComponentType<T>)
+          exportedComponent =
+            (module as { default?: ComponentType<T> }).default ||
+            (module as ComponentType<T>)
         } else {
           // 具名导出
-          exportedComponent = (module as Record<string, ComponentType<T>>)[exportName]
+          exportedComponent = (module as Record<string, ComponentType<T>>)[
+            exportName
+          ]
         }
 
         if (!exportedComponent) {
@@ -88,7 +93,7 @@ export function useLazyComponent<T = unknown>(
 
         setError({
           error: err instanceof Error ? err : new Error(String(err)),
-          errorType: 'LOAD_REMOTE' as ErrorInfo['errorType'],
+          errorType: ERROR_TYPE.LOAD_REMOTE,
         })
         setLoadingState(false)
       } finally {
@@ -106,13 +111,7 @@ export function useLazyComponent<T = unknown>(
         clearTimeout(delayTimer)
       }
     }
-  }, [
-    loader,
-    exportName,
-    delayLoading,
-    dataFetchParams,
-    noSSR,
-  ])
+  }, [loader, exportName, delayLoading, dataFetchParams, noSSR])
 
   return {
     loading: loadingState && showLoading,
@@ -140,7 +139,7 @@ export function useLazyComponent<T = unknown>(
  * ```
  */
 export function createLazyComponent<T extends Record<string, unknown>>(
-  options: LazyComponentOptions<T>
+  options: LazyComponentOptions<T>,
 ): ComponentType<T> {
   const LazyComponent: ComponentType<T> = (props: T) => {
     const { loading, error, Component } = useLazyComponent(options)
