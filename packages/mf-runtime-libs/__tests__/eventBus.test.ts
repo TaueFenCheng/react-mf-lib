@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { eventBus, createEventBus, EventBusClass } from '../src/event-bus'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { createEventBus, type EventBusClass, eventBus } from '../src/event-bus'
 
 describe('EventBus', () => {
   let bus: EventBusClass
@@ -95,11 +95,7 @@ describe('EventBus', () => {
   describe('filter', () => {
     it('should filter events based on condition', () => {
       const callback = vitest.fn()
-      bus.on(
-        'filtered-event',
-        callback,
-        { filter: (data: number) => data > 5 },
-      )
+      bus.on('filtered-event', callback, { filter: (data: number) => data > 5 })
       bus.emit('filtered-event', 3)
       bus.emit('filtered-event', 10)
 

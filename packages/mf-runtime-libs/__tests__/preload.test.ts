@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../src/loader', async () => {
   return {
@@ -6,14 +6,14 @@ vi.mock('../src/loader', async () => {
   }
 })
 
+import { loadRemoteMultiVersion } from '../src/loader'
 import {
-  preloadRemote,
-  preloadRemoteList,
   cancelPreload,
   clearPreloadCache,
   getPreloadStatus,
+  preloadRemote,
+  preloadRemoteList,
 } from '../src/preload'
-import { loadRemoteMultiVersion } from '../src/loader'
 
 const mockLoadRemoteMultiVersion = vi.mocked(loadRemoteMultiVersion)
 
@@ -60,7 +60,11 @@ describe('preload', () => {
       await preloadRemote({ pkg: 'test-pkg', version: '1.0.0', name: 'test' })
 
       // Second call - should use cache (not call loadRemoteMultiVersion again)
-      const result = await preloadRemote({ pkg: 'test-pkg', version: '1.0.0', name: 'test' })
+      const result = await preloadRemote({
+        pkg: 'test-pkg',
+        version: '1.0.0',
+        name: 'test',
+      })
 
       expect(result).toEqual({
         scopeName: 'test-scope',
@@ -77,7 +81,12 @@ describe('preload', () => {
       } as any)
 
       await preloadRemote({ pkg: 'test-pkg', version: '1.0.0', name: 'test' })
-      await preloadRemote({ pkg: 'test-pkg', version: '1.0.0', name: 'test', force: true })
+      await preloadRemote({
+        pkg: 'test-pkg',
+        version: '1.0.0',
+        name: 'test',
+        force: true,
+      })
 
       expect(mockLoadRemoteMultiVersion).toHaveBeenCalledTimes(2)
     })

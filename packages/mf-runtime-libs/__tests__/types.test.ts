@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type {
   LoadRemoteOptions,
-  VersionCache,
-  PreloadOptions,
   PreloadCacheItem,
+  PreloadOptions,
   PreloadStatus,
+  VersionCache,
 } from '../src/types'
 
 describe('Types', () => {

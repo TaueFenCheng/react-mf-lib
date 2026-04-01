@@ -1,15 +1,15 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  parseVersion,
-  compareVersions,
-  satisfiesVersion,
   checkVersionCompatibility,
+  compareVersions,
+  extractMajorVersion,
   findCompatibleVersion,
-  sortVersions,
   getLatestVersion,
   getStableVersions,
-  extractMajorVersion,
   isPrerelease,
+  parseVersion,
+  satisfiesVersion,
+  sortVersions,
 } from '../src/version'
 
 describe('parseVersion', () => {
@@ -136,7 +136,10 @@ describe('findCompatibleVersion', () => {
   })
 
   it('should find version in range', () => {
-    const result = findCompatibleVersion(versions, { min: '1.1.0', max: '2.0.0' })
+    const result = findCompatibleVersion(versions, {
+      min: '1.1.0',
+      max: '2.0.0',
+    })
     expect(result).toBe('2.0.0')
   })
 

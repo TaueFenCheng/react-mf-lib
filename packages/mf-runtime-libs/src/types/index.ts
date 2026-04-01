@@ -1,6 +1,6 @@
-import { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/runtime'
+import type { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/runtime'
 
-export { type ModuleFederationRuntimePlugin }
+export type { ModuleFederationRuntimePlugin }
 
 export interface LoadRemoteOptions {
   name: string // 模块联邦 name（基础名）

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { loadRemoteMultiVersion } from '../src/loader'
 
 vi.mock('../src/loader/utils', async () => {
@@ -12,8 +12,12 @@ vi.mock('../src/loader/utils', async () => {
   }
 })
 
-const { resolveFinalVersion, buildFinalUrls, getFinalSharedConfig, tryLoadRemote } =
-  await import('../src/loader/utils')
+const {
+  resolveFinalVersion,
+  buildFinalUrls,
+  getFinalSharedConfig,
+  tryLoadRemote,
+} = await import('../src/loader/utils')
 
 describe('loader/index', () => {
   beforeEach(() => {
@@ -38,7 +42,10 @@ describe('loader/index', () => {
         'http://cdn2.com/remoteEntry.js',
       ])
       vi.mocked(getFinalSharedConfig).mockReturnValue({})
-      vi.mocked(tryLoadRemote).mockResolvedValue({ scopeName: 'test-module', mf: {} })
+      vi.mocked(tryLoadRemote).mockResolvedValue({
+        scopeName: 'test-module',
+        mf: {},
+      })
 
       const result = await loadRemoteMultiVersion(baseOptions, [])
 
@@ -49,7 +56,11 @@ describe('loader/index', () => {
         86400000,
         true,
       )
-      expect(buildFinalUrls).toHaveBeenCalledWith('test-pkg', '1.0.0', undefined)
+      expect(buildFinalUrls).toHaveBeenCalledWith(
+        'test-pkg',
+        '1.0.0',
+        undefined,
+      )
       expect(getFinalSharedConfig).toHaveBeenCalledWith(undefined)
     })
 
@@ -69,7 +80,12 @@ describe('loader/index', () => {
         [],
       )
 
-      expect(resolveFinalVersion).toHaveBeenCalledWith('test-pkg', 'latest', 86400000, true)
+      expect(resolveFinalVersion).toHaveBeenCalledWith(
+        'test-pkg',
+        'latest',
+        86400000,
+        true,
+      )
     })
 
     it('should use custom options', async () => {
@@ -95,7 +111,12 @@ describe('loader/index', () => {
         [],
       )
 
-      expect(resolveFinalVersion).toHaveBeenCalledWith('test-pkg', '2.0.0', 3600000, false)
+      expect(resolveFinalVersion).toHaveBeenCalledWith(
+        'test-pkg',
+        '2.0.0',
+        3600000,
+        false,
+      )
       expect(buildFinalUrls).toHaveBeenCalledWith(
         'test-pkg',
         '2.0.0',
@@ -128,8 +149,7 @@ describe('loader/index', () => {
         'http://cdn2.com/remoteEntry.js',
       ])
       vi.mocked(getFinalSharedConfig).mockReturnValue({})
-      vi.mocked(tryLoadRemote)
-        .mockRejectedValue(new Error('Load failed'))
+      vi.mocked(tryLoadRemote).mockRejectedValue(new Error('Load failed'))
 
       await expect(loadRemoteMultiVersion(baseOptions, [])).rejects.toThrow(
         '[MF] 所有加载源 (2 个) 均加载失败。',
@@ -142,7 +162,10 @@ describe('loader/index', () => {
         'http://cdn1.com/remoteEntry.js',
       ])
       vi.mocked(getFinalSharedConfig).mockReturnValue({})
-      vi.mocked(tryLoadRemote).mockResolvedValue({ scopeName: 'test-module', mf: {} })
+      vi.mocked(tryLoadRemote).mockResolvedValue({
+        scopeName: 'test-module',
+        mf: {},
+      })
 
       const plugins = [{ name: 'test-plugin' }]
       await loadRemoteMultiVersion(baseOptions, plugins as any)
@@ -165,7 +188,10 @@ describe('loader/index', () => {
         'http://cdn1.com/remoteEntry.js',
       ])
       vi.mocked(getFinalSharedConfig).mockReturnValue({})
-      vi.mocked(tryLoadRemote).mockResolvedValue({ scopeName: 'my-scope', mf: {} })
+      vi.mocked(tryLoadRemote).mockResolvedValue({
+        scopeName: 'my-scope',
+        mf: {},
+      })
 
       await loadRemoteMultiVersion(
         {
@@ -175,7 +201,16 @@ describe('loader/index', () => {
         [],
       )
 
-      expect(tryLoadRemote).toHaveBeenCalledWith('my-scope', expect.any(String), expect.any(Number), expect.any(Number), expect.any(Object), expect.any(Array), [], {})
+      expect(tryLoadRemote).toHaveBeenCalledWith(
+        'my-scope',
+        expect.any(String),
+        expect.any(Number),
+        expect.any(Number),
+        expect.any(Object),
+        expect.any(Array),
+        [],
+        {},
+      )
     })
 
     it('should handle retries parameter', async () => {
@@ -242,7 +277,10 @@ describe('loader/index', () => {
         'http://cdn1.com/remoteEntry.js',
       ])
       vi.mocked(getFinalSharedConfig).mockReturnValue({})
-      vi.mocked(tryLoadRemote).mockResolvedValue({ scopeName: 'test-module', mf: {} })
+      vi.mocked(tryLoadRemote).mockResolvedValue({
+        scopeName: 'test-module',
+        mf: {},
+      })
 
       const remoteSourcePlugins = [
         {

@@ -1,85 +1,78 @@
 // 版本管理模块
-export { loadReactVersion } from './version/react'
-export {
-  checkVersionCompatibility,
-  satisfiesVersion,
-  findCompatibleVersion,
-  getCompatibleReactVersions,
-  fetchAvailableVersions,
-  sortVersions,
-  getLatestVersion,
-  getStableVersions,
-  extractMajorVersion,
-  isPrerelease,
-  compareVersions,
-  parseVersion,
-} from './version'
-
-// 核心加载模块
-export {
-  loadRemoteMultiVersion,
-  createRemoteSourcePlugin,
-  type RemoteSourcePlugin,
-  type RemoteSourcePluginContext,
-  type LoadRemoteExtraOptions,
-} from './loader'
-export {
-  fetchLatestVersion,
-  getVersionCache,
-  setVersionCache,
-  buildCdnUrls,
-  tryLoadRemote,
-  getFinalSharedConfig,
-  resolveFinalVersion,
-  buildFinalUrls,
-  type LoadResult,
-  type RuntimeRemote,
-} from './loader/utils'
-
-// 预加载模块
-export {
-  preloadRemote,
-  preloadRemoteList,
-  cancelPreload,
-  clearPreloadCache,
-  getPreloadStatus,
-} from './preload'
-
-// 卸载管理模块
-export {
-  unloadRemote,
-  unloadAll,
-  registerRemoteInstance,
-  registerLoadedModule,
-  getLoadedRemotes,
-  isRemoteLoaded,
-} from './unload'
-
-// 健康检查模块
-export {
-  checkRemoteHealth,
-  checkModuleLoadable,
-  getRemoteHealthReport,
-  formatHealthStatus,
-} from './health'
-
-// 事件总线模块
-export {
-  eventBus,
-  createEventBus,
-} from './event-bus'
-
-// 类型导出
-export type {
-  LoadRemoteOptions,
-  VersionCache,
-  PreloadOptions,
-  PreloadCacheItem,
-  PreloadStatus,
-} from './types'
-
-// 插件导出
-export { fallbackPlugin } from './plugins/fallback'
 
 // Bridge 模块（懒加载组件）
 export * from './bridge'
+// 事件总线模块
+export {
+  createEventBus,
+  eventBus,
+} from './event-bus'
+// 健康检查模块
+export {
+  checkModuleLoadable,
+  checkRemoteHealth,
+  formatHealthStatus,
+  getRemoteHealthReport,
+} from './health'
+// 核心加载模块
+export {
+  createRemoteSourcePlugin,
+  type LoadRemoteExtraOptions,
+  loadRemoteMultiVersion,
+  type RemoteSourcePlugin,
+  type RemoteSourcePluginContext,
+} from './loader'
+export {
+  buildCdnUrls,
+  buildFinalUrls,
+  fetchLatestVersion,
+  getFinalSharedConfig,
+  getVersionCache,
+  type LoadResult,
+  type RuntimeRemote,
+  resolveFinalVersion,
+  setVersionCache,
+  tryLoadRemote,
+} from './loader/utils'
+// 插件导出
+export { fallbackPlugin } from './plugins/fallback'
+// 预加载模块
+export {
+  cancelPreload,
+  clearPreloadCache,
+  getPreloadStatus,
+  preloadRemote,
+  preloadRemoteList,
+} from './preload'
+// 类型导出
+export type {
+  LoadRemoteOptions,
+  PreloadCacheItem,
+  PreloadOptions,
+  PreloadStatus,
+  VersionCache,
+} from './types'
+// 卸载管理模块
+export {
+  getLoadedRemotes,
+  isRemoteLoaded,
+  registerLoadedModule,
+  registerRemoteInstance,
+  unloadAll,
+  unloadRemote,
+} from './unload'
+export {
+  checkVersionCompatibility,
+  compareVersions,
+  extractMajorVersion,
+  fetchAvailableVersions,
+  findCompatibleVersion,
+  getCompatibleReactVersions,
+  getLatestVersion,
+  getStableVersions,
+  isPrerelease,
+  parseVersion,
+  satisfiesVersion,
+  sortVersions,
+} from './version'
+export { loadReactVersion } from './version/react'

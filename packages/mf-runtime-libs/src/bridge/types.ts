@@ -12,7 +12,10 @@ export enum ERROR_TYPE {
   RENDER = 'RENDER',
 }
 
-export interface LazyComponentOptions<T = unknown, E extends keyof T = keyof T> {
+export interface LazyComponentOptions<
+  T = unknown,
+  E extends keyof T = keyof T,
+> {
   /**
    * 加载远程组件的函数
    * @example () => loadRemote('remote/Component')

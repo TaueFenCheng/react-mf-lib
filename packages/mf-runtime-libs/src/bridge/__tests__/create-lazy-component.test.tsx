@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLazyComponent } from '../create-lazy-component'
 import type { LazyComponentOptions } from '../types'
 
@@ -16,7 +16,7 @@ describe('useLazyComponent', () => {
         loader: mockLoader,
         loading: <div>Loading...</div>,
         fallback: () => <div>Error</div>,
-      })
+      }),
     )
 
     expect(result.current.loading).toBe(true)
@@ -32,7 +32,7 @@ describe('useLazyComponent', () => {
         loader: mockLoader,
         loading: <div>Loading...</div>,
         fallback: () => <div>Error</div>,
-      })
+      }),
     )
 
     await waitFor(() => {
@@ -50,7 +50,7 @@ describe('useLazyComponent', () => {
         loader: mockLoader,
         loading: <div>Loading...</div>,
         fallback: () => <div>Error</div>,
-      })
+      }),
     )
 
     await waitFor(() => {

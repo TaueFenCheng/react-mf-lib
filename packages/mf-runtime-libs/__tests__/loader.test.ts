@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  fetchLatestVersion,
-  getVersionCache,
-  setVersionCache,
   buildCdnUrls,
-  tryLoadRemote,
-  getFinalSharedConfig,
-  resolveFinalVersion,
   buildFinalUrls,
+  fetchLatestVersion,
+  getFinalSharedConfig,
+  getVersionCache,
+  resolveFinalVersion,
+  setVersionCache,
+  tryLoadRemote,
 } from '../src/loader/utils'
 
 // Mock @module-federation/enhanced/runtime
@@ -47,7 +47,9 @@ describe('loader/utils', () => {
 
       const result = await fetchLatestVersion('test-pkg')
       expect(result).toBe('2.0.0')
-      expect(mockFetch).toHaveBeenCalledWith('https://registry.npmjs.org/test-pkg')
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://registry.npmjs.org/test-pkg',
+      )
     })
 
     it('should throw error when fetch fails', async () => {
@@ -245,7 +247,11 @@ describe('loader/utils', () => {
     })
 
     it('should append local fallback when provided', () => {
-      const urls = buildFinalUrls('test-pkg', '1.0.0', 'http://localhost:3000/remoteEntry.js')
+      const urls = buildFinalUrls(
+        'test-pkg',
+        '1.0.0',
+        'http://localhost:3000/remoteEntry.js',
+      )
       expect(urls).toHaveLength(3)
       expect(urls[2]).toBe('http://localhost:3000/remoteEntry.js')
     })
@@ -257,7 +263,12 @@ describe('loader/utils', () => {
     })
 
     it('should return version directly when not latest', async () => {
-      const result = await resolveFinalVersion('test-pkg', '1.0.0', 86400000, true)
+      const result = await resolveFinalVersion(
+        'test-pkg',
+        '1.0.0',
+        86400000,
+        true,
+      )
       expect(result).toBe('1.0.0')
     })
 
@@ -278,7 +289,12 @@ describe('loader/utils', () => {
         }),
       } as any)
 
-      const result = await resolveFinalVersion('test-pkg', 'latest', 86400000, false)
+      const result = await resolveFinalVersion(
+        'test-pkg',
+        'latest',
+        86400000,
+        false,
+      )
       expect(result).toBe('1.5.0')
       expect(mockFetch).not.toHaveBeenCalled()
     })
@@ -301,7 +317,12 @@ describe('loader/utils', () => {
         }),
       } as any)
 
-      const result = await resolveFinalVersion('test-pkg', 'latest', 86400000, false)
+      const result = await resolveFinalVersion(
+        'test-pkg',
+        'latest',
+        86400000,
+        false,
+      )
       expect(result).toBe('2.0.0')
     })
 
@@ -313,7 +334,12 @@ describe('loader/utils', () => {
         }),
       } as any)
 
-      const result = await resolveFinalVersion('test-pkg', 'latest', 86400000, false)
+      const result = await resolveFinalVersion(
+        'test-pkg',
+        'latest',
+        86400000,
+        false,
+      )
       expect(result).toBe('2.0.0')
     })
 
@@ -327,7 +353,12 @@ describe('loader/utils', () => {
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
-      const result = await resolveFinalVersion('test-pkg', 'latest', 86400000, true)
+      const result = await resolveFinalVersion(
+        'test-pkg',
+        'latest',
+        86400000,
+        true,
+      )
       expect(result).toBe('2.0.0')
 
       // Wait for async revalidation
@@ -338,7 +369,9 @@ describe('loader/utils', () => {
 
   describe('tryLoadRemote', () => {
     it('should create instance and return mf instance on success', async () => {
-      const { createInstance } = await import('@module-federation/enhanced/runtime')
+      const { createInstance } = await import(
+        '@module-federation/enhanced/runtime'
+      )
       vi.mocked(createInstance).mockReturnValue({
         name: 'host',
         loadRemote: vi.fn(),
@@ -359,13 +392,22 @@ describe('loader/utils', () => {
     })
 
     it('should retry on failure', async () => {
-      const { createInstance } = await import('@module-federation/enhanced/runtime')
+      const { createInstance } = await import(
+        '@module-federation/enhanced/runtime'
+      )
       vi.mocked(createInstance).mockImplementation(() => {
         throw new Error('Load failed')
       })
 
       await expect(
-        tryLoadRemote('test-scope', 'http://example.com/remoteEntry.js', 3, 10, {}, []),
+        tryLoadRemote(
+          'test-scope',
+          'http://example.com/remoteEntry.js',
+          3,
+          10,
+          {},
+          [],
+        ),
       ).rejects.toThrow()
 
       // Should have been called 3 times (retries)
@@ -373,7 +415,9 @@ describe('loader/utils', () => {
     })
 
     it('should respect delay between retries', async () => {
-      const { createInstance } = await import('@module-federation/enhanced/runtime')
+      const { createInstance } = await import(
+        '@module-federation/enhanced/runtime'
+      )
       vi.mocked(createInstance).mockImplementation(() => {
         throw new Error('Load failed')
       })
@@ -381,7 +425,14 @@ describe('loader/utils', () => {
       const startTime = Date.now()
 
       await expect(
-        tryLoadRemote('test-scope', 'http://example.com/remoteEntry.js', 3, 50, {}, []),
+        tryLoadRemote(
+          'test-scope',
+          'http://example.com/remoteEntry.js',
+          3,
+          50,
+          {},
+          [],
+        ),
       ).rejects.toThrow()
 
       const elapsed = Date.now() - startTime
@@ -389,13 +440,22 @@ describe('loader/utils', () => {
     })
 
     it('should include fallback plugin in instance creation', async () => {
-      const { createInstance } = await import('@module-federation/enhanced/runtime')
+      const { createInstance } = await import(
+        '@module-federation/enhanced/runtime'
+      )
       vi.mocked(createInstance).mockReturnValue({
         name: 'host',
         loadRemote: vi.fn(),
       } as any)
 
-      await tryLoadRemote('test-scope', 'http://example.com/remoteEntry.js', 1, 1000, {}, [])
+      await tryLoadRemote(
+        'test-scope',
+        'http://example.com/remoteEntry.js',
+        1,
+        1000,
+        {},
+        [],
+      )
 
       const callArgs = vi.mocked(createInstance).mock.calls[0][0]
       expect(callArgs?.plugins).toBeDefined()

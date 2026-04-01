@@ -1,18 +1,18 @@
 import type { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/runtime'
 import type { LoadRemoteOptions } from '../types'
 import {
-  resolveFinalVersion,
-  buildFinalUrls,
-  getFinalSharedConfig,
-  tryLoadRemote,
-} from './utils'
-import {
-  resolveRegisteredRemotes,
   createRemoteSourcePlugin,
   type LoadRemoteExtraOptions,
   type RemoteSourcePlugin,
   type RemoteSourcePluginContext,
+  resolveRegisteredRemotes,
 } from './remote-source'
+import {
+  buildFinalUrls,
+  getFinalSharedConfig,
+  resolveFinalVersion,
+  tryLoadRemote,
+} from './utils'
 
 export {
   createRemoteSourcePlugin,

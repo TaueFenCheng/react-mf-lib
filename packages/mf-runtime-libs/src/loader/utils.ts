@@ -1,6 +1,6 @@
 import {
   createInstance,
-  ModuleFederationRuntimePlugin,
+  type ModuleFederationRuntimePlugin,
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
 import type { VersionCache } from '../types'

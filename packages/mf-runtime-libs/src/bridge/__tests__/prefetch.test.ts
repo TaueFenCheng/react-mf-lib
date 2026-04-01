@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { prefetchComponent } from '../prefetch'
 
 describe('prefetchComponent', () => {
@@ -34,7 +34,7 @@ describe('prefetchComponent', () => {
         id: 'remote/Component',
         preloadComponentResource: true,
       },
-      mockGetInstance
+      mockGetInstance,
     )
 
     expect(mockPrefetch).toHaveBeenCalledWith({

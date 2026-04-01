@@ -72,9 +72,9 @@ export async function resolveRegisteredRemotes(
 
   return dedupeRemotes(remoteList).filter((remote) => {
     return !(
-      remote.name === context.scopeName
-      && 'entry' in remote
-      && remote.entry === context.currentEntry
+      remote.name === context.scopeName &&
+      'entry' in remote &&
+      remote.entry === context.currentEntry
     )
   })
 }

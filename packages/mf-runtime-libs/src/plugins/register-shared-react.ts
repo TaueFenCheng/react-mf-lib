@@ -28,7 +28,10 @@ export function initSharedScope() {
   }
 
   // 验证 React 实例是否有效
-  if (typeof globalReact !== 'object' || typeof globalReact.useCallback !== 'function') {
+  if (
+    typeof globalReact !== 'object' ||
+    typeof globalReact.useCallback !== 'function'
+  ) {
     console.warn('[register-shared-react] Invalid React instance', {
       react: globalReact,
       useCallback: globalReact.useCallback,
@@ -53,10 +56,13 @@ export function initSharedScope() {
   const reactVersion = globalReact.version || '18.0.0'
   const reactDomVersion = globalReactDOM.version || '18.0.0'
 
-  console.log('[register-shared-react] Registering React and ReactDOM to share scope', {
-    reactVersion,
-    reactDomVersion,
-  })
+  console.log(
+    '[register-shared-react] Registering React and ReactDOM to share scope',
+    {
+      reactVersion,
+      reactDomVersion,
+    },
+  )
 
   // 注册 react 到共享作用域
   // @ts-ignore
@@ -64,7 +70,9 @@ export function initSharedScope() {
     get: () => () => {
       const react = (window as any).React
       if (!react || typeof react.useCallback !== 'function') {
-        console.error('[register-shared-react] React instance is invalid when getting')
+        console.error(
+          '[register-shared-react] React instance is invalid when getting',
+        )
         return null
       }
       console.log('[register-shared-react] Getting React instance')
@@ -84,7 +92,9 @@ export function initSharedScope() {
     get: () => () => {
       const reactdom = (window as any).ReactDOM
       if (!reactdom) {
-        console.error('[register-shared-react] ReactDOM instance is invalid when getting')
+        console.error(
+          '[register-shared-react] ReactDOM instance is invalid when getting',
+        )
         return null
       }
       console.log('[register-shared-react] Getting ReactDOM instance')

@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  unloadRemote,
-  unloadAll,
-  registerRemoteInstance,
-  registerLoadedModule,
   getLoadedRemotes,
   isRemoteLoaded,
+  registerLoadedModule,
+  registerRemoteInstance,
+  unloadAll,
+  unloadRemote,
 } from '../src/unload'
 
 describe('unload', () => {
@@ -24,14 +24,26 @@ describe('unload', () => {
   describe('registerRemoteInstance', () => {
     it('should register a remote instance and return key', () => {
       const mfInstance = { loadRemote: vi.fn() }
-      const key = registerRemoteInstance('test-name', 'test-scope', 'test-pkg', '1.0.0', mfInstance)
+      const key = registerRemoteInstance(
+        'test-name',
+        'test-scope',
+        'test-pkg',
+        '1.0.0',
+        mfInstance,
+      )
 
       expect(key).toBe('test-name::test-pkg@1.0.0')
     })
 
     it('should store instance with correct metadata', () => {
       const mfInstance = { loadRemote: vi.fn() }
-      const key = registerRemoteInstance('my-app', 'my-scope', '@org/pkg', '2.0.0', mfInstance)
+      const key = registerRemoteInstance(
+        'my-app',
+        'my-scope',
+        '@org/pkg',
+        '2.0.0',
+        mfInstance,
+      )
 
       expect(key).toBe('my-app::@org/pkg@2.0.0')
     })
@@ -64,7 +76,9 @@ describe('unload', () => {
     })
 
     it('should handle non-existent key gracefully', () => {
-      expect(() => registerLoadedModule('non-existent', 'module-a')).not.toThrow()
+      expect(() =>
+        registerLoadedModule('non-existent', 'module-a'),
+      ).not.toThrow()
     })
   })
 
@@ -127,24 +141,39 @@ describe('unload', () => {
         cleanup: vi.fn().mockResolvedValue(undefined),
       })
 
-      const result = await unloadRemote({ name: 'test', pkg: 'pkg', version: '1.0.0' })
+      const result = await unloadRemote({
+        name: 'test',
+        pkg: 'pkg',
+        version: '1.0.0',
+      })
 
       expect(result).toBe(true)
       expect(getLoadedRemotes()).toHaveLength(0)
     })
 
     it('should unload all versions with wildcard', async () => {
-      registerRemoteInstance('test', 'scope', 'pkg', '1.0.0', { cleanup: vi.fn() })
-      registerRemoteInstance('test', 'scope', 'pkg', '2.0.0', { cleanup: vi.fn() })
+      registerRemoteInstance('test', 'scope', 'pkg', '1.0.0', {
+        cleanup: vi.fn(),
+      })
+      registerRemoteInstance('test', 'scope', 'pkg', '2.0.0', {
+        cleanup: vi.fn(),
+      })
 
-      const result = await unloadRemote({ name: 'test', pkg: 'pkg', version: '*' })
+      const result = await unloadRemote({
+        name: 'test',
+        pkg: 'pkg',
+        version: '*',
+      })
 
       expect(result).toBe(true)
       expect(getLoadedRemotes()).toHaveLength(0)
     })
 
     it('should return false when no matching remote', async () => {
-      const result = await unloadRemote({ name: 'non-existent', pkg: 'non-existent' })
+      const result = await unloadRemote({
+        name: 'non-existent',
+        pkg: 'non-existent',
+      })
       expect(result).toBe(false)
     })
 
@@ -158,15 +187,19 @@ describe('unload', () => {
           '1.0.0': { timestamp: Date.now() },
         },
       }
-      localStorage.setItem(
-        'mf-multi-version',
-        JSON.stringify(cacheData),
-      )
+      localStorage.setItem('mf-multi-version', JSON.stringify(cacheData))
 
-      registerRemoteInstance('test', 'scope', 'test-pkg', '1.0.0', { cleanup: vi.fn() })
+      registerRemoteInstance('test', 'scope', 'test-pkg', '1.0.0', {
+        cleanup: vi.fn(),
+      })
 
       // Note: clearCache uses the specific version, not wildcard
-      await unloadRemote({ name: 'test', pkg: 'test-pkg', version: '1.0.0', clearCache: true })
+      await unloadRemote({
+        name: 'test',
+        pkg: 'test-pkg',
+        version: '1.0.0',
+        clearCache: true,
+      })
 
       const cacheStr = localStorage.getItem('mf-multi-version')
       if (cacheStr) {
@@ -201,8 +234,12 @@ describe('unload', () => {
 
   describe('unloadAll', () => {
     it('should unload all remotes', async () => {
-      registerRemoteInstance('app1', 'scope1', 'pkg1', '1.0.0', { cleanup: vi.fn() })
-      registerRemoteInstance('app2', 'scope2', 'pkg2', '2.0.0', { cleanup: vi.fn() })
+      registerRemoteInstance('app1', 'scope1', 'pkg1', '1.0.0', {
+        cleanup: vi.fn(),
+      })
+      registerRemoteInstance('app2', 'scope2', 'pkg2', '2.0.0', {
+        cleanup: vi.fn(),
+      })
 
       await unloadAll()
 
@@ -214,9 +251,14 @@ describe('unload', () => {
     })
 
     it('should clear all cache when clearAllCache is true', async () => {
-      localStorage.setItem('mf-multi-version', JSON.stringify({ pkg1: { '1.0.0': {} } }))
+      localStorage.setItem(
+        'mf-multi-version',
+        JSON.stringify({ pkg1: { '1.0.0': {} } }),
+      )
 
-      registerRemoteInstance('app1', 'scope1', 'pkg1', '1.0.0', { cleanup: vi.fn() })
+      registerRemoteInstance('app1', 'scope1', 'pkg1', '1.0.0', {
+        cleanup: vi.fn(),
+      })
 
       await unloadAll(true)
 
@@ -228,7 +270,9 @@ describe('unload', () => {
         throw new Error('Storage error')
       })
 
-      registerRemoteInstance('test', 'scope', 'pkg', '1.0.0', { cleanup: vi.fn() })
+      registerRemoteInstance('test', 'scope', 'pkg', '1.0.0', {
+        cleanup: vi.fn(),
+      })
 
       await expect(unloadAll(true)).resolves.toBeUndefined()
     })

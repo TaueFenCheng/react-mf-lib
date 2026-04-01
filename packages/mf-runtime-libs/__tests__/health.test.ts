@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  checkRemoteHealth,
   checkModuleLoadable,
-  getRemoteHealthReport,
+  checkRemoteHealth,
   formatHealthStatus,
+  getRemoteHealthReport,
 } from '../src/health'
 
 describe('health', () => {
@@ -50,7 +50,7 @@ describe('health', () => {
       // Mock fetch to succeed but simulate high latency
       vi.spyOn(global, 'fetch').mockImplementation(async () => {
         // Simulate high latency by waiting
-        await new Promise(resolve => setTimeout(resolve, 1500))
+        await new Promise((resolve) => setTimeout(resolve, 1500))
         return { ok: true } as any
       })
 
@@ -151,7 +151,11 @@ describe('health', () => {
     })
 
     it('should return false when mf is null', async () => {
-      const result = await checkModuleLoadable('test-scope', 'MyComponent', null)
+      const result = await checkModuleLoadable(
+        'test-scope',
+        'MyComponent',
+        null,
+      )
       expect(result).toBe(false)
     })
 
