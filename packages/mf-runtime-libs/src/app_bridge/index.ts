@@ -17,5 +17,8 @@ export { createBridgeRemoteApp } from './create-remote-app'
 export type {
   BridgeAppComponent,
   BridgeAppProps,
+  BridgeAppProviderFactory,
+  BridgeAppProviderInstance,
+  BridgeAppProviderOptions,
   CreateBridgeAppOptions,
 } from './types'

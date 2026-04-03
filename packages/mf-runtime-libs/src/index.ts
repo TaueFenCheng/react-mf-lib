@@ -3,6 +3,9 @@
 export type {
   BridgeAppComponent,
   BridgeAppProps,
+  BridgeAppProviderFactory,
+  BridgeAppProviderInstance,
+  BridgeAppProviderOptions,
   CreateBridgeAppOptions,
 } from './app_bridge'
 // 应用层桥接封装
