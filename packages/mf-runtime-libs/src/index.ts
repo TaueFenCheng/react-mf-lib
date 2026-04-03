@@ -2,19 +2,13 @@
 
 export type {
   BridgeAppComponent,
-  BridgeAppLoaderOptions,
   BridgeAppProps,
-  BridgeAppProviderFactory,
-  BridgeAppProviderInstance,
-  BridgeAppProviderOptions,
   CreateBridgeAppOptions,
 } from './app_bridge'
 // 应用层桥接封装
 export {
-  createBridgeAppProvider,
   createBridgeComponent,
   createBridgeRemoteApp,
-  createBridgeRemoteLoader,
   createRemoteAppComponent,
   createRemoteComponent,
 } from './app_bridge'
