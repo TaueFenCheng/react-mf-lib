@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import React, { type ComponentType, useEffect, useState } from 'react'
+import { type ComponentType, useEffect, useState } from 'react'
 import type { ErrorInfo, LazyComponentOptions } from './types'
 import { ERROR_TYPE } from './types'
 
@@ -32,8 +32,6 @@ export function useLazyComponent<T = unknown>(
 ): UseLazyComponentResult<T> {
   const {
     loader,
-    loading,
-    fallback,
     delayLoading,
     export: exportName = 'default',
     dataFetchParams,
@@ -48,11 +46,14 @@ export function useLazyComponent<T = unknown>(
   useEffect(() => {
     let mounted = true
 
+    void dataFetchParams
+    void noSSR
+
     // 处理延迟显示 loading
     let delayTimer: NodeJS.Timeout | undefined
     if (delayLoading) {
       delayTimer = setTimeout(() => {
-        if (mounted && loadingState) {
+        if (mounted) {
           setShowLoading(true)
         }
       }, delayLoading)
@@ -138,6 +139,12 @@ export function useLazyComponent<T = unknown>(
  * <LazyButton prop1="value" prop2={123} />
  * ```
  */
+function isValidComponentType(value: unknown): value is ComponentType<unknown> {
+  if (typeof value === 'function') return true
+  if (typeof value === 'object' && value !== null && '$$typeof' in value) return true
+  return false
+}
+
 export function createLazyComponent<T extends Record<string, unknown>>(
   options: LazyComponentOptions<T>,
 ): ComponentType<T> {
@@ -156,6 +163,14 @@ export function createLazyComponent<T extends Record<string, unknown>>(
 
     // 渲染组件
     if (Component) {
+      if (!isValidComponentType(Component)) {
+        return options.fallback({
+          error: new Error(
+            `[Bridge] Invalid component type received: ${typeof Component}. Check remote module export and fallback behavior.`,
+          ),
+          errorType: ERROR_TYPE.LOAD_REMOTE,
+        }) as JSX.Element
+      }
       return <Component {...props} />
     }
 

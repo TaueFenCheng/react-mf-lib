@@ -14,20 +14,32 @@ describe('fallbackPlugin', () => {
   })
 
   describe('errorLoadRemote', () => {
-    it('should return "fallback" string when called', () => {
+    it('should rethrow original error when args.error is Error', () => {
       const plugin = fallbackPlugin()
-      const result = plugin.errorLoadRemote({ error: new Error('test') })
-      expect(result).toBe('fallback')
+      const testError = new Error('test')
+
+      expect(() => plugin.errorLoadRemote({ error: testError })).toThrow(testError)
     })
 
-    it('should log the args to console', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    it('should throw generic error when args has no valid error', () => {
+      const plugin = fallbackPlugin()
+
+      expect(() => plugin.errorLoadRemote({ extra: 'data' })).toThrow(
+        '[MF] loadRemote failed and no valid fallback module was provided',
+      )
+    })
+
+    it('should log the args to console.error', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       const plugin = fallbackPlugin()
       const testArgs = { error: new Error('test'), extra: 'data' }
 
-      plugin.errorLoadRemote(testArgs)
+      expect(() => plugin.errorLoadRemote(testArgs)).toThrow()
 
-      expect(consoleSpy).toHaveBeenCalledWith(testArgs, 'args')
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[MF] loadRemote failed in fallbackPlugin',
+        testArgs,
+      )
       consoleSpy.mockRestore()
     })
   })
