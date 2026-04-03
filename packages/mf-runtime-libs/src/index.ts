@@ -8,6 +8,7 @@ export type {
 // 应用层桥接封装
 export {
   createBridgeComponent,
+  createBridgeComponentV19,
   createBridgeRemoteApp,
   createRemoteAppComponent,
   createRemoteComponent,
