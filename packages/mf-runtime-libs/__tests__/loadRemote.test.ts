@@ -103,7 +103,7 @@ describe('loader/index', () => {
           version: '2.0.0',
           retries: 5,
           delay: 2000,
-          cdnFallbackEntry: 'https://cdn-fallback.example.com/remoteEntry.js',
+          localFallback: 'http://localhost:3000/remoteEntry.js',
           cacheTTL: 3600000,
           revalidate: false,
           shared: { custom: {} },
@@ -120,7 +120,7 @@ describe('loader/index', () => {
       expect(buildFinalUrls).toHaveBeenCalledWith(
         'test-pkg',
         '2.0.0',
-        'https://cdn-fallback.example.com/remoteEntry.js',
+        'http://localhost:3000/remoteEntry.js',
       )
       expect(getFinalSharedConfig).toHaveBeenCalledWith({ custom: {} })
     })
@@ -265,36 +265,6 @@ describe('loader/index', () => {
         expect.any(Number),
         5000,
         expect.any(Object),
-        [],
-        [],
-        {},
-      )
-    })
-
-    it('should use localDebug entry first and skip CDN url building', async () => {
-      vi.mocked(resolveFinalVersion).mockResolvedValue('1.0.0')
-      vi.mocked(getFinalSharedConfig).mockReturnValue({})
-      vi.mocked(tryLoadRemote).mockResolvedValue({ scopeName: 'test', mf: {} })
-
-      await loadRemoteMultiVersion(
-        {
-          name: 'test',
-          pkg: 'test-pkg',
-          localDebug: {
-            enabled: true,
-            entry: 'http://localhost:3000/remoteEntry.js',
-          },
-        },
-        [],
-      )
-
-      expect(buildFinalUrls).not.toHaveBeenCalled()
-      expect(tryLoadRemote).toHaveBeenCalledWith(
-        'test',
-        'http://localhost:3000/remoteEntry.js',
-        3,
-        1000,
-        {},
         [],
         [],
         {},

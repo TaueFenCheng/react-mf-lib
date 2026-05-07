@@ -10,7 +10,6 @@ import {
 import {
   buildFinalUrls,
   getFinalSharedConfig,
-  resolveLocalDebugConfig,
   resolveFinalVersion,
   tryLoadRemote,
 } from './utils'
@@ -36,8 +35,7 @@ export async function loadRemoteMultiVersion(
     version = 'latest',
     retries = 3,
     delay = 1000,
-    cdnFallbackEntry,
-    localDebug,
+    localFallback,
     cacheTTL = 24 * 60 * 60 * 1000,
     revalidate = true,
     shared: customShared,
@@ -58,10 +56,7 @@ export async function loadRemoteMultiVersion(
 
   // 2. 构建最终 URL 列表
   const scopeName = `${name}`
-  const localDebugConfig = resolveLocalDebugConfig(localDebug)
-  const urls = localDebugConfig
-    ? [localDebugConfig.entry]
-    : buildFinalUrls(pkg, finalVersion, cdnFallbackEntry)
+  const urls = buildFinalUrls(pkg, finalVersion, localFallback)
 
   // 3. 合并共享配置
   const finalSharedConfig = getFinalSharedConfig(customShared)

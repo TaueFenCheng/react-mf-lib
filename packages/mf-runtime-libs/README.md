@@ -55,26 +55,6 @@ useEffect(() => {
 }, []);
 ```
 
-#### 1.1 本地调试开关（localhost）
-
-```ts
-import { loadRemoteMultiVersion } from 'mf-runtime-libs';
-
-await loadRemoteMultiVersion({
-  name: 'react_mf_lib',
-  pkg: 'test-mf-unpkg',
-  version: '1.0.5',
-  cdnFallbackEntry: 'https://cdn-backup.example.com/test-mf-unpkg/remoteEntry.js',
-  localDebug: {
-    enabled: true,
-    entry: 'http://localhost:3000/remoteEntry.js',
-  },
-});
-```
-
-- `cdnFallbackEntry`：仅用于 CDN 多环境兜底（单个地址）
-- `localDebug`：仅用于 localhost 调试。配置后优先走本地入口，不走 CDN 地址构建逻辑
-
 #### 2. 使用 React 组件加载远程模块
 
 ```tsx

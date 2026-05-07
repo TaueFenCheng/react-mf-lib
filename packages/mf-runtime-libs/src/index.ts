@@ -62,7 +62,6 @@ export {
 } from './preload'
 // 类型导出
 export type {
-  LocalDebugOptions,
   LoadRemoteOptions,
   PreloadCacheItem,
   PreloadOptions,
