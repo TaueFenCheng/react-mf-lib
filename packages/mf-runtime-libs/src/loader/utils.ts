@@ -3,7 +3,7 @@ import {
   type ModuleFederationRuntimePlugin,
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
-import type { VersionCache } from '../types'
+import type { LocalDebugOptions, VersionCache } from '../types'
 
 // --- 核心配置抽象 ---
 
@@ -119,6 +119,41 @@ export function buildCdnUrls(pkg: string, version: string): string[] {
   return DEFAULT_CDN_TEMPLATES.map((template) =>
     template.replace('{pkg}', pkg).replace('{version}', version),
   )
+}
+
+export interface ResolvedLocalDebugConfig {
+  enabled: boolean
+  entry: string
+}
+
+/**
+ * 归一化本地调试配置（仅 localhost 调试能力）
+ */
+export function resolveLocalDebugConfig(
+  localDebug?: LocalDebugOptions,
+): ResolvedLocalDebugConfig | null {
+  if (!localDebug) return null
+
+  const { enabled = true, entry } = localDebug
+  const trimmedEntry = entry?.trim()
+
+  if (!enabled || !trimmedEntry) return null
+
+  return {
+    enabled: true,
+    entry: trimmedEntry,
+  }
+}
+
+/**
+ * 归一化多环境兜底地址（仅 CDN/环境 fallback，不包含 localhost 调试逻辑）
+ */
+export function normalizeFallbackEntries(
+  cdnFallbackEntry?: string,
+): string[] {
+  const fallbackEntry = cdnFallbackEntry?.trim()
+  if (!fallbackEntry) return []
+  return [fallbackEntry]
 }
 
 // --- 核心加载逻辑 ---
@@ -402,14 +437,14 @@ export async function resolveFinalVersion(
 }
 
 /**
- * 构建最终的 URL 列表（包含本地 fallback）
+ * 构建最终的 URL 列表（CDN + 单个 fallback）
  */
 export function buildFinalUrls(
   pkg: string,
   version: string,
-  localFallback?: string,
+  cdnFallbackEntry?: string,
 ): string[] {
-  const urls = buildCdnUrls(pkg, version)
-  if (localFallback) urls.push(localFallback)
-  return urls
+  const cdnUrls = buildCdnUrls(pkg, version)
+  const fallbackUrls = normalizeFallbackEntries(cdnFallbackEntry)
+  return [...cdnUrls, ...fallbackUrls.filter((url) => !cdnUrls.includes(url))]
 }

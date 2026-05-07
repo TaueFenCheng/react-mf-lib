@@ -69,7 +69,7 @@ const { mf } = await loadRemoteMultiVersion({
   // 内置顺序：
   // 1. cdn.jsdelivr.net
   // 2. unpkg.com
-  // 3. localFallback (如果提供)
+  // 3. cdnFallbackEntry（如果提供）
 });
 ```
 
@@ -184,7 +184,8 @@ function loadRemoteMultiVersion(
 | `version` | `string` | ❌ | `'latest'` | 版本号或 `'latest'` |
 | `retries` | `number` | ❌ | `3` | 每个 CDN 的重试次数 |
 | `delay` | `number` | ❌ | `1000` | 重试间隔（毫秒） |
-| `localFallback` | `string` | ❌ | - | 本地兜底 URL |
+| `cdnFallbackEntry` | `string` | ❌ | - | CDN 多环境兜底地址（单个） |
+| `localDebug` | `LocalDebugOptions` | ❌ | - | localhost 本地调试配置（配置后优先走 localhost，不走 CDN 地址构建） |
 | `cacheTTL` | `number` | ❌ | `86400000` | 缓存有效期（毫秒） |
 | `revalidate` | `boolean` | ❌ | `true` | 是否异步验证最新版本 |
 | `shared` | `Record<string, any>` | ❌ | - | 自定义共享模块配置 |
@@ -200,6 +201,68 @@ Module Federation 运行时插件数组，默认会添加 `fallbackPlugin()`。
 | `baseRemotes` | `RuntimeRemote[]` | ❌ | `[]` | 直接注册的附加 remote 列表 |
 | `remoteSourcePlugins` | `RemoteSourcePlugin[]` | ❌ | `[]` | 通过插件动态返回并注册 remote 列表 |
 | `registerOptions` | `{ force?: boolean }` | ❌ | `{}` | 透传给 `registerRemotes` 的配置 |
+
+#### `cdnFallbackEntry`（CDN 多环境兜底）说明
+
+- 仅用于 **CDN / 多环境地址兜底**，与 localhost 调试无关。
+- 会在内置 CDN 列表后追加参与加载。
+
+```ts
+await loadRemoteMultiVersion({
+  name: 'ui_lib',
+  pkg: 'my-ui-components',
+  version: '1.2.3',
+  cdnFallbackEntry: 'https://cdn-backup.example.com/my-ui-components/remoteEntry.js',
+})
+```
+
+#### `localDebug`（localhost 调试）详细说明
+
+```ts
+interface LocalDebugOptions {
+  enabled?: boolean
+  entry: string
+}
+```
+- `localDebug` 仅用于 localhost 调试。
+- 配置后优先使用 `localDebug.entry`，并跳过 CDN 地址构建流程。
+
+#### 本地调试使用示例
+
+```ts
+import { loadRemoteMultiVersion } from 'mf-runtime-libs'
+
+// 1) 仅配置多环境兜底（不启用 localhost 调试）
+await loadRemoteMultiVersion({
+  name: 'ui_lib',
+  pkg: 'my-ui-components',
+  version: '1.2.3',
+  cdnFallbackEntry: 'https://cdn-backup.example.com/my-ui-components/remoteEntry.js',
+})
+
+// 2) 显式开启本地调试（优先走 localhost）
+await loadRemoteMultiVersion({
+  name: 'ui_lib',
+  pkg: 'my-ui-components',
+  version: '1.2.3',
+  cdnFallbackEntry: 'https://cdn-backup.example.com/my-ui-components/remoteEntry.js',
+  localDebug: {
+    enabled: true,
+    entry: 'http://localhost:3000/remoteEntry.js',
+  },
+})
+
+// 3) 本地调试切换目标 localhost
+await loadRemoteMultiVersion({
+  name: 'ui_lib',
+  pkg: 'my-ui-components',
+  version: '1.2.3',
+  localDebug: {
+    enabled: true,
+    entry: 'http://localhost:3001/remoteEntry.js',
+  },
+})
+```
 
 #### 返回值
 
@@ -339,23 +402,27 @@ const finalVersion = await resolveFinalVersion('my-pkg', 'latest', 24 * 60 * 60 
 
 #### buildFinalUrls
 
-构建最终的 URL 列表（包含本地 fallback）。
+构建最终的 URL 列表（CDN + 单个 fallback）。
 
 ```typescript
 function buildFinalUrls(
   pkg: string,
   version: string,
-  localFallback?: string,
+  cdnFallbackEntry?: string,
 ): string[]
 ```
 
 **示例**:
 ```typescript
-const urls = buildFinalUrls('my-lib', '1.0.0', 'http://localhost:3001/remoteEntry.js');
+const urls = buildFinalUrls(
+  'my-lib',
+  '1.0.0',
+  'https://cdn-backup.example.com/my-lib/remoteEntry.js',
+);
 // [
 //   'https://cdn.jsdelivr.net/npm/my-lib@1.0.0/dist/remoteEntry.js',
 //   'https://unpkg.com/my-lib@1.0.0/dist/remoteEntry.js',
-//   'http://localhost:3001/remoteEntry.js'
+//   'https://cdn-backup.example.com/my-lib/remoteEntry.js'
 // ]
 ```
 
@@ -442,13 +509,26 @@ npm 包名，用于从 CDN 加载。
 }
 ```
 
-#### localFallback
+#### cdnFallbackEntry
 
-本地开发时的兜底地址。
+CDN 多环境兜底地址（非 localhost 调试）。
 
 ```typescript
 {
-  localFallback: 'http://localhost:3001/remoteEntry.js',
+  cdnFallbackEntry: 'https://cdn-backup.example.com/remoteEntry.js',
+}
+```
+
+#### localDebug
+
+localhost 本地调试配置（对象模式）。
+
+```typescript
+{
+  localDebug: {
+    enabled: true,
+    entry: 'http://localhost:3001/remoteEntry.js',
+  },
 }
 ```
 
@@ -776,16 +856,22 @@ const Card = await mf.loadRemote('ui_lib/Card');  // 等待 Button 加载完才�
 ### 5. 本地开发
 
 ```typescript
-// ✅ 好的做法：开发环境使用本地兜底
+// ✅ 好的做法：开发环境启用 localhost 调试，生产环境仅走 CDN + 多环境兜底
 const isDev = process.env.NODE_ENV === 'development';
 
 const { mf } = await loadRemoteMultiVersion({
   name: 'ui_lib',
   pkg: 'my-ui-components',
   version: '1.0.0',
-  ...(isDev && {
-    localFallback: 'http://localhost:3001/remoteEntry.js',
-  }),
+  cdnFallbackEntry: 'https://cdn-backup.example.com/my-ui-components/remoteEntry.js',
+  ...(isDev
+    ? {
+        localDebug: {
+          enabled: true,
+          entry: 'http://localhost:3001/remoteEntry.js',
+        },
+      }
+    : {}),
 });
 ```
 
@@ -801,13 +887,18 @@ const { mf } = await loadRemoteMultiVersion({
 - 检查网络连接
 - 验证 CDN 地址是否可访问
 - 增加 `retries` 和 `delay` 值
-- 配置 `localFallback` 作为兜底
+- 配置 `cdnFallbackEntry` 作为 CDN 多环境兜底
+- 如需 localhost 调试，显式开启 `localDebug`
 
 ```typescript
 {
   retries: 5,
   delay: 2000,
-  localFallback: 'http://localhost:3001/remoteEntry.js',
+  cdnFallbackEntry: 'https://cdn-backup.example.com/remoteEntry.js',
+  localDebug: {
+    enabled: true,
+    entry: 'http://localhost:3001/remoteEntry.js',
+  },
 }
 ```
 
@@ -1276,10 +1367,16 @@ interface LoadRemoteOptions {
   version?: string;  // 指定版本 or "latest"
   retries?: number;  // 重试次数
   delay?: number;  // 重试间隔
-  localFallback?: string;  // 本地兜底
+  cdnFallbackEntry?: string;  // CDN 多环境兜底（单个）
+  localDebug?: LocalDebugOptions;  // localhost 调试配置（对象）
   cacheTTL?: number;  // 缓存时间
   revalidate?: boolean;  // 灰度更新
   shared?: Record<string, any>;  // 自定义 shared 配置
+}
+
+interface LocalDebugOptions {
+  enabled?: boolean;
+  entry: string;
 }
 
 interface LoadRemoteExtraOptions {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type {
+  LocalDebugOptions,
   LoadRemoteOptions,
   PreloadCacheItem,
   PreloadOptions,
@@ -16,7 +17,7 @@ describe('Types', () => {
         version: '1.0.0',
         retries: 3,
         delay: 1000,
-        localFallback: 'http://localhost:3000/remoteEntry.js',
+        cdnFallbackEntry: 'https://cdn-fallback.example.com/remoteEntry.js',
         cacheTTL: 86400000,
         revalidate: true,
         shared: {},
@@ -44,6 +45,31 @@ describe('Types', () => {
       }
 
       expect(options.shared).toBeUndefined()
+    })
+
+    it('should support local debug switch config', () => {
+      const options: LoadRemoteOptions = {
+        name: 'test',
+        pkg: 'pkg',
+        cdnFallbackEntry: 'https://cdn-a.example.com/remoteEntry.js',
+        localDebug: {
+          enabled: true,
+          entry: 'http://localhost:3000/remoteEntry.js',
+        },
+      }
+
+      expect(typeof options.localDebug).toBe('object')
+    })
+  })
+
+  describe('LocalDebugOptions', () => {
+    it('should require localhost entry in object mode', () => {
+      const option: LocalDebugOptions = {
+        enabled: true,
+        entry: 'http://localhost:3000/remoteEntry.js',
+      }
+
+      expect(option.entry).toContain('localhost')
     })
   })
 

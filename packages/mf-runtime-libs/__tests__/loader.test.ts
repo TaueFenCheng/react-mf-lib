@@ -5,6 +5,7 @@ import {
   fetchLatestVersion,
   getFinalSharedConfig,
   getVersionCache,
+  resolveLocalDebugConfig,
   resolveFinalVersion,
   setVersionCache,
   tryLoadRemote,
@@ -239,21 +240,55 @@ describe('loader/utils', () => {
   })
 
   describe('buildFinalUrls', () => {
-    it('should return CDN URLs without local fallback', () => {
+    it('should return CDN URLs without fallback entry', () => {
       const urls = buildFinalUrls('test-pkg', '1.0.0')
       expect(urls).toHaveLength(2)
       expect(urls[0]).toContain('cdn.jsdelivr.net')
       expect(urls[1]).toContain('unpkg.com')
     })
 
-    it('should append local fallback when provided', () => {
+    it('should append fallback entry when provided', () => {
       const urls = buildFinalUrls(
         'test-pkg',
         '1.0.0',
-        'http://localhost:3000/remoteEntry.js',
+        'https://cdn-fallback.example.com/remoteEntry.js',
       )
       expect(urls).toHaveLength(3)
-      expect(urls[2]).toBe('http://localhost:3000/remoteEntry.js')
+      expect(urls[2]).toBe('https://cdn-fallback.example.com/remoteEntry.js')
+    })
+  })
+
+  describe('resolveLocalDebugConfig', () => {
+    it('should return null when localDebug is undefined', () => {
+      const result = resolveLocalDebugConfig()
+      expect(result).toBeNull()
+    })
+
+    it('should return null when localDebug is explicitly disabled', () => {
+      const result = resolveLocalDebugConfig({
+        enabled: false,
+        entry: 'http://localhost:3000/remoteEntry.js',
+      })
+      expect(result).toBeNull()
+    })
+
+    it('should use localDebug.entry when provided', () => {
+      const result = resolveLocalDebugConfig({
+        enabled: true,
+        entry: 'http://localhost:4000/remoteEntry.js',
+      })
+      expect(result).toEqual({
+        enabled: true,
+        entry: 'http://localhost:4000/remoteEntry.js',
+      })
+    })
+
+    it('should return null when localDebug entry is empty', () => {
+      const result = resolveLocalDebugConfig({
+        enabled: true,
+        entry: '   ',
+      })
+      expect(result).toBeNull()
     })
   })
 
