@@ -10,6 +10,7 @@ import {
 import {
   buildFinalUrls,
   getFinalSharedConfig,
+  isEmpty,
   resolveFinalVersion,
   tryLoadRemote,
 } from './utils'
@@ -39,12 +40,19 @@ export async function loadRemoteMultiVersion(
     cacheTTL = 24 * 60 * 60 * 1000,
     revalidate = true,
     shared: customShared,
+    localDebug,
   } = options
   const {
     remoteSourcePlugins = [],
     baseRemotes = [],
     registerOptions = {},
   } = extraOptions
+
+  //TODO 暂定待实现本地localhost logic
+  if(isEmpty(localDebug)){
+    console.log("pass")
+    return {} as unknown as any
+  }
 
   // 1. 解析最终版本号
   const finalVersion = await resolveFinalVersion(

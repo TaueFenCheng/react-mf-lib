@@ -2,6 +2,11 @@ import type { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/
 
 export type { ModuleFederationRuntimePlugin }
 
+export interface LocalDebugOptions {
+  enabled?: boolean // 是否启用 localhost 本地调试
+  entry: string // 本地调试 remoteEntry 地址
+}
+
 export interface LoadRemoteOptions {
   name: string // 模块联邦 name（基础名）
   pkg: string // npm 包名
@@ -12,6 +17,7 @@ export interface LoadRemoteOptions {
   cacheTTL?: number // 缓存时间
   revalidate?: boolean // 灰度更新
   shared?: Record<string, any> // 自定义 shared 配置
+  localDebug?: LocalDebugOptions // 本地的 localhost 调试配置
 }
 
 export interface VersionCache {

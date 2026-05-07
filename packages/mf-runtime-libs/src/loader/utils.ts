@@ -413,3 +413,27 @@ export function buildFinalUrls(
   if (localFallback) urls.push(localFallback)
   return urls
 }
+
+export function isEmpty(params: unknown): boolean {
+  if (params === null || params === undefined) {
+    return true
+  }
+
+  if (typeof params === 'number') {
+    return Number.isNaN(params)
+  }
+
+  if (typeof params === 'string') {
+    return params.trim().length === 0
+  }
+
+  if (Array.isArray(params)) {
+    return params.length === 0
+  }
+
+  if (typeof params === 'object') {
+    return Object.keys(params).length === 0
+  }
+
+  return false
+}
