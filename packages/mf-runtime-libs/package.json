@@ -1,8 +1,9 @@
 {
   "name": "mf-runtime-libs",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "description": "Utilities for remote reload in Module Federation & React Component",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": {
@@ -16,22 +17,22 @@
     },
     "./vue": {
       "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/main.js"
+        "types": "./dist/vue.d.ts",
+        "default": "./dist/vue.js"
       },
       "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/main.cjs"
+        "types": "./dist/vue.d.ts",
+        "default": "./dist/vue.cjs"
       }
     },
     "./react": {
       "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/main.js"
+        "types": "./dist/react.d.ts",
+        "default": "./dist/react.js"
       },
       "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/main.cjs"
+        "types": "./dist/react.d.ts",
+        "default": "./dist/react.cjs"
       }
     }
   },

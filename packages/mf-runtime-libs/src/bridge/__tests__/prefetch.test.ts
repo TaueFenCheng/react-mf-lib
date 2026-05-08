@@ -6,7 +6,7 @@ describe('prefetchComponent', () => {
     vi.clearAllMocks()
   })
 
-  it('should call instance.prefetch with correct options', () => {
+  it('should call instance.prefetch with correct options', async () => {
     const mockPrefetch = vi.fn()
     const mockInstance = {
       prefetch: mockPrefetch,
@@ -16,12 +16,14 @@ describe('prefetchComponent', () => {
 
     prefetchComponent({ id: 'remote/Component' }, mockGetInstance)
 
-    expect(mockPrefetch).toHaveBeenCalledWith({
-      id: 'remote/Component',
+    await vi.waitFor(() => {
+      expect(mockPrefetch).toHaveBeenCalledWith({
+        id: 'remote/Component',
+      })
     })
   })
 
-  it('should pass preloadComponentResource option', () => {
+  it('should pass preloadComponentResource option', async () => {
     const mockPrefetch = vi.fn()
     const mockInstance = {
       prefetch: mockPrefetch,
@@ -37,9 +39,11 @@ describe('prefetchComponent', () => {
       mockGetInstance,
     )
 
-    expect(mockPrefetch).toHaveBeenCalledWith({
-      id: 'remote/Component',
-      preloadComponentResource: true,
+    await vi.waitFor(() => {
+      expect(mockPrefetch).toHaveBeenCalledWith({
+        id: 'remote/Component',
+        preloadComponentResource: true,
+      })
     })
   })
 })

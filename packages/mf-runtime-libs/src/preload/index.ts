@@ -1,18 +1,20 @@
 import { loadRemoteMultiVersion } from '../loader'
 import type { LoadRemoteOptions } from '../types'
+import { BoundedCache } from '../utils/bounded-cache'
 
-interface PreloadCache {
-  [pkg: string]: {
-    version: string
-    scopeName: string
-    mf: any
-    timestamp: number
-  }
+interface PreloadCacheEntry {
+  version: string
+  scopeName: string
+  mf: any
+  timestamp: number
 }
 
-const preloadCache: PreloadCache = {}
-
 const PRELOAD_CACHE_TTL = 5 * 60 * 1000
+
+const preloadCache = new BoundedCache<string, PreloadCacheEntry>({
+  maxSize: 50,
+  ttl: PRELOAD_CACHE_TTL,
+})
 
 export interface PreloadOptions extends LoadRemoteOptions {
   priority?: 'idle' | 'high'
@@ -23,13 +25,9 @@ function getCachedPreload(
   pkg: string,
   version: string,
 ): { scopeName: string; mf: any } | null {
-  const cached = preloadCache[pkg]
+  const cached = preloadCache.get(pkg)
   if (!cached) return null
   if (cached.version !== version) return null
-  if (Date.now() - cached.timestamp > PRELOAD_CACHE_TTL) {
-    delete preloadCache[pkg]
-    return null
-  }
   return { scopeName: cached.scopeName, mf: cached.mf }
 }
 
@@ -39,12 +37,12 @@ function setCachedPreload(
   scopeName: string,
   mf: any,
 ): void {
-  preloadCache[pkg] = {
+  preloadCache.set(pkg, {
     version,
     scopeName,
     mf,
     timestamp: Date.now(),
-  }
+  })
 }
 
 declare const requestIdleCallback:
@@ -116,20 +114,17 @@ export function preloadRemoteList(
 }
 
 export function cancelPreload(pkg: string): void {
-  const cached = preloadCache[pkg]
-  if (cached) {
-    delete preloadCache[pkg]
-  }
+  preloadCache.delete(pkg)
 }
 
 export function clearPreloadCache(): void {
-  Object.keys(preloadCache).forEach((pkg) => delete preloadCache[pkg])
+  preloadCache.clear()
 }
 
 export function getPreloadStatus(
   pkg: string,
 ): { loaded: boolean; timestamp: number } | null {
-  const cached = preloadCache[pkg]
+  const cached = preloadCache.get(pkg)
   if (!cached) return null
   return { loaded: true, timestamp: cached.timestamp }
 }

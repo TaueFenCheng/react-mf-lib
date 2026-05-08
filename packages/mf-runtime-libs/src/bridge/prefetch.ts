@@ -4,10 +4,8 @@ import type { PrefetchOptions } from './types'
  * 获取 Module Federation 实例的函数
  * 允许测试时注入 mock
  */
-function getDefaultInstance() {
-  // 动态 require 以避免循环依赖和确保运行时加载
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { getInstance } = require('@module-federation/enhanced/runtime')
+async function getDefaultInstance() {
+  const { getInstance } = await import('@module-federation/enhanced/runtime')
   return getInstance()
 }
 
@@ -35,28 +33,34 @@ export function prefetchComponent(
   options: PrefetchOptions,
   getInstanceFn?: () => unknown,
 ): void {
-  try {
-    const getInstance = getInstanceFn ?? getDefaultInstance
-    const instance = getInstance() as {
-      prefetch?: (opts: PrefetchOptions) => void
-    }
-
-    if (!instance || typeof instance.prefetch !== 'function') {
-      console.warn(
-        '[mf-runtime-libs/bridge] instance.prefetch 不可用，请确保已注册 lazyLoadComponentPlugin 插件',
-      )
-      return
-    }
-
-    instance.prefetch({
-      id: options.id,
-      preloadComponentResource: options.preloadComponentResource,
-      dataFetchParams: options.dataFetchParams,
-    })
-  } catch (error) {
-    console.warn(
-      '[mf-runtime-libs/bridge] 预加载失败:',
-      error instanceof Error ? error.message : error,
-    )
+  const resolveInstance = async (): Promise<unknown> => {
+    if (getInstanceFn) return getInstanceFn()
+    return getDefaultInstance()
   }
+
+  resolveInstance()
+    .then((instance) => {
+      const inst = instance as {
+        prefetch?: (opts: PrefetchOptions) => void
+      }
+
+      if (!inst || typeof inst.prefetch !== 'function') {
+        console.warn(
+          '[mf-runtime-libs/bridge] instance.prefetch 不可用，请确保已注册 lazyLoadComponentPlugin 插件',
+        )
+        return
+      }
+
+      inst.prefetch({
+        id: options.id,
+        preloadComponentResource: options.preloadComponentResource,
+        dataFetchParams: options.dataFetchParams,
+      })
+    })
+    .catch((error) => {
+      console.warn(
+        '[mf-runtime-libs/bridge] 预加载失败:',
+        error instanceof Error ? error.message : error,
+      )
+    })
 }

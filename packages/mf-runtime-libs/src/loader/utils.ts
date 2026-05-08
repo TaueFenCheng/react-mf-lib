@@ -4,85 +4,34 @@ import {
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
 import type { VersionCache } from '../types'
+import {
+  CDN_TEMPLATES,
+  REACT_SINGLETON_PACKAGES,
+  SINGLETON_SHARE_CONFIG,
+  fetchLatestVersion as fetchLatestVersionShared,
+} from './shared'
+import { BoundedCache } from '../utils/bounded-cache'
 
 // --- 核心配置抽象 ---
 
-/** 默认的 CDN 地址模板 */
-const DEFAULT_CDN_TEMPLATES = [
-  'https://cdn.jsdelivr.net/npm/{pkg}@{version}/dist/remoteEntry.js',
-  'https://unpkg.com/{pkg}@{version}/dist/remoteEntry.js',
-]
-
 /** 默认的共享模块配置（使用 runtime 期望的 shareConfig 结构） */
-const DEFAULT_SHARED_CONFIG: Record<string, any> = {
-  react: {
-    shareConfig: {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      strictVersion: false,
+const DEFAULT_SHARED_CONFIG: Record<string, any> = Object.fromEntries(
+  REACT_SINGLETON_PACKAGES.map((pkg) => [
+    pkg,
+    {
+      shareConfig: { ...SINGLETON_SHARE_CONFIG },
+      strategy: 'loaded-first',
     },
-    strategy: 'loaded-first',
-  },
-  'react-dom': {
-    shareConfig: {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      strictVersion: false,
-    },
-    strategy: 'loaded-first',
-  },
-  'react-dom/client': {
-    shareConfig: {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      strictVersion: false,
-    },
-    strategy: 'loaded-first',
-  },
-  'react/jsx-runtime': {
-    shareConfig: {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      strictVersion: false,
-    },
-    strategy: 'loaded-first',
-  },
-  'react/jsx-dev-runtime': {
-    shareConfig: {
-      singleton: true,
-      eager: true,
-      requiredVersion: false,
-      strictVersion: false,
-    },
-    strategy: 'loaded-first',
-  },
-}
+  ]),
+)
 
 // --- 工具函数 ---
 
-interface NpmRegistryResponse {
-  'dist-tags'?: {
-    latest: string
-    [tag: string]: string | undefined
-  }
-}
-
 /**
- * 从 npm registry 获取最新版本，并增加类型安全性
+ * 从 npm registry 获取最新版本
  */
 export async function fetchLatestVersion(pkg: string): Promise<string> {
-  const res = await fetch(`https://registry.npmjs.org/${pkg}`)
-  if (!res.ok)
-    throw new Error(`[MF] 无法获取 ${pkg} 的版本信息，状态码：${res.status}`)
-  const data = (await res.json()) as NpmRegistryResponse
-  const latest = data['dist-tags']?.latest
-
-  if (!latest) throw new Error(`[MF] 无法从 NPM 获取 ${pkg} 的 latest tag`)
-  return latest
+  return fetchLatestVersionShared(pkg)
 }
 
 /**
@@ -116,7 +65,7 @@ export function setVersionCache(pkg: string, version: string) {
  * 拼接 CDN 地址 (统一使用抽象的模板)
  */
 export function buildCdnUrls(pkg: string, version: string): string[] {
-  return DEFAULT_CDN_TEMPLATES.map((template) =>
+  return CDN_TEMPLATES.map((template: string) =>
     template.replace('{pkg}', pkg).replace('{version}', version),
   )
 }
@@ -132,8 +81,14 @@ export type RuntimeRemote = Parameters<
   ReturnType<typeof createInstance>['registerRemotes']
 >[0][number]
 
-const mfInstanceCache = new Map<string, ReturnType<typeof createInstance>>()
-const mfInstanceLoadingCache = new Map<string, Promise<LoadResult>>()
+const mfInstanceCache = new BoundedCache<string, ReturnType<typeof createInstance>>({
+  maxSize: 100,
+  ttl: 10 * 60 * 1000,
+})
+const mfInstanceLoadingCache = new BoundedCache<string, Promise<LoadResult>>({
+  maxSize: 50,
+  ttl: 5 * 60 * 1000,
+})
 
 // 导出缓存用于测试
 export { mfInstanceCache, mfInstanceLoadingCache }
@@ -227,6 +182,18 @@ export async function tryLoadRemote(
   }
 }
 
+function createSingletonEntry(
+  version: string,
+  lib: () => unknown,
+): Record<string, unknown> {
+  return {
+    version,
+    lib,
+    shareConfig: { ...SINGLETON_SHARE_CONFIG },
+    strategy: 'loaded-first',
+  }
+}
+
 /**
  * 获取最终的共享配置
  */
@@ -246,40 +213,18 @@ export function getFinalSharedConfig(
       typeof globalReact.useCallback === 'function'
 
     if (isValidReact) {
-      // 注意：runtime shared 需要使用 shareConfig，而不是直接 singleton/eager 顶层字段
-      globalShared.react = {
-        version: globalReact.version || '18.0.0',
-        lib: () => globalReact,
-        shareConfig: {
-          singleton: true,
-          eager: true,
-          requiredVersion: false,
-          strictVersion: false,
-        },
-        strategy: 'loaded-first',
-      }
-      globalShared['react-dom'] = {
-        version: globalReactDOM.version || '18.0.0',
-        lib: () => globalReactDOM,
-        shareConfig: {
-          singleton: true,
-          eager: true,
-          requiredVersion: false,
-          strictVersion: false,
-        },
-        strategy: 'loaded-first',
-      }
-      globalShared['react-dom/client'] = {
-        version: globalReactDOM.version || '18.0.0',
-        lib: () => globalReactDOM,
-        shareConfig: {
-          singleton: true,
-          eager: true,
-          requiredVersion: false,
-          strictVersion: false,
-        },
-        strategy: 'loaded-first',
-      }
+      globalShared.react = createSingletonEntry(
+        globalReact.version || '18.0.0',
+        () => globalReact,
+      )
+      globalShared['react-dom'] = createSingletonEntry(
+        globalReactDOM.version || '18.0.0',
+        () => globalReactDOM,
+      )
+      globalShared['react-dom/client'] = createSingletonEntry(
+        globalReactDOM.version || '18.0.0',
+        () => globalReactDOM,
+      )
 
       console.log('[getFinalSharedConfig] Using global React instance', {
         version: globalReact.version,
@@ -303,51 +248,27 @@ export function getFinalSharedConfig(
   }
 
   // 保证 React 关键共享模块总是单例 + loaded-first
-  const keepSingletonPackages = [
-    'react',
-    'react-dom',
-    'react-dom/client',
-    'react/jsx-runtime',
-    'react/jsx-dev-runtime',
-  ]
-
-  for (const pkgName of keepSingletonPackages) {
+  for (const pkgName of REACT_SINGLETON_PACKAGES) {
     const base = mergedShared[pkgName] || {}
     mergedShared[pkgName] = {
       ...base,
       strategy: 'loaded-first',
       shareConfig: {
-        singleton: true,
-        eager: true,
-        requiredVersion: false,
-        strictVersion: false,
+        ...SINGLETON_SHARE_CONFIG,
         ...(base.shareConfig || {}),
       },
     }
   }
 
   // 如果全局存在 React，则优先保留 host 侧 lib，避免 remote 侧 React 抢占
-  if (typeof globalShared.react?.lib === 'function') {
-    mergedShared.react = {
-      ...(mergedShared.react || {}),
-      lib: globalShared.react.lib,
-      version: globalShared.react.version,
-    }
-  }
-
-  if (typeof globalShared['react-dom']?.lib === 'function') {
-    mergedShared['react-dom'] = {
-      ...(mergedShared['react-dom'] || {}),
-      lib: globalShared['react-dom'].lib,
-      version: globalShared['react-dom'].version,
-    }
-  }
-
-  if (typeof globalShared['react-dom/client']?.lib === 'function') {
-    mergedShared['react-dom/client'] = {
-      ...(mergedShared['react-dom/client'] || {}),
-      lib: globalShared['react-dom/client'].lib,
-      version: globalShared['react-dom/client'].version,
+  for (const pkgName of ['react', 'react-dom', 'react-dom/client'] as const) {
+    const globalEntry = globalShared[pkgName]
+    if (typeof globalEntry?.lib === 'function') {
+      mergedShared[pkgName] = {
+        ...(mergedShared[pkgName] || {}),
+        lib: globalEntry.lib,
+        version: globalEntry.version,
+      }
     }
   }
 
