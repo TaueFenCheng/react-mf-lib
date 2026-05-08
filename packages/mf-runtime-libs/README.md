@@ -55,6 +55,26 @@ useEffect(() => {
 }, []);
 ```
 
+#### 本地调试
+
+本地开发时，可以使用 `localDebug` 配置直接加载本地运行的远程组件服务：
+
+```ts
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
+
+const { scopeName, mf } = await loadRemoteMultiVersion({
+  name: 'react_mf_lib',
+  pkg: 'test-mf-unpkg',
+  version: '1.0.0',
+  localDebug: {
+    enabled: true,
+    entry: 'http://localhost:3001/remoteEntry.js',
+  },
+});
+
+const mod = await mf.loadRemote(`${scopeName}/Button`);
+```
+
 #### 2. 使用 React 组件加载远程模块
 
 ```tsx

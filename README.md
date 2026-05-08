@@ -71,6 +71,26 @@ async function loadRemoteComponent() {
 }
 ```
 
+### 本地调试
+
+本地开发时，使用 `localDebug` 配置直接加载本地运行的远程组件服务：
+
+```typescript
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
+
+const { scopeName, mf } = await loadRemoteMultiVersion({
+  name: 'my-remote-app',
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  localDebug: {
+    enabled: true,
+    entry: 'http://localhost:3001/remoteEntry.js',
+  },
+});
+
+const mod = await mf.loadRemote(`${scopeName}/Button`);
+```
+
 ### Bridge 模块 - 懒加载远程组件
 
 ```typescript
@@ -269,6 +289,7 @@ const { scopeName, mf } = await loadRemoteMultiVersion(options, plugins);
 | `retries` | `number` | ❌ | `3` | 每个 CDN 的重试次数 |
 | `delay` | `number` | ❌ | `1000` | 重试间隔（毫秒） |
 | `localFallback` | `string` | ❌ | - | 本地兜底 URL |
+| `localDebug` | `LocalDebugOptions` | ❌ | - | 本地调试配置，启用后跳过 CDN 直接使用本地地址 |
 | `cacheTTL` | `number` | ❌ | `86400000` | 缓存时间（毫秒） |
 | `revalidate` | `boolean` | ❌ | `true` | 异步重新验证最新版本 |
 | `shared` | `Record<string, any>` | ❌ | - | 自定义共享模块配置 |
@@ -543,6 +564,33 @@ useEffect(() => {
 }, []);
 ```
 
+### 5. 本地调试
+
+```typescript
+// ✅ 推荐：本地开发使用 localDebug 配置
+const isDev = process.env.NODE_ENV === 'development';
+
+const { mf } = await loadRemoteMultiVersion({
+  name: 'my-app',
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  ...(isDev && {
+    localDebug: {
+      enabled: true,
+      entry: 'http://localhost:3001/remoteEntry.js',
+    },
+  }),
+});
+
+// 或者使用 localFallback 作为兜底（会先尝试 CDN）
+const { mf } = await loadRemoteMultiVersion({
+  name: 'my-app',
+  pkg: '@myorg/remote-app',
+  version: '1.0.0',
+  localFallback: 'http://localhost:3001/remoteEntry.js',
+});
+```
+
 ## 故障排查
 
 ### 加载失败
@@ -552,6 +600,7 @@ useEffect(() => {
 3. 验证远程组件是否正确构建
 4. 检查 Module Federation 配置是否匹配
 5. 确认 `remoteEntry.js` 可访问
+6. 本地开发时，使用 `localDebug` 配置直接加载本地服务
 
 ### "React is not defined" 错误
 

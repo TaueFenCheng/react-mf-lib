@@ -58,7 +58,7 @@ export async function loadRemoteMultiVersion(
   // 2. 构建最终 URL 列表
   const scopeName = `${name}`;
   let urls: string[];
-  if (!isEmpty(localDebug) && localDebug?.entry) {
+  if (!isEmpty(localDebug) && localDebug?.entry && localDebug.enabled) {
     console.log("localDebug", localDebug);
     urls = localDebug?.entry ? [localDebug?.entry] as string[] : [];
   } else {
