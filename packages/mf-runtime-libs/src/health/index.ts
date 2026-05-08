@@ -1,4 +1,5 @@
 import type { LoadRemoteOptions } from '../types'
+import { CDN_TEMPLATES, fetchLatestVersion } from '../loader/shared'
 
 export interface HealthCheckResult {
   pkg: string
@@ -19,11 +20,6 @@ export interface RemoteHealthReport {
   overall: 'healthy' | 'degraded' | 'unhealthy'
   remotes: HealthCheckResult[]
 }
-
-const CDN_URLS = [
-  'https://cdn.jsdelivr.net/npm/{pkg}@{version}/dist/remoteEntry.js',
-  'https://unpkg.com/{pkg}@{version}/dist/remoteEntry.js',
-]
 
 async function checkCdnAccess(
   cdnUrl: string,
@@ -51,29 +47,20 @@ async function checkCdnAccess(
   }
 }
 
-async function fetchLatestVersion(pkg: string): Promise<string | null> {
-  try {
-    const res = await fetch(`https://registry.npmjs.org/${pkg}`)
-    if (!res.ok) return null
-    const data = await res.json()
-    return data['dist-tags']?.latest || null
-  } catch {
-    return null
-  }
-}
-
 export async function checkRemoteHealth(
   options: LoadRemoteOptions,
 ): Promise<HealthCheckResult> {
   const { pkg, version = 'latest' } = options
 
   const actualVersion =
-    version === 'latest' ? (await fetchLatestVersion(pkg)) || version : version
+    version === 'latest'
+      ? (await fetchLatestVersion(pkg, true)) || version
+      : version
 
   const results: Array<{ cdn: string; reachable: boolean; latency: number }> =
     []
 
-  for (const template of CDN_URLS) {
+  for (const template of CDN_TEMPLATES) {
     const url = template
       .replace('{pkg}', pkg)
       .replace('{version}', actualVersion)

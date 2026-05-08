@@ -6,6 +6,8 @@ export default defineConfig({
   source: {
     entry: {
       main: './src/index.ts',
+      vue: './src/vue.ts',
+      react: './src/react.ts',
     },
   },
   output: {

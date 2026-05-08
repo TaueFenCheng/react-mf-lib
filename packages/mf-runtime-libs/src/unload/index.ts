@@ -121,35 +121,37 @@ export function registerLoadedModule(key: string, moduleId: string): void {
   }
 }
 
-export function unloadAll(clearAllCache = false): Promise<void> {
-  return new Promise((resolve) => {
-    const keys = Array.from(remoteInstances.keys())
+export async function unloadAll(clearAllCache = false): Promise<void> {
+  const keys = Array.from(remoteInstances.keys())
 
-    if (keys.length === 0) {
-      resolve()
-      return
+  if (keys.length === 0) {
+    if (clearAllCache) {
+      try {
+        localStorage.removeItem('mf-multi-version')
+      } catch (e) {
+        console.warn('[MF Unload] 清除所有缓存失败:', e)
+      }
     }
+    return
+  }
 
-    let completed = 0
-    keys.forEach(async (key) => {
+  await Promise.all(
+    keys.map(async (key) => {
       const instance = remoteInstances.get(key)
       if (instance) {
         await cleanupInstance(instance)
         remoteInstances.delete(key)
       }
-      completed++
-      if (completed >= keys.length) {
-        if (clearAllCache) {
-          try {
-            localStorage.removeItem('mf-multi-version')
-          } catch (e) {
-            console.warn('[MF Unload] 清除所有缓存失败:', e)
-          }
-        }
-        resolve()
-      }
-    })
-  })
+    }),
+  )
+
+  if (clearAllCache) {
+    try {
+      localStorage.removeItem('mf-multi-version')
+    } catch (e) {
+      console.warn('[MF Unload] 清除所有缓存失败:', e)
+    }
+  }
 }
 
 export function getLoadedRemotes(): Array<{
