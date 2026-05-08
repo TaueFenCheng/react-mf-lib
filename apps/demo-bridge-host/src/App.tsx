@@ -42,10 +42,10 @@ function RemoteCardWrapper() {
           pkg: "demo-bridge-provider",
           version: "1.0.0",
           // localFallback: "http://localhost:3001/remoteEntry.js",
-        localDebug: {
+          localDebug: {
             enabled: true,
             entry: "http://localhost:3001/remoteEntry.js",
-        },
+          },
         });
         const mod: any = await mf!.loadRemote("demo_provider/RemoteCard");
         // 支持默认导出或组件本身
