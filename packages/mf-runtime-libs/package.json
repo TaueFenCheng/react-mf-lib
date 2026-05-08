@@ -1,6 +1,6 @@
 {
   "name": "mf-runtime-libs",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "Utilities for remote reload in Module Federation & React Component",
   "exports": {

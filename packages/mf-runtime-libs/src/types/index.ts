@@ -3,7 +3,7 @@ import type { ModuleFederationRuntimePlugin } from '@module-federation/enhanced/
 export type { ModuleFederationRuntimePlugin }
 
 export interface LocalDebugOptions {
-  enabled?: boolean // 是否启用 localhost 本地调试
+  enabled: boolean // 是否启用 localhost 本地调试
   entry: string // 本地调试 remoteEntry 地址
 }
 
