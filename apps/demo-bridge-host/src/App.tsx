@@ -1,66 +1,77 @@
-import './App.css'
-import { useEffect, useState } from 'react'
+import "./App.css";
+import { useEffect, useState } from "react";
 import {
   createLazyComponent,
   loadRemoteMultiVersion,
   prefetchComponent,
-} from 'mf-runtime-libs'
+} from "mf-runtime-libs";
 
 // 使用 createLazyComponent 创建远程组件
 const RemoteButton = createLazyComponent({
   loader: () =>
     loadRemoteMultiVersion({
-      name: 'demo_provider',
-      pkg: 'demo-bridge-provider',
-      version: '1.0.0',
-      localFallback: 'http://localhost:3001/remoteEntry.js',
-    }).then(({ mf }) => mf!.loadRemote('demo_provider/RemoteButton')) as Promise<Record<string, unknown>>,
+      name: "demo_provider",
+      pkg: "demo-bridge-provider",
+      version: "1.0.0",
+      // localFallback: 'http://localhost:3001/remoteEntry.js',
+      localDebug: {
+        enabled: true,
+        entry: "http://localhost:3001/remoteEntry.js",
+      },
+    }).then(({ mf }) =>
+      mf!.loadRemote("demo_provider/RemoteButton")
+    ) as Promise<Record<string, unknown>>,
   loading: <div className="loading">Loading RemoteButton...</div>,
   fallback: ({ error }) => (
     <div className="error">Failed to load RemoteButton: {error.message}</div>
   ),
-})
+});
 
 // 使用 manual load 加载远程组件
 function RemoteCardWrapper() {
-  const [RemoteCardComp, setRemoteCardComp] = useState<React.ComponentType<any> | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const [RemoteCardComp, setRemoteCardComp] =
+    useState<React.ComponentType<any> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     async function loadCard() {
       try {
         const { mf } = await loadRemoteMultiVersion({
-          name: 'demo_provider',
-          pkg: 'demo-bridge-provider',
-          version: '1.0.0',
-          localFallback: 'http://localhost:3001/remoteEntry.js',
-        })
-        const mod: any = await mf!.loadRemote('demo_provider/RemoteCard')
+          name: "demo_provider",
+          pkg: "demo-bridge-provider",
+          version: "1.0.0",
+          // localFallback: "http://localhost:3001/remoteEntry.js",
+        localDebug: {
+            enabled: true,
+            entry: "http://localhost:3001/remoteEntry.js",
+        },
+        });
+        const mod: any = await mf!.loadRemote("demo_provider/RemoteCard");
         // 支持默认导出或组件本身
-        const component = mod?.default || mod
+        const component = mod?.default || mod;
         if (component) {
-          setRemoteCardComp(() => component)
+          setRemoteCardComp(() => component);
         }
-        setLoading(false)
+        setLoading(false);
       } catch (err) {
-        setError(err as Error)
-        setLoading(false)
+        setError(err as Error);
+        setLoading(false);
       }
     }
-    loadCard()
-  }, [])
+    loadCard();
+  }, []);
 
   if (loading) {
-    return <div className="loading">Loading RemoteCard...</div>
+    return <div className="loading">Loading RemoteCard...</div>;
   }
 
   if (error || !RemoteCardComp) {
     return (
       <div className="error">
-        Failed to load RemoteCard: {error?.message || 'Unknown error'}
+        Failed to load RemoteCard: {error?.message || "Unknown error"}
       </div>
-    )
+    );
   }
 
   return (
@@ -68,19 +79,19 @@ function RemoteCardWrapper() {
       <p>This card component is loaded from the remote provider app.</p>
       <p>Bridge module is working correctly!</p>
     </RemoteCardComp>
-  )
+  );
 }
 
 function App() {
-  const [buttonClickCount, setButtonClickCount] = useState(0)
+  const [buttonClickCount, setButtonClickCount] = useState(0);
 
   // 预加载 RemoteCard 组件
   useEffect(() => {
     prefetchComponent({
-      id: 'demo_provider/RemoteCard',
+      id: "demo_provider/RemoteCard",
       preloadComponentResource: true,
-    })
-  }, [])
+    });
+  }, []);
 
   return (
     <div className="App">
@@ -116,7 +127,7 @@ function App() {
         </section>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
