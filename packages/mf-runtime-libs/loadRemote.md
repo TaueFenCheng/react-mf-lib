@@ -185,6 +185,7 @@ function loadRemoteMultiVersion(
 | `retries` | `number` | ❌ | `3` | 每个 CDN 的重试次数 |
 | `delay` | `number` | ❌ | `1000` | 重试间隔（毫秒） |
 | `localFallback` | `string` | ❌ | - | 本地兜底 URL |
+| `localDebug` | `LocalDebugOptions` | ❌ | - | 本地调试配置 |
 | `cacheTTL` | `number` | ❌ | `86400000` | 缓存有效期（毫秒） |
 | `revalidate` | `boolean` | ❌ | `true` | 是否异步验证最新版本 |
 | `shared` | `Record<string, any>` | ❌ | - | 自定义共享模块配置 |
@@ -451,6 +452,27 @@ npm 包名，用于从 CDN 加载。
   localFallback: 'http://localhost:3001/remoteEntry.js',
 }
 ```
+
+#### localDebug
+
+本地调试配置，启用后将直接使用指定的本地 entry 地址，跳过 CDN 加载。
+
+```typescript
+{
+  localDebug: {
+    enabled: true,  // 是否启用本地调试
+    entry: 'http://localhost:3001/remoteEntry.js',  // 本地 remoteEntry 地址
+  },
+}
+```
+
+**使用场景**：
+- 本地开发时，直接加载本地运行的远程组件服务
+- 调试远程组件时，避免从 CDN 加载
+
+**与 localFallback 的区别**：
+- `localFallback`: 作为 CDN 加载失败后的兜底地址，会先尝试 CDN
+- `localDebug`: 启用后直接使用本地地址，跳过 CDN 加载
 
 #### cacheTTL
 
@@ -776,7 +798,7 @@ const Card = await mf.loadRemote('ui_lib/Card');  // 等待 Button 加载完才�
 ### 5. 本地开发
 
 ```typescript
-// ✅ 好的做法：开发环境使用本地兜底
+// ✅ 好的做法：开发环境使用本地调试配置
 const isDev = process.env.NODE_ENV === 'development';
 
 const { mf } = await loadRemoteMultiVersion({
@@ -784,8 +806,19 @@ const { mf } = await loadRemoteMultiVersion({
   pkg: 'my-ui-components',
   version: '1.0.0',
   ...(isDev && {
-    localFallback: 'http://localhost:3001/remoteEntry.js',
+    localDebug: {
+      enabled: true,
+      entry: 'http://localhost:3001/remoteEntry.js',
+    },
   }),
+});
+
+// 或者使用 localFallback 作为兜底（会先尝试 CDN）
+const { mf } = await loadRemoteMultiVersion({
+  name: 'ui_lib',
+  pkg: 'my-ui-components',
+  version: '1.0.0',
+  localFallback: 'http://localhost:3001/remoteEntry.js',
 });
 ```
 
@@ -802,12 +835,21 @@ const { mf } = await loadRemoteMultiVersion({
 - 验证 CDN 地址是否可访问
 - 增加 `retries` 和 `delay` 值
 - 配置 `localFallback` 作为兜底
+- 本地开发时使用 `localDebug` 直接加载本地服务
 
 ```typescript
 {
   retries: 5,
   delay: 2000,
   localFallback: 'http://localhost:3001/remoteEntry.js',
+}
+
+// 或者本地开发时直接使用 localDebug
+{
+  localDebug: {
+    enabled: true,
+    entry: 'http://localhost:3001/remoteEntry.js',
+  },
 }
 ```
 
@@ -1270,6 +1312,11 @@ function App() {
 ## 类型定义
 
 ```typescript
+interface LocalDebugOptions {
+  enabled: boolean;  // 是否启用本地调试
+  entry: string;     // 本地调试 remoteEntry 地址
+}
+
 interface LoadRemoteOptions {
   name: string;  // 模块联邦 name（基础名）
   pkg: string;  // npm 包名
@@ -1277,6 +1324,7 @@ interface LoadRemoteOptions {
   retries?: number;  // 重试次数
   delay?: number;  // 重试间隔
   localFallback?: string;  // 本地兜底
+  localDebug?: LocalDebugOptions;  // 本地调试配置
   cacheTTL?: number;  // 缓存时间
   revalidate?: boolean;  // 灰度更新
   shared?: Record<string, any>;  // 自定义 shared 配置
