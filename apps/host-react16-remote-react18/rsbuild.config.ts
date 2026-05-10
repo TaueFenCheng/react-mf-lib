@@ -1,9 +1,10 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { defineConfig } from '@rsbuild/core'
 import { pluginReact } from '@rsbuild/plugin-react'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+// 如需启用下方 workspace link 配置，需取消注释以下导入：
+// import path from 'node:path'
+// import { fileURLToPath } from 'node:url'
+// const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [
@@ -14,30 +15,20 @@ export default defineConfig({
       },
     }),
   ],
-  source: {
-    resolve: {
-      alias: {
-        // mf-runtime-libs 的构建产物中有 import ... from "react"，
-        // workspace link 会导致从 dist 目录解析失败，通过 alias 强制指定宿主 node_modules
-        'react/jsx-runtime': path.resolve(__dirname, './src/jsx-runtime-shim.ts'),
-        'react/jsx-dev-runtime': path.resolve(
-          __dirname,
-          './src/jsx-runtime-shim.ts',
-        ),
-      },
-    },
-  },
-  tools: {
-    rspack: {
-      resolve: {
-        // workspace 链接的包中 import react 时，优先从宿主应用的 node_modules 解析
-        modules: [
-          path.resolve(__dirname, 'node_modules'),
-          'node_modules',
-        ],
-      },
-    },
-  },
+  // workspace link 开发时，mf-runtime-libs 中的 import react from "react"
+  // 会从真实路径（packages/mf-runtime-libs/dist/）解析，找不到 peer dep 的 react。
+  // 从 npm 安装正式包后不需要此配置。
+  // 如需启用，同时取消上方 import path / fileURLToPath 的注释：
+  // tools: {
+  //   rspack: {
+  //     resolve: {
+  //       modules: [
+  //         path.resolve(__dirname, 'node_modules'),
+  //         'node_modules',
+  //       ],
+  //     },
+  //   },
+  // },
   server: {
     port: 3004,
   },
