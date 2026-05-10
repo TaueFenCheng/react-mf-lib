@@ -122,7 +122,10 @@ describe('loader/index', () => {
         '2.0.0',
         'http://localhost:3000/remoteEntry.js',
       )
-      expect(getFinalSharedConfig).toHaveBeenCalledWith({ custom: {} }, undefined)
+      expect(getFinalSharedConfig).toHaveBeenCalledWith(
+        { custom: {} },
+        undefined,
+      )
     })
 
     it('should try multiple URLs on failure', async () => {

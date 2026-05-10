@@ -140,7 +140,8 @@ export function useLazyComponent<T = unknown>(
  */
 function isValidComponentType(value: unknown): value is ComponentType<unknown> {
   if (typeof value === 'function') return true
-  if (typeof value === 'object' && value !== null && '$$typeof' in value) return true
+  if (typeof value === 'object' && value !== null && '$$typeof' in value)
+    return true
   return false
 }
 

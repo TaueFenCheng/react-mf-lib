@@ -214,8 +214,8 @@ importers:
   apps/host-react16-remote-react18:
     dependencies:
       mf-runtime-libs:
-        specifier: workspace:*
-        version: link:../../packages/mf-runtime-libs
+        specifier: ^1.0.8
+        version: 1.0.8(node-fetch@2.7.0(encoding@0.1.13))(react-dom@16.14.0(react@16.14.0))(react-router@6.30.3(react@16.14.0))(react@16.14.0)(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))(webpack@5.106.2)
       react:
         specifier: ^16.14.0
         version: 16.14.0
@@ -340,6 +340,9 @@ importers:
       react-router-dom:
         specifier: ^6.30.0
         version: 6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      vue:
+        specifier: '>=3.0.0'
+        version: 3.5.30(typescript@5.9.3)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.6
@@ -3163,6 +3166,16 @@ packages:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
 
+  mf-runtime-libs@1.0.8:
+    resolution: {integrity: sha512-9OFFMBmT2sELQaG5RuwbnvLHF6qqRZwd0D5+S4nWPiptXnN+DzXQ/emTH6VjvyBmAQtSHIWsuOaQgMSRmgjn+w==}
+    peerDependencies:
+      react: '>=17.0.0'
+      react-dom: '>=17.0.0'
+      vue: '>=3.0.0'
+    peerDependenciesMeta:
+      vue:
+        optional: true
+
   micromatch@4.0.8:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
@@ -4862,6 +4875,18 @@ snapshots:
       react-error-boundary: 4.1.2(react@18.3.1)
       react-router-dom: 6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
+  '@module-federation/bridge-react@2.4.0(node-fetch@2.7.0(encoding@0.1.13))(react-dom@16.14.0(react@16.14.0))(react-router-dom@6.30.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0))(react-router@6.30.3(react@16.14.0))(react@16.14.0)':
+    dependencies:
+      '@module-federation/sdk': 2.4.0(node-fetch@2.7.0(encoding@0.1.13))
+      lru-cache: 10.4.3
+      react: 16.14.0
+      react-dom: 16.14.0(react@16.14.0)
+    optionalDependencies:
+      react-router: 6.30.3(react@16.14.0)
+      react-router-dom: 6.30.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0)
+    transitivePeerDependencies:
+      - node-fetch
+
   '@module-federation/bridge-react@2.4.0(node-fetch@2.7.0(encoding@0.1.13))(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-router@6.30.3(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@module-federation/sdk': 2.4.0(node-fetch@2.7.0(encoding@0.1.13))
@@ -4890,6 +4915,14 @@ snapshots:
       - typescript
       - utf-8-validate
       - vue-tsc
+
+  '@module-federation/data-prefetch@0.18.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0)':
+    dependencies:
+      '@module-federation/runtime': 0.18.3
+      '@module-federation/sdk': 0.18.3
+      fs-extra: 9.1.0
+      react: 16.14.0
+      react-dom: 16.14.0(react@16.14.0)
 
   '@module-federation/data-prefetch@0.18.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -4985,6 +5018,34 @@ snapshots:
       '@module-federation/bridge-react-webpack-plugin': 0.18.3
       '@module-federation/cli': 0.18.3(typescript@5.9.3)
       '@module-federation/data-prefetch': 0.18.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@module-federation/dts-plugin': 0.18.3(typescript@5.9.3)
+      '@module-federation/error-codes': 0.18.3
+      '@module-federation/inject-external-runtime-core-plugin': 0.18.3(@module-federation/runtime-tools@0.18.3)
+      '@module-federation/managers': 0.18.3
+      '@module-federation/manifest': 0.18.3(typescript@5.9.3)
+      '@module-federation/rspack': 0.18.3(@rspack/core@1.6.0(@swc/helpers@0.5.17))(typescript@5.9.3)
+      '@module-federation/runtime-tools': 0.18.3
+      '@module-federation/sdk': 0.18.3
+      btoa: 1.2.1
+      schema-utils: 4.3.3
+      upath: 2.0.1
+    optionalDependencies:
+      typescript: 5.9.3
+      webpack: 5.106.2
+    transitivePeerDependencies:
+      - '@rspack/core'
+      - bufferutil
+      - debug
+      - react
+      - react-dom
+      - supports-color
+      - utf-8-validate
+
+  '@module-federation/enhanced@0.18.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0)(typescript@5.9.3)(webpack@5.106.2)':
+    dependencies:
+      '@module-federation/bridge-react-webpack-plugin': 0.18.3
+      '@module-federation/cli': 0.18.3(typescript@5.9.3)
+      '@module-federation/data-prefetch': 0.18.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0)
       '@module-federation/dts-plugin': 0.18.3(typescript@5.9.3)
       '@module-federation/error-codes': 0.18.3
       '@module-federation/inject-external-runtime-core-plugin': 0.18.3(@module-federation/runtime-tools@0.18.3)
@@ -7012,6 +7073,28 @@ snapshots:
 
   methods@1.1.2: {}
 
+  mf-runtime-libs@1.0.8(node-fetch@2.7.0(encoding@0.1.13))(react-dom@16.14.0(react@16.14.0))(react-router@6.30.3(react@16.14.0))(react@16.14.0)(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))(webpack@5.106.2):
+    dependencies:
+      '@module-federation/bridge-react': 2.4.0(node-fetch@2.7.0(encoding@0.1.13))(react-dom@16.14.0(react@16.14.0))(react-router-dom@6.30.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0))(react-router@6.30.3(react@16.14.0))(react@16.14.0)
+      '@module-federation/enhanced': 0.18.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0)(typescript@5.9.3)(webpack@5.106.2)
+      react: 16.14.0
+      react-dom: 16.14.0(react@16.14.0)
+      react-router-dom: 6.30.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0)
+    optionalDependencies:
+      vue: 3.5.30(typescript@5.9.3)
+    transitivePeerDependencies:
+      - '@rspack/core'
+      - bufferutil
+      - debug
+      - hono
+      - node-fetch
+      - react-router
+      - supports-color
+      - typescript
+      - utf-8-validate
+      - vue-tsc
+      - webpack
+
   micromatch@4.0.8:
     dependencies:
       braces: 3.0.3
@@ -7273,12 +7356,24 @@ snapshots:
 
   react-refresh@0.17.0: {}
 
+  react-router-dom@6.30.3(react-dom@16.14.0(react@16.14.0))(react@16.14.0):
+    dependencies:
+      '@remix-run/router': 1.23.2
+      react: 16.14.0
+      react-dom: 16.14.0(react@16.14.0)
+      react-router: 6.30.3(react@16.14.0)
+
   react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@remix-run/router': 1.23.2
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-router: 6.30.3(react@18.3.1)
+
+  react-router@6.30.3(react@16.14.0):
+    dependencies:
+      '@remix-run/router': 1.23.2
+      react: 16.14.0
 
   react-router@6.30.3(react@18.3.1):
     dependencies:

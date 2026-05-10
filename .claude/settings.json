@@ -12,7 +12,8 @@
       "Bash(npx --yes @biomejs/biome check src/App.tsx)",
       "Bash(npx @biomejs/biome check src/App.tsx)",
       "Bash(npx @biomejs/biome format --write src/App.tsx)",
-      "Bash(pnpm --filter host-react16-remote-react18 build)"
+      "Bash(pnpm --filter host-react16-remote-react18 build)",
+      "Bash(pnpm info *)"
     ]
   }
 }

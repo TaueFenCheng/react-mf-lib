@@ -36,9 +36,7 @@ export async function fetchLatestVersion(
     const res = await fetch(`https://registry.npmjs.org/${pkg}`)
     if (!res.ok) {
       if (silent) return null
-      throw new Error(
-        `[MF] 无法获取 ${pkg} 的版本信息，状态码：${res.status}`,
-      )
+      throw new Error(`[MF] 无法获取 ${pkg} 的版本信息，状态码：${res.status}`)
     }
     const data = (await res.json()) as NpmRegistryResponse
     const latest = data['dist-tags']?.latest

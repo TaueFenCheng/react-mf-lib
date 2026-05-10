@@ -1,7 +1,21 @@
 /**
  * Vue 专用入口 — 仅包含加载器和工具，不包含 React Bridge 组件
  */
-export { loadRemoteMultiVersion } from './loader'
+
+export { createEventBus, eventBus } from './event-bus'
+export {
+  checkModuleLoadable,
+  checkRemoteHealth,
+  formatHealthStatus,
+  getRemoteHealthReport,
+} from './health'
+export type {
+  LoadRemoteExtraOptions,
+  RemoteSourcePlugin,
+  RemoteSourcePluginContext,
+} from './loader'
+export { createRemoteSourcePlugin, loadRemoteMultiVersion } from './loader'
+export type { LoadResult, RuntimeRemote } from './loader/utils'
 export {
   buildCdnUrls,
   buildFinalUrls,
@@ -12,15 +26,7 @@ export {
   setVersionCache,
   tryLoadRemote,
 } from './loader/utils'
-export type {
-  LoadRemoteExtraOptions,
-  RemoteSourcePlugin,
-  RemoteSourcePluginContext,
-} from './loader'
-export type { LoadResult, RuntimeRemote } from './loader/utils'
-export { createRemoteSourcePlugin } from './loader'
 export { fallbackPlugin } from './plugins/fallback'
-export { createEventBus, eventBus } from './event-bus'
 export {
   cancelPreload,
   clearPreloadCache,
@@ -43,12 +49,6 @@ export {
   unloadAll,
   unloadRemote,
 } from './unload'
-export {
-  checkModuleLoadable,
-  checkRemoteHealth,
-  formatHealthStatus,
-  getRemoteHealthReport,
-} from './health'
 export {
   checkVersionCompatibility,
   compareVersions,

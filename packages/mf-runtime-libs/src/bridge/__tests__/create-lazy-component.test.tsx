@@ -1,5 +1,5 @@
-import React from 'react'
 import { renderHook, waitFor } from '@testing-library/react'
+import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLazyComponent } from '../create-lazy-component'
 import type { LazyComponentOptions } from '../types'

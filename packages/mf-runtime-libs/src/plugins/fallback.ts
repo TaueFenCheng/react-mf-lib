@@ -12,6 +12,8 @@ export const fallbackPlugin: () => ModuleFederationRuntimePlugin = () => ({
 
     throw rawError instanceof Error
       ? rawError
-      : new Error('[MF] loadRemote failed and no valid fallback module was provided')
+      : new Error(
+          '[MF] loadRemote failed and no valid fallback module was provided',
+        )
   },
 })
