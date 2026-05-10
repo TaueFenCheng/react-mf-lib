@@ -17,13 +17,24 @@ export default defineConfig({
   source: {
     resolve: {
       alias: {
-        // mf-runtime-libs 的构建产物中有 import { jsx } from 'react/jsx-runtime'，
-        // React 16 不提供此模块，通过 shim 转发到 React.createElement
+        // mf-runtime-libs 的构建产物中有 import ... from "react"，
+        // workspace link 会导致从 dist 目录解析失败，通过 alias 强制指定宿主 node_modules
         'react/jsx-runtime': path.resolve(__dirname, './src/jsx-runtime-shim.ts'),
         'react/jsx-dev-runtime': path.resolve(
           __dirname,
           './src/jsx-runtime-shim.ts',
         ),
+      },
+    },
+  },
+  tools: {
+    rspack: {
+      resolve: {
+        // workspace 链接的包中 import react 时，优先从宿主应用的 node_modules 解析
+        modules: [
+          path.resolve(__dirname, 'node_modules'),
+          'node_modules',
+        ],
       },
     },
   },

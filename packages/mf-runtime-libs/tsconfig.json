@@ -10,7 +10,8 @@
     "moduleResolution": "bundler",
     "useDefineForClassFields": true,
     "allowImportingTsExtensions": true,
-    "jsx": "react-jsx"
+    "jsx": "react"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/__tests__", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.spec.ts"]
 }

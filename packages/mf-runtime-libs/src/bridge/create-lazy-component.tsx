@@ -1,5 +1,4 @@
-/** @jsxImportSource react */
-import { type ComponentType, useEffect, useState } from 'react'
+import React, { type ComponentType, useEffect, useState } from 'react'
 import type { ErrorInfo, LazyComponentOptions } from './types'
 import { ERROR_TYPE } from './types'
 
@@ -171,7 +170,7 @@ export function createLazyComponent<T extends Record<string, unknown>>(
           errorType: ERROR_TYPE.LOAD_REMOTE,
         }) as JSX.Element
       }
-      return <Component {...props} />
+      return React.createElement(Component, props)
     }
 
     return null
