@@ -1,5 +1,5 @@
-import type { LoadRemoteOptions } from '../types'
 import { CDN_TEMPLATES, fetchLatestVersion } from '../loader/shared'
+import type { LoadRemoteOptions } from '../types'
 
 export interface HealthCheckResult {
   pkg: string

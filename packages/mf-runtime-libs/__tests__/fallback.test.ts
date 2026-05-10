@@ -18,7 +18,9 @@ describe('fallbackPlugin', () => {
       const plugin = fallbackPlugin()
       const testError = new Error('test')
 
-      expect(() => plugin.errorLoadRemote({ error: testError })).toThrow(testError)
+      expect(() => plugin.errorLoadRemote({ error: testError })).toThrow(
+        testError,
+      )
     })
 
     it('should throw generic error when args has no valid error', () => {

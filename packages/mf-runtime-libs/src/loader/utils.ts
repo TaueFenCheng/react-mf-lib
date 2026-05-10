@@ -4,14 +4,14 @@ import {
 } from '@module-federation/enhanced/runtime'
 import { fallbackPlugin } from '../plugins/fallback'
 import type { VersionCache } from '../types'
-import {
-  CDN_TEMPLATES,
-  REACT_SINGLETON_PACKAGES,
-  SINGLETON_SHARE_CONFIG,
-  fetchLatestVersion as fetchLatestVersionShared,
-} from './shared'
 import { BoundedCache } from '../utils/bounded-cache'
 import type { ReactDeps } from './remote-source'
+import {
+  CDN_TEMPLATES,
+  fetchLatestVersion as fetchLatestVersionShared,
+  REACT_SINGLETON_PACKAGES,
+  SINGLETON_SHARE_CONFIG,
+} from './shared'
 
 // --- 核心配置抽象 ---
 
@@ -82,7 +82,10 @@ export type RuntimeRemote = Parameters<
   ReturnType<typeof createInstance>['registerRemotes']
 >[0][number]
 
-const mfInstanceCache = new BoundedCache<string, ReturnType<typeof createInstance>>({
+const mfInstanceCache = new BoundedCache<
+  string,
+  ReturnType<typeof createInstance>
+>({
   maxSize: 100,
   ttl: 10 * 60 * 1000,
 })

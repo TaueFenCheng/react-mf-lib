@@ -1,8 +1,5 @@
 import { createRemoteAppComponent } from '@module-federation/bridge-react'
-import type {
-  BridgeAppComponent,
-  CreateBridgeAppOptions,
-} from './types'
+import type { BridgeAppComponent, CreateBridgeAppOptions } from './types'
 
 export function createBridgeRemoteApp<
   TModule extends Record<string, unknown>,
