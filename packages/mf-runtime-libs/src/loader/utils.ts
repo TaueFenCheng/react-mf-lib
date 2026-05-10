@@ -11,6 +11,7 @@ import {
   fetchLatestVersion as fetchLatestVersionShared,
 } from './shared'
 import { BoundedCache } from '../utils/bounded-cache'
+import type { ReactDeps } from './remote-source'
 
 // --- 核心配置抽象 ---
 
@@ -123,9 +124,11 @@ export async function tryLoadRemote(
   plugins: ModuleFederationRuntimePlugin[],
   extraRemotes: RuntimeRemote[] = [],
   registerOptions: { force?: boolean } = {},
+  reactDeps?: ReactDeps,
 ): Promise<LoadResult> {
   const remotesIdentity = buildRemotesIdentity(extraRemotes)
-  const cacheKey = `${scopeName}::${url}::${remotesIdentity}::${registerOptions.force ? 'force' : 'normal'}`
+  const reactVersion = reactDeps?.React?.version || 'default'
+  const cacheKey = `${scopeName}::${url}::${remotesIdentity}::${reactVersion}::${registerOptions.force ? 'force' : 'normal'}`
 
   // 检查缓存
   const cachedMfs = mfInstanceCache.get(cacheKey)
@@ -199,10 +202,11 @@ function createSingletonEntry(
  */
 export function getFinalSharedConfig(
   customShared?: Record<string, any>,
+  reactDeps?: ReactDeps,
 ): Record<string, any> {
-  // 检查全局是否有 React/ReactDOM（用于 Vue 项目加载 React 远程组件）
-  const globalReact = (window as any).React
-  const globalReactDOM = (window as any).ReactDOM
+  // 优先使用显式传入的 React 实例，再 fallback 到 window
+  const globalReact = reactDeps?.React ?? (window as any).React
+  const globalReactDOM = reactDeps?.ReactDOM ?? (window as any).ReactDOM
 
   const globalShared: Record<string, any> = {}
 

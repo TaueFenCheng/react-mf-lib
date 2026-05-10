@@ -1,5 +1,6 @@
 import { loadRemoteMultiVersion } from "mf-runtime-libs";
 import React from "react";
+import ReactDOM from "react-dom";
 import "./App.css";
 
 interface RemoteButtonProps {
@@ -29,15 +30,19 @@ function App() {
 	React.useEffect(() => {
 		async function loadButton() {
 			try {
-				const { mf } = await loadRemoteMultiVersion({
-					name: "demo_provider",
-					pkg: "demo-bridge-provider",
-					version: "1.0.0",
-					localDebug: {
-						enabled: true,
-						entry: "http://localhost:3001/remoteEntry.js",
+				const { mf } = await loadRemoteMultiVersion(
+					{
+						name: "demo_provider",
+						pkg: "demo-bridge-provider",
+						version: "1.0.0",
+						localDebug: {
+							enabled: true,
+							entry: "http://localhost:3001/remoteEntry.js",
+						},
 					},
-				});
+					[],
+					{ react: { React, ReactDOM } },
+				);
 				const mod = await mf.loadRemote<Record<string, unknown> | null>(
 					"demo_provider/RemoteButton",
 				);
@@ -59,15 +64,19 @@ function App() {
 
 		async function loadCard() {
 			try {
-				const { mf } = await loadRemoteMultiVersion({
-					name: "demo_provider",
-					pkg: "demo-bridge-provider",
-					version: "1.0.0",
-					localDebug: {
-						enabled: true,
-						entry: "http://localhost:3001/remoteEntry.js",
+				const { mf } = await loadRemoteMultiVersion(
+					{
+						name: "demo_provider",
+						pkg: "demo-bridge-provider",
+						version: "1.0.0",
+						localDebug: {
+							enabled: true,
+							entry: "http://localhost:3001/remoteEntry.js",
+						},
 					},
-				});
+					[],
+					{ react: { React, ReactDOM } },
+				);
 				const mod = await mf.loadRemote<Record<string, unknown> | null>(
 					"demo_provider/RemoteCard",
 				);

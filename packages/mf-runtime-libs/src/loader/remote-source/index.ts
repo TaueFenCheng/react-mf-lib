@@ -19,12 +19,24 @@ export interface RemoteSourcePlugin {
   ) => MaybePromise<RuntimeRemote[] | void>
 }
 
+export interface ReactDeps {
+  React: any
+  ReactDOM: any
+}
+
 export interface LoadRemoteExtraOptions {
   remoteSourcePlugins?: RemoteSourcePlugin[]
   baseRemotes?: RuntimeRemote[]
   registerOptions?: {
     force?: boolean
   }
+  /**
+   * 显式指定宿主 React/ReactDOM 实例。
+   * 传入后，getFinalSharedConfig 会用此实例填入 shared scope 的 lib，
+   * 避免加载远程端自己的 React。不传则回退到 window.React / window.ReactDOM。
+   * 适用于多 React 版本共存场景。
+   */
+  react?: ReactDeps
 }
 
 function dedupeRemotes(remotes: RuntimeRemote[]): RuntimeRemote[] {

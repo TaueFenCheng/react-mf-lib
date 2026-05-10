@@ -61,7 +61,7 @@ describe('loader/index', () => {
         '1.0.0',
         undefined,
       )
-      expect(getFinalSharedConfig).toHaveBeenCalledWith(undefined)
+      expect(getFinalSharedConfig).toHaveBeenCalledWith(undefined, undefined)
     })
 
     it('should use default options', async () => {
@@ -122,7 +122,7 @@ describe('loader/index', () => {
         '2.0.0',
         'http://localhost:3000/remoteEntry.js',
       )
-      expect(getFinalSharedConfig).toHaveBeenCalledWith({ custom: {} })
+      expect(getFinalSharedConfig).toHaveBeenCalledWith({ custom: {} }, undefined)
     })
 
     it('should try multiple URLs on failure', async () => {
@@ -179,6 +179,7 @@ describe('loader/index', () => {
         plugins,
         [],
         {},
+        undefined,
       )
     })
 
@@ -210,6 +211,7 @@ describe('loader/index', () => {
         expect.any(Array),
         [],
         {},
+        undefined,
       )
     })
 
@@ -239,6 +241,7 @@ describe('loader/index', () => {
         [],
         [],
         {},
+        undefined,
       )
     })
 
@@ -268,6 +271,7 @@ describe('loader/index', () => {
         [],
         [],
         {},
+        undefined,
       )
     })
 
@@ -318,6 +322,7 @@ describe('loader/index', () => {
           },
         ],
         {},
+        undefined,
       )
     })
   })

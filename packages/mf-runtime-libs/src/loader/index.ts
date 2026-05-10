@@ -3,6 +3,7 @@ import type { LoadRemoteOptions } from "../types";
 import {
   createRemoteSourcePlugin,
   type LoadRemoteExtraOptions,
+  type ReactDeps,
   type RemoteSourcePlugin,
   type RemoteSourcePluginContext,
   resolveRegisteredRemotes,
@@ -20,6 +21,7 @@ export {
   type RemoteSourcePlugin,
   type RemoteSourcePluginContext,
   type LoadRemoteExtraOptions,
+  type ReactDeps,
 };
 
 /**
@@ -65,7 +67,10 @@ export async function loadRemoteMultiVersion(
     urls = buildFinalUrls(pkg, finalVersion, localFallback);
   }
   // 3. 合并共享配置
-  const finalSharedConfig = getFinalSharedConfig(customShared);
+  const finalSharedConfig = getFinalSharedConfig(
+    customShared,
+    extraOptions.react,
+  );
 
   // 4. 遍历 URL 并尝试加载（故障转移/Fallback）
   for (const url of urls) {
@@ -83,7 +88,7 @@ export async function loadRemoteMultiVersion(
         remoteSourcePlugins
       );
 
-      return tryLoadRemote(
+      return await tryLoadRemote(
         scopeName,
         url,
         retries,
@@ -91,7 +96,8 @@ export async function loadRemoteMultiVersion(
         finalSharedConfig,
         plugins,
         registeredRemotes,
-        registerOptions
+        registerOptions,
+        extraOptions.react,
       );
     } catch (e) {
       console.warn(`[MF] 切换 CDN 路径：${url} 失败，尝试下一个...`, e);

@@ -8,6 +8,7 @@
 - [核心功能](#核心功能)
 - [安装](#安装)
 - [快速开始](#快速开始)
+- [推荐用法：显式传入 React 实例](#推荐用法显式传入-react-实例)
 - [API 参考](#api-参考)
   - [loadRemoteMultiVersion](#loadremotemultiversion)
   - [工具函数](#工具函数)
@@ -159,6 +160,73 @@ async function loadMultipleComponents() {
 }
 ```
 
+## 推荐用法：显式传入 React 实例
+
+`mf-runtime-libs` 支持两种方式将宿主应用的 React/ReactDOM 注入到远程模块的共享作用域中：
+
+### 方式一：显式传入（推荐）
+
+在调用 `loadRemoteMultiVersion` 时，通过第三个参数 `extraOptions.react` 显式传入当前宿主应用的 React/ReactDOM 实例：
+
+```typescript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { loadRemoteMultiVersion } from 'mf-runtime-libs';
+
+const { mf } = await loadRemoteMultiVersion(
+  {
+    name: 'ui_lib',
+    pkg: 'my-ui-components',
+    version: '1.0.0',
+  },
+  [],
+  { react: { React, ReactDOM } },  // 显式注入
+);
+```
+
+**优点**：
+- 不依赖全局变量（`window.React`）
+- 在多 React 版本共存的场景下，可以精确控制每个 `loadRemoteMultiVersion` 调用使用哪个 React 版本
+- 缓存 key 会包含 React 版本，不同版本之间互不干扰
+
+### 方式二：全局变量（回退方案）
+
+当不传 `react` 参数时，库会回退到 `window.React / window.ReactDOM` 作为兼容方案：
+
+```typescript
+// 不传 react 参数，使用 window.React 回退
+const { mf } = await loadRemoteMultiVersion({
+  name: 'ui_lib',
+  pkg: 'my-ui-components',
+  version: '1.0.0',
+});
+```
+
+### 多版本 React 共存示例
+
+当同一宿主应用中有多个 React 版本时，可以为每个远程模块分别指定 React 版本：
+
+```typescript
+import React17 from 'react_17';
+import ReactDOM17 from 'react-dom_17';
+import React18 from 'react';
+import ReactDOM18 from 'react-dom';
+
+// 远程组件 A 使用 React 17
+const remoteA = await loadRemoteMultiVersion(
+  { name: 'remote_a', pkg: 'lib-a', version: '1.0.0' },
+  [],
+  { react: { React: React17, ReactDOM: ReactDOM17 } },
+);
+
+// 远程组件 B 使用 React 18
+const remoteB = await loadRemoteMultiVersion(
+  { name: 'remote_b', pkg: 'lib-b', version: '2.0.0' },
+  [],
+  { react: { React: React18, ReactDOM: ReactDOM18 } },
+);
+```
+
 ## API 参考
 
 ### loadRemoteMultiVersion
@@ -201,6 +269,7 @@ Module Federation 运行时插件数组，默认会添加 `fallbackPlugin()`。
 | `baseRemotes` | `RuntimeRemote[]` | ❌ | `[]` | 直接注册的附加 remote 列表 |
 | `remoteSourcePlugins` | `RemoteSourcePlugin[]` | ❌ | `[]` | 通过插件动态返回并注册 remote 列表 |
 | `registerOptions` | `{ force?: boolean }` | ❌ | `{}` | 透传给 `registerRemotes` 的配置 |
+| `react` | `ReactDeps` | ❌ | `window.React` | 显式指定宿主 React/ReactDOM 实例，见 [React 实例注入](#react-实例注入) |
 
 #### 返回值
 
@@ -292,6 +361,9 @@ function tryLoadRemote(
   delay: number,
   sharedConfig: Record<string, any>,
   plugins: ModuleFederationRuntimePlugin[],
+  extraRemotes?: RuntimeRemote[],
+  registerOptions?: { force?: boolean },
+  reactDeps?: ReactDeps,
 ): Promise<LoadResult>
 ```
 
@@ -300,8 +372,16 @@ function tryLoadRemote(
 合并默认共享配置和自定义配置。
 
 ```typescript
-function getFinalSharedConfig(customShared?: Record<string, any>): Record<string, any>
+function getFinalSharedConfig(
+  customShared?: Record<string, any>,
+  reactDeps?: ReactDeps,
+): Record<string, any>
 ```
+
+**参数**:
+
+- `customShared`: 自定义共享模块配置
+- `reactDeps`: 可选，显式传入 `{ React, ReactDOM }` 实例。传入后，共享配置中的 React/ReactDOM 会使用此实例而非全局变量
 
 **示例**:
 ```typescript
@@ -317,6 +397,11 @@ const customConfig = getFinalSharedConfig({
     },
   },
 });
+
+// 显式传入 React 实例（推荐）
+import React from 'react';
+import ReactDOM from 'react-dom';
+const config = getFinalSharedConfig(undefined, { React, ReactDOM });
 ```
 
 #### resolveFinalVersion
@@ -1336,6 +1421,17 @@ interface LoadRemoteExtraOptions {
   registerOptions?: {
     force?: boolean;
   };
+  /**
+   * 显式指定宿主 React/ReactDOM 实例。
+   * 传入后，getFinalSharedConfig 会用此实例填入 shared scope 的 lib，
+   * 避免加载远程端自己的 React。不传则回退到 window.React / window.ReactDOM。
+   */
+  react?: ReactDeps;
+}
+
+interface ReactDeps {
+  React: any;
+  ReactDOM: any;
 }
 
 interface RemoteSourcePluginContext {

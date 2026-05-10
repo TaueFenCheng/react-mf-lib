@@ -18,7 +18,7 @@ export default defineConfig({
   },
   tools: {
     rspack: {
-      externals: ['react', 'react-dom', 'react/jsx-runtime'],
+      externals: ['react', 'react-dom'],
     },
   },
   lib: [
