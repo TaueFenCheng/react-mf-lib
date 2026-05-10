@@ -1,0 +1,25 @@
+{
+  "name": "host-react16-remote",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "rsbuild build",
+    "dev": "rsbuild dev --open",
+    "dev:all": "concurrently --kill-others \"pnpm --filter demo-bridge-provider dev\" \"sleep 3 && pnpm dev\"",
+    "preview": "rsbuild preview"
+  },
+  "dependencies": {
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "mf-runtime-libs": "workspace:*"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.4.13",
+    "@rsbuild/plugin-react": "^1.3.4",
+    "@types/react": "^16.14.65",
+    "@types/react-dom": "^16.9.25",
+    "concurrently": "^9.1.2",
+    "typescript": "^5.9.2"
+  }
+}

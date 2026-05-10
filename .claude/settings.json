@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import json,sys; vs=json.load\\(sys.stdin\\); print\\([v for v in vs if v.startswith\\('16.'\\)][-5:]\\)\")",
+      "Bash(pnpm --filter host-react16-remote build)",
+      "Bash(pnpm --filter host-react16-remote run lint)",
+      "Bash(pnpm --filter mf-runtime-libs biome --version)",
+      "Bash(pnpm biome *)",
+      "Bash(npx --yes @biomejs/biome --version)",
+      "Bash(pnpm ls *)",
+      "Bash(node -e \"const c = require\\('base-biome-config/package.json'\\); console.log\\(JSON.stringify\\(c.main, null, 2\\)\\)\")",
+      "Bash(npx --yes @biomejs/biome check src/App.tsx)",
+      "Bash(npx @biomejs/biome check src/App.tsx)",
+      "Bash(npx @biomejs/biome format --write src/App.tsx)",
+      "Bash(pnpm --filter host-react16-remote-react18 build)"
+    ]
+  }
+}
