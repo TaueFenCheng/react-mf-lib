@@ -29,6 +29,13 @@
 
 ## [未发布]
 
+## [1.0.8] - 2026-05-10
+
+### Release
+
+- Published version 1.0.8 with patch bump
+
+
 ## [1.0.7] - 2026-05-08
 
 ### Release
